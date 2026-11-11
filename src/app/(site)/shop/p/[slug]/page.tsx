@@ -5,7 +5,7 @@ import { prisma } from "@/server/db";
 import { getCurrentUser } from "@/server/auth";
 import { favoriteIds } from "@/server/home";
 import { listReviews } from "@/server/reviews";
-import { searchProducts } from "@/server/listings";
+import { searchProducts, productFlash, effectiveProductPrice } from "@/server/listings";
 import { mediaSrc } from "@/server/media";
 import { trackView } from "@/server/analytics";
 import { getLocale, getT } from "@/i18n/server";
@@ -35,7 +35,9 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const p = await prisma.product.findUnique({ where: { slug }, include: { merchant: true, category: { include: { parent: true } }, variants: { where: { active: true }, orderBy: { name: "asc" } } } });
   if (!p || p.status !== "PUBLISHED" || p.merchant.status !== "APPROVED") notFound();
   void trackView(p.merchantId, "product", p.id);
-  const sale = p.salePriceCents != null && p.salePriceCents < p.priceCents ? p.salePriceCents : null;
+  const flashPct = (await productFlash([p.id])).get(p.id) ?? 0;
+  const nowPrice = effectiveProductPrice(p.priceCents, p.salePriceCents, flashPct);
+  const sale = nowPrice < p.priceCents ? nowPrice : null;
   const [saved, reviews, related, delivered, reviewed] = await Promise.all([
     favoriteIds(user?.id),
     listReviews({ productId: p.id }),
@@ -75,7 +77,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           </div>
           {p.ageMin != null && <p className="mt-2 inline-block rounded-full bg-powder-soft px-3 py-1 text-xs font-medium text-powder-deep">{t("{a}–{b} yrs", { a: p.ageMin, b: p.ageMax ?? 12 })}</p>}
           <div className="mt-6">
-            <AddToCart variants={p.variants.map((v) => ({ id: v.id, name: v.name === "Default" ? t("Standard") : v.name, stock: v.stock, priceCents: v.priceCents ?? sale ?? p.priceCents }))} comparePriceCents={sale ? p.priceCents : null} />
+            <AddToCart variants={p.variants.map((v) => ({ id: v.id, name: v.name === "Default" ? t("Standard") : v.name, stock: v.stock, priceCents: v.priceCents != null ? effectiveProductPrice(v.priceCents, null, flashPct) : nowPrice }))} comparePriceCents={sale ? p.priceCents : null} />
           </div>
           <div className="mt-8 space-y-3 rounded-3xl bg-canvas p-5 text-sm">
             <p className="flex gap-3">

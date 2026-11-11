@@ -360,7 +360,9 @@ export async function searchProducts(f: ProductFilters, locale: Locale): Promise
     include: { merchant: { select: { name: true } }, variants: { where: { active: true }, select: { stock: true, priceCents: true } } },
     take: 300,
   });
+  const flash = await productFlash(rows.map((r) => r.id));
   let items = rows.map((p): ProductCardData => {
+    const now = effectiveProductPrice(p.priceCents, p.salePriceCents, flash.get(p.id));
     return {
       kind: "product",
       id: p.id,
@@ -369,7 +371,7 @@ export async function searchProducts(f: ProductFilters, locale: Locale): Promise
       image: p.images[0] ? (p.images[0].startsWith("/") || p.images[0].startsWith("http") ? p.images[0] : mediaSrc(p.images[0])) : mediaSrc(),
       merchantName: p.merchant.name,
       priceCents: p.priceCents,
-      salePriceCents: p.salePriceCents != null && p.salePriceCents < p.priceCents ? p.salePriceCents : null,
+      salePriceCents: now < p.priceCents ? now : null,
       rating: p.ratingAvg,
       ratingCount: p.ratingCount,
       inStock: p.variants.some((v) => v.stock > 0),
@@ -392,6 +394,23 @@ export async function searchProducts(f: ProductFilters, locale: Locale): Promise
     });
   const offset = f.offset ?? 0;
   return { items: items.slice(offset, offset + (f.limit ?? 24)), total: items.length };
+}
+
+/** Running flash promotions (percent off) per product. */
+export async function productFlash(ids: string[]) {
+  if (!ids.length) return new Map<string, number>();
+  const now = new Date();
+  const rows = await prisma.flashPromotion.findMany({ where: { productId: { in: ids }, startsAt: { lte: now }, endsAt: { gt: now } } });
+  const m = new Map<string, number>();
+  for (const r of rows) m.set(r.productId!, Math.max(m.get(r.productId!) ?? 0, r.percentOff));
+  return m;
+}
+
+/** The price a parent pays now: the lowest of the sale price and the flash price. */
+export function effectiveProductPrice(base: number, sale: number | null, flashPct = 0) {
+  const s = sale != null && sale < base ? sale : base;
+  const f = flashPct ? Math.round((base * (100 - flashPct)) / 100) : base;
+  return Math.min(s, f);
 }
 
 // ───────────────────────── Search text ─────────────────────────

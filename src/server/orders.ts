@@ -5,6 +5,7 @@ import { UserError } from "./auth";
 import { findCart } from "./cart";
 import { mediaSrc } from "./media";
 import { recordOrderCommission, reverseOrderCommission } from "./commission";
+import { effectiveProductPrice, productFlash } from "./listings";
 import { awardPoints, isMember, reversePoints } from "./membership";
 import { notifyMerchant, notifyUser } from "./notify";
 import { loc, type Locale } from "@/i18n/core";
@@ -61,6 +62,7 @@ export async function cartView(locale: Locale) {
   if (!cart) return { groups: [] as CartGroup[], totalCents: 0, count: 0, discountCode: null as string | null, discountError: false, problems: [] as string[] };
   const items = await prisma.cartItem.findMany({ where: { cartId: cart.id }, include: { variant: { include: { product: { include: { merchant: true } } } } }, orderBy: { id: "asc" } });
   const discount = await validDiscount(cart.discountCode);
+  const flash = await productFlash(items.map((i) => i.variant.productId));
   const problems: string[] = [];
   const byMerchant = new Map<string, CartGroup>();
   for (const it of items) {
@@ -69,7 +71,7 @@ export async function cartView(locale: Locale) {
       problems.push(loc(p.title, locale));
       continue;
     }
-    const unit = it.variant.priceCents ?? (p.salePriceCents != null && p.salePriceCents < p.priceCents ? p.salePriceCents : p.priceCents);
+    const unit = it.variant.priceCents != null ? effectiveProductPrice(it.variant.priceCents, null, flash.get(p.id)) : effectiveProductPrice(p.priceCents, p.salePriceCents, flash.get(p.id));
     const g =
       byMerchant.get(p.merchantId) ??
       ({ merchantId: p.merchantId, merchantName: p.merchant.name, items: [], subtotalCents: 0, deliveryCents: 0, discountCents: 0, totalCents: 0, codEnabled: p.merchant.codEnabled } as CartGroup);

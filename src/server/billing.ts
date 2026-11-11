@@ -140,6 +140,10 @@ export async function markInvoicePaid(invoiceId: string, opts: { paymentId?: str
       if (l.refType === "subscription" && l.refId) await activateSubscription(tx, l.refId);
       if (l.refType === "campaign" && l.refId) await tx.adCampaign.updateMany({ where: { id: l.refId, status: "PENDING_PAYMENT" }, data: { status: "PENDING_APPROVAL" } });
       if (l.refType === "certification" && l.refId) await tx.certification.updateMany({ where: { id: l.refId, status: "AWAITING_PAYMENT" }, data: { status: "PAID" } });
+      if (l.refType === "farah-license" && l.refId) {
+        const c = await tx.certification.findUnique({ where: { id: l.refId } });
+        if (c?.status === "APPROVED" && c.validUntil) await tx.merchant.update({ where: { id: c.merchantId }, data: { farahUntil: c.validUntil } });
+      }
       if (l.refType === "commissions") {
         await tx.commission.updateMany({ where: { invoiceId: inv.id }, data: { status: "SETTLED" } });
         await tx.settlement.updateMany({ where: { reference: inv.number, status: "DRAFT" }, data: { status: "PAID", paidAt: new Date() } });

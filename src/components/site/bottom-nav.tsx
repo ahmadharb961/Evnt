@@ -11,7 +11,7 @@ export function BottomNav() {
   const current = usePathname();
   // The tapped tab lights up straight away, before its page has loaded.
   const pending = usePendingNav();
-  const path = pending ?? current;
+  const path = pending && pending !== "…" ? pending : current;
   const items = [
     { href: "/", label: t("Explore"), icon: Compass, on: path === "/" || path.startsWith("/discover") },
     { href: "/activities", label: t("Activities"), icon: Sparkles, on: path.startsWith("/activities") || path.startsWith("/events") },

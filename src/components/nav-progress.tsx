@@ -4,17 +4,38 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useT } from "@/i18n/client";
 
-/* Shared "a page is loading" state, so the bottom menu can react to taps too. */
-let pending: string | null = null;
+/* Shared "a page is loading" state, so the bottom menu can react to taps too.
+   `clicked` = the path just tapped; `holds` = loading placeholders currently on screen. */
+let clicked: string | null = null;
+let holds = 0;
+let snapshot: string | null = null;
 const subs = new Set<() => void>();
-const set = (v: string | null) => {
-  if (pending === v) return;
-  pending = v;
+const emit = () => {
+  const next = clicked ?? (holds > 0 ? "…" : null);
+  if (next === snapshot) return;
+  snapshot = next;
   subs.forEach((f) => f());
 };
+const set = (v: string | null) => {
+  clicked = v;
+  emit();
+};
 const subscribe = (f: () => void) => (subs.add(f), () => subs.delete(f));
-/** The path being opened right now, or null. */
-export const usePendingNav = () => useSyncExternalStore(subscribe, () => pending, () => null);
+/** The path being opened right now ("…" while a placeholder is showing), or null. */
+export const usePendingNav = () => useSyncExternalStore(subscribe, () => snapshot, () => null);
+
+/** Put inside loading screens: keeps the loader visible until the real page replaces the placeholder. */
+export function LoadingHold() {
+  useEffect(() => {
+    holds++;
+    emit();
+    return () => {
+      holds = Math.max(0, holds - 1);
+      emit();
+    };
+  }, []);
+  return null;
+}
 
 /**
  * Clear loading signal on every tap: a bar along the top (below the iPhone notch) right away,
@@ -60,28 +81,30 @@ export function NavProgress() {
     };
   }, []);
 
-  // Start / animate.
+  const on = busy != null;
+  // Start while busy; finish when the real page is on screen.
   useEffect(() => {
     clearInterval(timer.current);
     clearTimeout(safety.current);
-    if (!busy) return;
+    if (!on) {
+      setBubble(false);
+      setW((x) => (x ? 100 : 0));
+      const h = setTimeout(() => setW(0), 350);
+      return () => clearTimeout(h);
+    }
     setW(15);
     timer.current = setInterval(() => setW((x) => (x >= 92 ? x : x + (92 - x) * 0.1)), 150);
-    const b = setTimeout(() => setBubble(true), 250);
-    safety.current = setTimeout(() => set(null), 20_000); // never stick forever
+    const bt = setTimeout(() => setBubble(true), 200);
+    safety.current = setTimeout(() => ((holds = 0), set(null)), 20_000); // never stick forever
     return () => {
-      clearTimeout(b);
+      clearTimeout(bt);
       clearInterval(timer.current);
     };
-  }, [busy]);
+  }, [on]);
 
-  // New page arrived: finish.
+  // New address: the tap is done; a loading placeholder (if any) keeps the loader up until the page arrives.
   useEffect(() => {
     set(null);
-    setBubble(false);
-    setW((x) => (x ? 100 : 0));
-    const h = setTimeout(() => setW(0), 350);
-    return () => clearTimeout(h);
   }, [pathname, search]);
 
   return (
@@ -92,7 +115,7 @@ export function NavProgress() {
           style={{ width: `${w}%`, opacity: w && w < 100 ? 1 : 0, transition: w === 0 ? "none" : "width 150ms ease-out, opacity 250ms ease 100ms" }}
         />
       </div>
-      {busy && bubble && (
+      {on && bubble && (
         <div role="status" className="pointer-events-none fixed inset-x-0 z-[100] flex justify-center" style={{ top: "calc(env(safe-area-inset-top) + 14px)" }}>
           <span className="inline-flex animate-rise-in items-center gap-2 rounded-full bg-ink px-4 py-2 text-sm font-semibold text-white shadow-lift">
             <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />

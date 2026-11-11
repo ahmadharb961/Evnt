@@ -1,3 +1,5 @@
+import { LoadingHold } from "@/components/nav-progress";
+
 /** Shown instantly when moving between pages, while the new page loads. */
 export default function Loading() {
   const card = (k: number) => (
@@ -12,6 +14,7 @@ export default function Loading() {
   );
   return (
     <div className="container-x py-8" role="status" aria-busy="true">
+      <LoadingHold />
       <div className="h-8 w-56 animate-pulse rounded-full bg-ink/[.08]" />
       <div className="mt-3 h-4 w-72 max-w-full animate-pulse rounded-full bg-ink/[.06]" />
       <div className="mt-8 flex gap-4 overflow-hidden">{[0, 1, 2, 3].map(card)}</div>

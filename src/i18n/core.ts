@@ -10,7 +10,7 @@ export const LOCALE_HEADER = "x-evnt-locale";
 export const isLocale = (v: unknown): v is Locale => v === "en" || v === "ar" || v === "fr";
 export const dirOf = (l: Locale) => (l === "ar" ? "rtl" : "ltr");
 export const LOCALE_NAMES: Record<Locale, string> = { en: "English", ar: "العربية", fr: "Français" };
-export const INTL_LOCALE: Record<Locale, string> = { en: "en-GB", ar: "ar-LB", fr: "fr-FR" };
+export const INTL_LOCALE: Record<Locale, string> = { en: "en-GB", ar: "ar-LB-u-nu-latn", fr: "fr-FR" };
 
 export type Vars = Record<string, string | number | null | undefined>;
 export type Dict = Record<string, string>;

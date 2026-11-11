@@ -22,6 +22,8 @@ const patterns = [
   /\bplural\(\s*[^,]+,\s*"((?:[^"\\]|\\.)+)",\s*"((?:[^"\\]|\\.)+)"/g,
   /new UserError\(\s*"((?:[^"\\]|\\.)+)"/g,
   /\b(?:title|body|label|error|en)\s*:\s*"((?:[^"\\]|\\.)+)"/g,
+  /\b(?:title|body)\s*:\s*[^,"?]+\?\s*"((?:[^"\\]|\\.)+)"\s*:\s*"((?:[^"\\]|\\.)+)"/g, // title: cond ? "a" : "b"
+  /\[\s*"((?:[^"\\]|\\.)+)",\s*"((?:[^"\\]|\\.)+)"\s*\]/g, // ["Title", "Body"] message pairs
 ];
 // Files whose object values are interface labels (status maps, facility/service labels…)
 const labelFiles = ["lib/status.ts", "lib/birthday.ts", "components/cards.tsx", "lib/phone.ts", "server/passwords.ts", "server/farah.ts", "app/admin/settings/page.tsx", "app/merchant/billing/page.tsx", "app/merchant/ads/page.tsx"];

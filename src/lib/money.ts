@@ -5,7 +5,7 @@ export function formatMoney(cents: number, locale: Locale | string = "en"): stri
   const whole = cents % 100 === 0;
   const l = INTL_LOCALE[locale as Locale] ?? "en-GB";
   // Western digits in Arabic too: Lebanese prices are written that way.
-  const s = new Intl.NumberFormat(l === "ar-LB" ? "en-GB" : l, {
+  const s = new Intl.NumberFormat(l.startsWith("ar") ? "en-GB" : l, {
     minimumFractionDigits: whole ? 0 : 2,
     maximumFractionDigits: 2,
   }).format(Math.abs(cents) / 100);

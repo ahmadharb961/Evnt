@@ -12,13 +12,13 @@ export function Gallery({ images, video, title }: { images: string[]; video?: st
   const show = (i: number) => setOpen(((i % imgs.length) + imgs.length) % imgs.length);
   return (
     <>
-      <div className="grid grid-cols-4 grid-rows-2 gap-2 overflow-hidden rounded-4xl" style={{ aspectRatio: "16 / 7" }}>
-        <button type="button" onClick={() => show(0)} className="col-span-4 row-span-2 sm:col-span-2">
+      <div className="grid aspect-[4/3] grid-cols-4 grid-rows-2 gap-2 overflow-hidden rounded-4xl sm:aspect-[16/7]">
+        <button type="button" onClick={() => show(0)} className="col-span-4 row-span-2 h-full w-full sm:col-span-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={imgs[0]} alt={title} className="h-full w-full object-cover" fetchPriority="high" />
         </button>
         {imgs.slice(1, 5).map((src, i) => (
-          <button key={src + i} type="button" onClick={() => show(i + 1)} className="relative hidden sm:block">
+          <button key={src + i} type="button" onClick={() => show(i + 1)} className="relative hidden h-full w-full sm:block">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={src} alt="" loading="lazy" className="h-full w-full object-cover" />
           </button>

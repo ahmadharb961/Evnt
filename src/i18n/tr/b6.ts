@@ -47,4 +47,5 @@ export const B6: [string, string, string][] = [
   ["Share", "مشاركة", "Partager"],
   ["Open your browser menu", "افتح قائمة المتصفح", "Ouvrez le menu du navigateur"],
   ["Add to Home screen", "إضافة إلى الشاشة الرئيسية", "Ajouter à l'écran d'accueil"],
+  ["Loading…", "جارٍ التحميل…", "Chargement…"],
 ];

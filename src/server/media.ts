@@ -46,7 +46,7 @@ export async function storeUpload(file: File, owner: { userId?: string; merchant
   }
   if (buf.length > MAX_IMAGE) throw new UserError("Image is too large (max 15 MB)");
   const img = sharp(buf, { failOn: "error" }).rotate();
-  const out = await img.resize({ width: 1800, height: 1800, fit: "inside", withoutEnlargement: true }).webp({ quality: 82 }).toBuffer({ resolveWithObject: true });
+  const out = await img.resize({ width: 2560, height: 2560, fit: "inside", withoutEnlargement: true }).webp({ quality: 85, smartSubsample: true }).toBuffer({ resolveWithObject: true });
   const m = await prisma.media.create({
     data: {
       mime: "image/webp",

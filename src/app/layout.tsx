@@ -9,6 +9,7 @@ import { I18nProvider } from "@/i18n/client";
 import { dictFor, getLocale } from "@/i18n/server";
 import { dirOf } from "@/i18n/core";
 import { appUrl } from "@/server/urls";
+import { InstallPrompt } from "@/components/install-prompt";
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
@@ -16,7 +17,16 @@ export async function generateMetadata(): Promise<Metadata> {
     title: { default: "EVNT — Everything for your kids. One destination.", template: "%s · EVNT" },
     description: "Discover, book and enjoy the best kids' activities, birthdays, family restaurants and shopping in Lebanon.",
     applicationName: "EVNT",
-    icons: { icon: "/brand/icon.svg" },
+    icons: {
+      icon: [
+        { url: "/favicon.ico", sizes: "48x48" },
+        { url: "/brand/icon.svg", type: "image/svg+xml" },
+        { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      ],
+      apple: [{ url: "/brand/apple-touch-icon.png", sizes: "180x180" }],
+    },
+    appleWebApp: { capable: true, title: "EVNT", statusBarStyle: "default" },
+    formatDetection: { telephone: false },
     openGraph: { siteName: "EVNT", type: "website", images: [{ url: "/brand/og-family.jpg", width: 1200, height: 630 }] },
   };
 }
@@ -35,6 +45,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body>
         <I18nProvider locale={locale} dict={dict}>
           {children}
+          <InstallPrompt />
         </I18nProvider>
       </body>
     </html>

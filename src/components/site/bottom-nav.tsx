@@ -16,7 +16,7 @@ export function BottomNav() {
     { href: "/account", label: t("Profile"), icon: User, on: path === "/account" || (path.startsWith("/account") && !path.startsWith("/account/bookings")) },
   ];
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-ink/[.08] bg-white/95 backdrop-blur-md lg:hidden" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-ink/[.08] bg-white/95 backdrop-blur-md lg:hidden" style={{ paddingBottom: "max(env(safe-area-inset-bottom), 4px)", paddingLeft: "env(safe-area-inset-left)", paddingRight: "env(safe-area-inset-right)" }}>
       <ul className="mx-auto grid h-16 max-w-lg grid-cols-5">
         {items.map(({ href, label, icon: Icon, on }) => (
           <li key={href}>

@@ -34,6 +34,9 @@ export async function generateMetadata(): Promise<Metadata> {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  // Lets iOS report the home-bar / notch areas (env(safe-area-inset-*)) so the bottom menu
+  // and sticky bars sit above the home indicator in the installed app.
+  viewportFit: "cover",
   themeColor: "#ffffff",
 };
 

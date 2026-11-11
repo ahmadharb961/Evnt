@@ -63,7 +63,7 @@ export async function createCampaign(
       });
       if (price > 0) {
         const inv = await createInvoice(merchantId, [{ kind: "ADVERTISING", description: `${loc(p.name, "en")} (${d.startsAt.toISOString().slice(0, 10)} → ${d.endsAt.toISOString().slice(0, 10)})`, amountCents: price, refType: "campaign", refId: c.id }], tx);
-        await tx.adCampaign.update({ where: { id: c.id }, data: { invoiceId: inv.id } });
+        c.invoiceId = (await tx.adCampaign.update({ where: { id: c.id }, data: { invoiceId: inv.id } })).invoiceId;
       }
       await tx.auditLog.create({ data: { actorId, action: "campaign.created", entityType: "campaign", entityId: c.id, data: { placement: p.code, price } } });
       return c;

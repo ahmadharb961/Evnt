@@ -20,6 +20,7 @@ async function applyOutcome(paymentId: string, outcome: "success" | "failed") {
   if (p.purpose === "ORDER") return applyOrderPayment(paymentId, outcome);
   if (p.purpose === "INVOICE") return applyInvoicePayment(paymentId, outcome);
   if (p.purpose === "MEMBERSHIP") return applyMembershipPayment(paymentId, outcome);
+  if (p.purpose === "RESERVATION_DEPOSIT") return (await import("../restaurants")).applyDepositPayment(paymentId, outcome);
 }
 
 /**
@@ -36,12 +37,13 @@ export async function startWhishPayment(p: {
   orderGroupId?: string;
   invoiceId?: string;
   membershipId?: string;
+  reservationId?: string;
   returnPath: string;
 }) {
   if (!(await whishAvailable())) throw new UserError("Online payment with Whish is not available yet");
   if (p.amountCents <= 0) throw new UserError("Nothing to pay");
-  const ref = p.bookingId ?? p.orderGroupId ?? p.invoiceId ?? p.membershipId ?? "x";
-  const attempt = await prisma.payment.count({ where: { purpose: p.purpose, OR: [{ bookingId: ref }, { orderGroupId: ref }, { invoiceId: ref }, { membershipId: ref }] } });
+  const ref = p.bookingId ?? p.orderGroupId ?? p.invoiceId ?? p.membershipId ?? p.reservationId ?? "x";
+  const attempt = await prisma.payment.count({ where: { purpose: p.purpose, OR: [{ bookingId: ref }, { orderGroupId: ref }, { invoiceId: ref }, { membershipId: ref }, { reservationId: ref }] } });
   const payment = await prisma.payment.create({
     data: {
       purpose: p.purpose,
@@ -55,6 +57,7 @@ export async function startWhishPayment(p: {
       orderGroupId: p.orderGroupId,
       invoiceId: p.invoiceId,
       membershipId: p.membershipId,
+      reservationId: p.reservationId,
     },
   });
   try {

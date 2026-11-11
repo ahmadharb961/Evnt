@@ -4,6 +4,8 @@ import { prisma } from "@/server/db";
 import { getLocale, getT } from "@/i18n/server";
 import { PageHeader, Panel, Stat } from "@/components/portal/shell";
 import { formatMoney } from "@/lib/money";
+import { ActionButton } from "@/components/portal/action-button";
+import { disputeCommissionAction } from "@/actions/merchant-growth";
 import { fmtDate } from "@/lib/dates";
 
 export const metadata = { title: "Billing & payouts" };
@@ -65,7 +67,14 @@ export default async function BillingPage() {
                     {l.memo} · {fmtDate(l.createdAt, locale, { day: "numeric", month: "short" })}
                   </span>
                 </span>
-                <span className={l.amountCents < 0 ? "text-red-600" : "text-mint-deep"}>{money(l.amountCents)}</span>
+                <span className="flex items-center gap-2">
+                  {(l.type === "COMMISSION" || l.type === "COD_COMMISSION") && l.amountCents < 0 && l.refType && l.refId && ctx.staffRole === "OWNER" && (
+                    <ActionButton action={disputeCommissionAction.bind(null, l.refType, l.refId)} className="btn-ghost btn-sm" prompt={t("Why do you dispute this commission?")}>
+                      {t("Dispute")}
+                    </ActionButton>
+                  )}
+                  <span className={l.amountCents < 0 ? "text-red-600" : "text-mint-deep"}>{money(l.amountCents)}</span>
+                </span>
               </li>
             ))}
           </ul>

@@ -4,6 +4,7 @@ import { merchantFeatures } from "@/server/features";
 import { prisma } from "@/server/db";
 import { getT } from "@/i18n/server";
 import { PortalShell, type NavItem } from "@/components/portal/shell";
+import { stopManagingAction } from "@/actions/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -57,7 +58,12 @@ export default async function MerchantLayout({ children }: { children: React.Rea
         {t("Some features are paused because of an overdue invoice. Pay it to restore them →")}
       </Link>
     ) : ctx.asAdmin ? (
-      <div className="mb-6 rounded-3xl bg-ink p-4 text-sm text-white">{t("You're managing this business as an EVNT admin.")}</div>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-3xl bg-ink p-4 text-sm text-white">
+        {t("You're managing this business as an EVNT admin.")}
+        <form action={stopManagingAction}>
+          <button className="btn btn-sm bg-white text-ink">{t("Back to admin")}</button>
+        </form>
+      </div>
     ) : null;
   return (
     <PortalShell title={m.name} subtitle={`${t(m.plan === "BASIC" ? "Basic plan" : m.plan === "PRO" ? "Pro plan" : "Featured plan")}`} nav={nav} banner={banner}>

@@ -215,3 +215,23 @@ export async function markMerchantNotificationsReadAction() {
   revalidatePath("/merchant/notifications");
 }
 
+
+/** A merchant disputes a commission (e.g. an external booking they believe wasn't EVNT-generated). */
+export async function disputeCommissionAction(refType: string, refId: string, reason?: string) {
+  const t = await getT();
+  const ctx = await requireMerchant("OWNER");
+  const map: Record<string, { source: "BOOKING" | "ORDER" | "RESERVATION"; id: string }> = {
+    booking: { source: "BOOKING", id: refId },
+    order: { source: "ORDER", id: refId },
+    reservation: { source: "RESERVATION", id: refId },
+    external: { source: "BOOKING", id: `ext:${refId}` },
+  };
+  const k = map[refType];
+  const c = k ? await prisma.commission.findUnique({ where: { source_sourceId: { source: k.source, sourceId: k.id } } }) : null;
+  if (!c || c.merchantId !== ctx.merchant.id) return { error: t("Not found") };
+  if (!reason?.trim()) return { error: t("Explain why you dispute this commission") };
+  if (await prisma.commissionDispute.findFirst({ where: { commissionId: c.id, status: "OPEN" } })) return { error: t("A dispute is already open for this") };
+  await prisma.commissionDispute.create({ data: { commissionId: c.id, openedById: ctx.user.id, reason: reason.slice(0, 1000) } });
+  revalidatePath("/merchant/billing");
+  return {};
+}

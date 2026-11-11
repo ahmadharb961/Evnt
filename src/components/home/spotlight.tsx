@@ -30,7 +30,7 @@ function SpotCard({ i, t, locale, saved, hero = false }: { i: CardData; t: T; lo
   const m = metaOf(i, t, locale);
   const farah = i.kind !== "product" && i.farah;
   return (
-    <div className={`group relative isolate overflow-hidden rounded-[1.75rem] bg-ink/40 ring-1 ring-white/10 ${hero ? "aspect-[4/5] sm:aspect-auto sm:h-full sm:min-h-[460px]" : "aspect-[4/5]"}`}>
+    <div className={`group relative isolate overflow-hidden rounded-[1.75rem] bg-ink/10 shadow-card ring-1 ring-ink/[.04] ${hero ? "aspect-[4/5] sm:aspect-auto sm:h-full sm:min-h-[460px]" : "aspect-[4/5]"}`}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={i.image} alt="" loading="lazy" className="absolute inset-0 -z-10 h-full w-full object-cover transition duration-700 group-hover:scale-[1.04]" />
       <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
@@ -61,7 +61,7 @@ function SpotCard({ i, t, locale, saved, hero = false }: { i: CardData; t: T; lo
   );
 }
 
-/** "Handpicked experiences": an editorial, dark showcase that stands apart from the regular rows. */
+/** "Handpicked experiences": an editorial, warm pastel showcase that stands apart from the regular rows. */
 export function Spotlight({ title, subtitle, href, ctaText, items, t, locale, saved }: { title: string; subtitle?: string; href?: string | null; ctaText?: string; items: CardData[]; t: T; locale: Locale; saved: Set<string> }) {
   if (!items.length) return null;
   const [first, ...rest] = items;
@@ -70,21 +70,21 @@ export function Spotlight({ title, subtitle, href, ctaText, items, t, locale, sa
   return (
     <section className="mt-12 sm:mt-16">
       <div className="container-x">
-        <div className="relative isolate overflow-hidden rounded-[2rem] bg-[#1d1b22] px-4 py-8 text-white sm:rounded-[2.5rem] sm:px-8 sm:py-12 lg:px-12">
-          <div aria-hidden className="absolute -end-24 -top-24 -z-10 h-72 w-72 rounded-full bg-blush/30 blur-3xl" />
-          <div aria-hidden className="absolute -bottom-32 -start-20 -z-10 h-80 w-80 rounded-full bg-mint/20 blur-3xl" />
-          <div aria-hidden className="absolute end-1/3 top-1/2 -z-10 h-56 w-56 rounded-full bg-peach/20 blur-3xl" />
+        <div className="relative isolate overflow-hidden rounded-[2rem] bg-gradient-to-br from-peach-soft via-[#fff8f3] to-blush-soft px-4 py-8 text-ink ring-1 ring-ink/[.04] sm:rounded-[2.5rem] sm:px-8 sm:py-12 lg:px-12">
+          <div aria-hidden className="absolute -end-24 -top-24 -z-10 h-72 w-72 rounded-full bg-blush/60 blur-3xl" />
+          <div aria-hidden className="absolute -bottom-32 -start-20 -z-10 h-80 w-80 rounded-full bg-mint/50 blur-3xl" />
+          <div aria-hidden className="absolute end-1/3 top-1/2 -z-10 h-56 w-56 rounded-full bg-powder/50 blur-3xl" />
           <div className="mb-7 flex flex-col gap-4 sm:mb-9 sm:flex-row sm:items-end sm:justify-between">
             <div className="max-w-xl">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/80">
-                <Sparkles className="h-3.5 w-3.5 text-peach" />
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-ink-soft shadow-sm backdrop-blur">
+                <Sparkles className="h-3.5 w-3.5 text-peach-deep" />
                 {t("Curated by EVNT")}
               </span>
               <h2 className="mt-3 font-serif text-[2rem] font-semibold leading-[1.05] tracking-tight sm:text-5xl">{title}</h2>
-              {subtitle && <p className="mt-3 text-sm text-white/70 sm:text-base">{subtitle}</p>}
+              {subtitle && <p className="mt-3 text-sm text-ink-soft sm:text-base">{subtitle}</p>}
             </div>
             {href && (
-              <Link href={href} className="inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-ink transition hover:bg-peach sm:self-auto">
+              <Link href={href} className="inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ink-soft sm:self-auto">
                 {ctaText || t("See all")}
                 <ArrowRight className="h-4 w-4 rtl:rotate-180" />
               </Link>

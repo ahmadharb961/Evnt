@@ -1,0 +1,1514 @@
+// EVNT database schema.
+// Conventions: money is stored in integer US cents; rates in basis points (1500 = 15%).
+// Customer-facing text that merchants or admins write is stored as JSON {en, ar, fr} ("Localized").
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ───────────────────────────── Users & access ─────────────────────────────
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  FINANCE
+  CONTENT
+  EVALUATOR
+}
+
+model User {
+  id                 String    @id @default(cuid())
+  email              String    @unique
+  phone              String?
+  name               String
+  passwordHash       String?
+  locale             String    @default("en")
+  disabled           Boolean   @default(false)
+  emailVerifiedAt    DateTime?
+  marketingEmail     Boolean   @default(false)
+  marketingWhatsapp  Boolean   @default(false)
+  notifyEmail        Boolean   @default(true)
+  notifyWhatsapp     Boolean   @default(false)
+  createdAt          DateTime  @default(now())
+  lastLoginAt        DateTime?
+
+  roles          UserRole[]
+  sessions       Session[]
+  oauthAccounts  OAuthAccount[]
+  family         FamilyProfile?
+  staff          MerchantStaff[]
+  bookings       Booking[]
+  orderGroups    OrderGroup[]
+  reservations   RestaurantReservation[]
+  inquiries      BirthdayInquiry[]
+  reviews        Review[]
+  favorites      Favorite[]
+  membership     Membership?
+  loyalty        LoyaltyEntry[]
+  notifications  Notification[]
+  cart           Cart?
+  passwordResets PasswordReset[]
+}
+
+model UserRole {
+  userId String
+  role   Role
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, role])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  userId    String
+  expiresAt DateTime
+  ipHash    String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model OAuthAccount {
+  id                String @id @default(cuid())
+  provider          String // google | apple
+  providerAccountId String
+  userId            String
+  user              User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model PasswordReset {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  userId    String
+  expiresAt DateTime
+  usedAt    DateTime?
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/// Optional and minimal: age bands only, never names or birth dates of children.
+model FamilyProfile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  ageBands        String[] // e.g. "0-2", "3-5", "6-8", "9-12"
+  interests       String[] // category slugs
+  preferredAreas  String[]
+  maxBudgetCents  Int?
+  consentAt       DateTime // parental consent to store this profile
+  updatedAt       DateTime @updatedAt
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ───────────────────────────── Media ─────────────────────────────
+
+/// Uploaded images and short videos, stored in Postgres (no persistent disk needed on Hostinger).
+model Media {
+  id         String   @id @default(cuid())
+  mime       String
+  size       Int
+  width      Int?
+  height     Int?
+  sha256     String
+  data       Bytes
+  ownerId    String? // user who uploaded
+  merchantId String?
+  createdAt  DateTime @default(now())
+
+  @@index([sha256])
+}
+
+// ───────────────────────────── Merchants ─────────────────────────────
+
+enum MerchantType {
+  ACTIVITY_PROVIDER
+  VENUE
+  RESTAURANT
+  RETAILER
+  BIRTHDAY_SERVICE
+  EVENT_ORGANIZER
+}
+
+enum MerchantStatus {
+  ONBOARDING
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum PlanCode {
+  BASIC
+  PRO
+  FEATURED
+}
+
+enum StaffRole {
+  OWNER
+  MANAGER
+  STAFF
+}
+
+model Merchant {
+  id               String         @id @default(cuid())
+  slug             String         @unique
+  name             String
+  type             MerchantType
+  status           MerchantStatus @default(ONBOARDING)
+  onboardingStep   Int            @default(1)
+  about            Json? // Localized
+  logoId           String?
+  coverId          String?
+  phone            String?
+  whatsapp         String?
+  email            String?
+  website          String?
+  instagram        String?
+  plan             PlanCode       @default(BASIC) // cached from the active subscription
+  attributionCode  String         @unique // merchant-originated links: /r/<code>
+  // Settlement details
+  payoutMethod     String? // whish | bank
+  payoutName       String?
+  payoutAccount    String? // IBAN or Whish number
+  // Shop settings
+  deliveryFeeCents Int            @default(300)
+  freeDeliveryOverCents Int?
+  codEnabled       Boolean        @default(true)
+  // Trust
+  ratingAvg        Float          @default(0)
+  ratingCount      Int            @default(0)
+  farahUntil       DateTime? // Farah Approved certification valid until
+  verifiedAt       DateTime?
+  rejectionReason  String?
+  restrictedAt     DateTime? // service restricted for unpaid invoices
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  staff          MerchantStaff[]
+  locations      MerchantLocation[]
+  subscriptions  MerchantSubscription[]
+  events         Event[]
+  seatingMaps    SeatingMap[]
+  restaurants    Restaurant[]
+  products       Product[]
+  orders         Order[]
+  bookings       Booking[]
+  commissions    Commission[]
+  ledger         LedgerEntry[]
+  settlements    Settlement[]
+  invoices       Invoice[]
+  reviews        Review[]
+  certifications Certification[]
+  campaigns      AdCampaign[]
+  leads          BirthdayLead[]
+  quoteRequests  BirthdayQuote[]
+  flashPromos    FlashPromotion[]
+  discountCodes  DiscountCode[]
+  contactClicks  ContactClick[]
+  externalClaims ExternalBooking[]
+  stats          DailyStat[]
+
+  @@index([status, type])
+}
+
+model MerchantStaff {
+  merchantId String
+  userId     String
+  role       StaffRole @default(OWNER)
+  createdAt  DateTime  @default(now())
+  merchant   Merchant  @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([merchantId, userId])
+  @@index([userId])
+}
+
+model MerchantLocation {
+  id         String   @id @default(cuid())
+  merchantId String
+  name       String
+  area       String // Lebanese area slug, e.g. "beirut", "jounieh"
+  address    String
+  lat        Float?
+  lng        Float?
+  merchant   Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  events     Event[]
+  restaurants Restaurant[]
+
+  @@index([merchantId])
+  @@index([area])
+}
+
+// ───────────────────────────── Plans, rates, settings ─────────────────────────────
+
+model SubscriptionPlan {
+  code                  PlanCode @id
+  name                  String
+  monthlyCents          Int
+  yearlyCents           Int
+  flashPromosPerMonth   Int
+  restaurantGuestFeeCents Int // per verified completed restaurant guest
+  bookingManagement     Boolean
+  advancedAnalytics     Boolean
+  birthdayRadar         Boolean
+  demandIntelligence    Boolean
+  priorityPlacement     Boolean
+  sponsoredRoundups     Boolean
+  features              Json // Localized bullet list for the pricing page
+  updatedAt             DateTime @updatedAt
+}
+
+enum CommissionCategory {
+  WORKSHOPS
+  CAMPS
+  SHOWS
+  BIRTHDAYS
+  FAMILY_EXPERIENCES
+  RETAIL
+}
+
+model CommissionRate {
+  category CommissionCategory
+  plan     PlanCode
+  rateBps  Int
+  updatedAt DateTime @updatedAt
+
+  @@id([category, plan])
+}
+
+/// Key/value platform settings editable by super admin (prices, fees, hold minutes, hero, ...).
+model Setting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+  updatedBy String?
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  PENDING_PAYMENT
+  ACTIVE
+  PAST_DUE
+  GRACE
+  CANCELED
+  EXPIRED
+}
+
+enum BillingInterval {
+  MONTHLY
+  YEARLY
+}
+
+model MerchantSubscription {
+  id                 String             @id @default(cuid())
+  merchantId         String
+  plan               PlanCode
+  interval           BillingInterval    @default(MONTHLY)
+  status             SubscriptionStatus
+  priceCents         Int
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  trialEndsAt        DateTime?
+  graceEndsAt        DateTime?
+  cancelAtPeriodEnd  Boolean            @default(false)
+  adminOverride      Boolean            @default(false)
+  note               String?
+  createdAt          DateTime           @default(now())
+  endedAt            DateTime?
+  merchant           Merchant           @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  @@index([merchantId, status])
+}
+
+// ───────────────────────────── Catalog: categories & events ─────────────────────────────
+
+enum ListingKind {
+  EVENT
+  RESTAURANT
+  PRODUCT
+}
+
+model Category {
+  id         String              @id @default(cuid())
+  slug       String              @unique
+  name       Json // Localized
+  blurb      Json?
+  kind       ListingKind
+  commission CommissionCategory?
+  imageUrl   String?
+  imageId    String?
+  parentId   String?
+  sort       Int                 @default(0)
+  active     Boolean             @default(true)
+  parent     Category?           @relation("Sub", fields: [parentId], references: [id])
+  children   Category[]          @relation("Sub")
+  events     Event[]
+  products   Product[]
+  sponsors   AdCampaign[]
+}
+
+enum ListingStatus {
+  DRAFT
+  PENDING_REVIEW
+  PUBLISHED
+  REJECTED
+  ARCHIVED
+}
+
+enum VenueSetting {
+  INDOOR
+  OUTDOOR
+  BOTH
+}
+
+enum SeatingMode {
+  GENERAL
+  ASSIGNED
+}
+
+model Event {
+  id               String        @id @default(cuid())
+  merchantId       String
+  locationId       String?
+  categoryId       String
+  slug             String        @unique
+  title            Json
+  summary          Json?
+  description      Json?
+  included         Json?
+  importantInfo    Json?
+  cancellationPolicy Json?
+  coverId          String?
+  coverUrl         String?
+  videoUrl         String?
+  ageMin           Int           @default(0)
+  ageMax           Int           @default(12)
+  setting          VenueSetting      @default(INDOOR)
+  isFree           Boolean       @default(false)
+  fromPriceCents   Int           @default(0) // cached lowest active ticket price
+  seatingMode      SeatingMode   @default(GENERAL)
+  seatingMapId     String?
+  accessible       Boolean       @default(false)
+  facilities       String[]
+  memberEarlyAccess Boolean      @default(false) // EVNT+ members can book 48h before sales open
+  payAtVenue       Boolean       @default(false) // authorized pay-at-venue reservations
+  externalUrl      String?
+  status           ListingStatus @default(DRAFT)
+  rejectionReason  String?
+  ratingAvg        Float         @default(0)
+  ratingCount      Int           @default(0)
+  popularity       Int           @default(0)
+  searchText       String        @default("")
+  publishedAt      DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  merchant    Merchant          @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  location    MerchantLocation? @relation(fields: [locationId], references: [id])
+  category    Category          @relation(fields: [categoryId], references: [id])
+  seatingMap  SeatingMap?       @relation(fields: [seatingMapId], references: [id])
+  media       EventMedia[]
+  sessions    EventSession[]
+  ticketTypes TicketType[]
+  bookings    Booking[]
+  reviews     Review[]
+  flashPromos FlashPromotion[]
+
+  @@index([status, categoryId])
+  @@index([merchantId])
+}
+
+model EventMedia {
+  id      String @id @default(cuid())
+  eventId String
+  mediaId String?
+  url     String?
+  kind    String @default("image") // image | video
+  sort    Int    @default(0)
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+}
+
+enum SessionStatus {
+  SCHEDULED
+  CANCELED
+}
+
+model EventSession {
+  id            String        @id @default(cuid())
+  eventId       String
+  startsAt      DateTime
+  endsAt        DateTime
+  capacity      Int // general admission capacity (assigned seating uses seats)
+  reserved      Int           @default(0) // held + confirmed spots (general admission)
+  salesStartAt  DateTime?
+  status        SessionStatus @default(SCHEDULED)
+  event         Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  holds         InventoryHold[]
+  seatClaims    SeatClaim[]
+  bookings      Booking[]
+  tickets       Ticket[]
+
+  @@index([eventId, startsAt])
+  @@index([startsAt])
+}
+
+model TicketType {
+  id         String   @id @default(cuid())
+  eventId    String
+  name       Json
+  priceCents Int
+  zone       String? // seating zone/category this ticket applies to (assigned seating)
+  minQty     Int      @default(1)
+  maxQty     Int      @default(10)
+  active     Boolean  @default(true)
+  sort       Int      @default(0)
+  event      Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  items      BookingItem[]
+}
+
+// ───────────────────────────── Seating ─────────────────────────────
+
+enum SeatKind {
+  SEAT
+  TABLE
+  SPOT
+  STATION
+}
+
+model SeatingMap {
+  id         String   @id @default(cuid())
+  merchantId String
+  name       String
+  width      Int      @default(20)
+  height     Int      @default(12)
+  zones      Json // [{key, name, color}]
+  labels     Json? // free text labels (stage, entrance...)
+  version    Int      @default(1)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  merchant   Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  seats      Seat[]
+  events     Event[]
+}
+
+model Seat {
+  id         String   @id @default(cuid())
+  mapId      String
+  label      String
+  row        String?
+  x          Int
+  y          Int
+  kind       SeatKind @default(SEAT)
+  zone       String
+  accessible Boolean  @default(false)
+  blocked    Boolean  @default(false)
+  map        SeatingMap @relation(fields: [mapId], references: [id], onDelete: Cascade)
+  claims     SeatClaim[]
+
+  @@unique([mapId, label])
+}
+
+enum ClaimStatus {
+  HELD
+  CONFIRMED
+  RESERVED // blocked by organizer for this session
+}
+
+/// One row per seat per session. The unique index is what makes double booking impossible.
+model SeatClaim {
+  id         String       @id @default(cuid())
+  sessionId  String
+  seatId     String
+  status     ClaimStatus
+  holdId     String?
+  bookingId  String?
+  expiresAt  DateTime?
+  createdAt  DateTime     @default(now())
+  session    EventSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  seat       Seat         @relation(fields: [seatId], references: [id], onDelete: Cascade)
+  hold       InventoryHold? @relation(fields: [holdId], references: [id], onDelete: SetNull)
+
+  @@unique([sessionId, seatId])
+  @@index([holdId])
+  @@index([bookingId])
+}
+
+/// A temporary hold during checkout (general admission quantity and/or seats).
+model InventoryHold {
+  id        String       @id @default(cuid())
+  sessionId String
+  userId    String?
+  quantity  Int
+  expiresAt DateTime
+  released  Boolean      @default(false)
+  bookingId String?      @unique
+  createdAt DateTime     @default(now())
+  session   EventSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  seats     SeatClaim[]
+
+  @@index([expiresAt, released])
+}
+
+// ───────────────────────────── Bookings & tickets ─────────────────────────────
+
+enum BookingStatus {
+  PENDING_PAYMENT
+  RESERVED_PAY_AT_VENUE
+  CONFIRMED
+  COMPLETED
+  CANCELED
+  EXPIRED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum PaymentMethod {
+  WHISH
+  PAY_AT_VENUE
+  COD
+  FREE
+  OFFLINE
+}
+
+enum Attribution {
+  EVNT // generated and paid through EVNT: 100% of the rate
+  EVNT_EXTERNAL // EVNT-generated, completed externally within 72h: 50%
+  MERCHANT_LINK // merchant-originated customer: 0%
+}
+
+model Booking {
+  id             String        @id @default(cuid())
+  code           String        @unique
+  userId         String
+  merchantId     String
+  eventId        String
+  sessionId      String
+  status         BookingStatus @default(PENDING_PAYMENT)
+  paymentMethod  PaymentMethod
+  attribution    Attribution   @default(EVNT)
+  subtotalCents  Int
+  feeCents       Int           @default(0) // EVNT booking convenience fee
+  discountCents  Int           @default(0)
+  totalCents     Int
+  refundedCents  Int           @default(0)
+  memberApplied  Boolean       @default(false)
+  contactName    String
+  contactPhone   String
+  contactEmail   String
+  attendees      Json? // [{name, ticketTypeId}]
+  locale         String        @default("en")
+  holdExpiresAt  DateTime?
+  confirmedAt    DateTime?
+  canceledAt     DateTime?
+  cancelReason   String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  user      User          @relation(fields: [userId], references: [id])
+  merchant  Merchant      @relation(fields: [merchantId], references: [id])
+  event     Event         @relation(fields: [eventId], references: [id])
+  session   EventSession  @relation(fields: [sessionId], references: [id])
+  items     BookingItem[]
+  tickets   Ticket[]
+  payments  Payment[]
+  reviews   Review[]
+
+  @@index([userId, createdAt])
+  @@index([merchantId, createdAt])
+  @@index([status, holdExpiresAt])
+}
+
+model BookingItem {
+  id             String     @id @default(cuid())
+  bookingId      String
+  ticketTypeId   String
+  quantity       Int
+  unitPriceCents Int
+  seatIds        String[]
+  booking        Booking    @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  ticketType     TicketType @relation(fields: [ticketTypeId], references: [id])
+}
+
+enum TicketStatus {
+  VALID
+  USED
+  VOID
+}
+
+model Ticket {
+  id           String       @id @default(cuid())
+  code         String       @unique // random, encoded in the QR
+  bookingId    String
+  sessionId    String
+  ticketTypeId String
+  seatId       String?
+  seatLabel    String?
+  attendeeName String?
+  status       TicketStatus @default(VALID)
+  scannedAt    DateTime?
+  scannedById  String?
+  booking      Booking      @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  session      EventSession @relation(fields: [sessionId], references: [id])
+}
+
+// ───────────────────────────── Payments, refunds, money ─────────────────────────────
+
+enum PaymentStatus {
+  INITIATED
+  PENDING
+  SUCCEEDED
+  FAILED
+  CANCELED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum PaymentPurpose {
+  BOOKING
+  ORDER
+  RESERVATION_DEPOSIT
+  INVOICE
+  MEMBERSHIP
+}
+
+model Payment {
+  id             String         @id @default(cuid())
+  purpose        PaymentPurpose
+  method         PaymentMethod
+  status         PaymentStatus  @default(INITIATED)
+  amountCents    Int
+  currency       String         @default("USD")
+  idempotencyKey String         @unique
+  providerRef    String?        @unique
+  userId         String?
+  merchantId     String?
+  bookingId      String?
+  orderGroupId   String?
+  invoiceId      String?
+  membershipId   String?
+  reservationId  String?
+  recordedById   String? // admin who recorded an offline settlement
+  failureReason  String?
+  confirmedAt    DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  booking        Booking?       @relation(fields: [bookingId], references: [id])
+  orderGroup     OrderGroup?    @relation(fields: [orderGroupId], references: [id])
+  invoice        Invoice?       @relation(fields: [invoiceId], references: [id])
+  membership     Membership?    @relation(fields: [membershipId], references: [id])
+  events         PaymentEvent[]
+  refunds        Refund[]
+
+  @@index([status, createdAt])
+}
+
+/// Every provider callback, stored before processing; duplicates are ignored by providerEventId.
+model PaymentEvent {
+  id              String   @id @default(cuid())
+  provider        String
+  providerEventId String   @unique
+  paymentId       String?
+  verified        Boolean
+  payload         Json
+  createdAt       DateTime @default(now())
+  payment         Payment? @relation(fields: [paymentId], references: [id])
+}
+
+enum RefundStatus {
+  REQUESTED
+  APPROVED
+  PROCESSED
+  REJECTED
+}
+
+model Refund {
+  id           String       @id @default(cuid())
+  paymentId    String?
+  bookingId    String?
+  orderId      String?
+  amountCents  Int
+  reason       String
+  status       RefundStatus @default(REQUESTED)
+  processedById String?
+  processedAt  DateTime?
+  createdAt    DateTime     @default(now())
+  payment      Payment?     @relation(fields: [paymentId], references: [id])
+}
+
+enum CommissionSource {
+  BOOKING
+  ORDER
+  RESERVATION
+}
+
+enum CommissionStatus {
+  PENDING // transaction not yet paid/collected/completed
+  EARNED
+  REVERSED
+  INVOICED
+  SETTLED
+}
+
+model Commission {
+  id          String             @id @default(cuid())
+  merchantId  String
+  source      CommissionSource
+  sourceId    String
+  category    CommissionCategory?
+  plan        PlanCode
+  attribution Attribution
+  rateBps     Int // effective rate after attribution
+  baseCents   Int
+  guests      Int?
+  amountCents Int
+  leadCreditCents Int            @default(0) // Birthday Radar fee credited against this commission
+  status      CommissionStatus   @default(PENDING)
+  earnedAt    DateTime?
+  invoiceId   String?
+  createdAt   DateTime           @default(now())
+  merchant    Merchant           @relation(fields: [merchantId], references: [id])
+  disputes    CommissionDispute[]
+
+  @@unique([source, sourceId])
+  @@index([merchantId, status])
+}
+
+model CommissionDispute {
+  id           String     @id @default(cuid())
+  commissionId String
+  openedById   String
+  reason       String
+  status       String     @default("OPEN") // OPEN | UPHELD | REJECTED
+  resolution   String?
+  resolvedAt   DateTime?
+  createdAt    DateTime   @default(now())
+  commission   Commission @relation(fields: [commissionId], references: [id])
+}
+
+enum LedgerType {
+  SALE // money EVNT collected on the merchant's behalf
+  COMMISSION // EVNT's fee (negative for the merchant)
+  REFUND
+  PAYOUT
+  COD_COMMISSION // commission owed on cash the merchant collected
+  ADJUSTMENT
+}
+
+/// Merchant balance = sum(amountCents). Positive: EVNT owes the merchant. Negative: merchant owes EVNT.
+model LedgerEntry {
+  id          String     @id @default(cuid())
+  merchantId  String
+  type        LedgerType
+  amountCents Int
+  memo        String
+  refType     String?
+  refId       String?
+  settlementId String?
+  createdById String?
+  createdAt   DateTime   @default(now())
+  merchant    Merchant   @relation(fields: [merchantId], references: [id])
+  settlement  Settlement? @relation(fields: [settlementId], references: [id])
+
+  @@index([merchantId, createdAt])
+}
+
+model Settlement {
+  id          String   @id @default(cuid())
+  number      String   @unique
+  merchantId  String
+  periodEnd   DateTime
+  amountCents Int // positive: paid to merchant; negative: collected from merchant
+  status      String   @default("DRAFT") // DRAFT | PAID | VOID
+  reference   String?
+  paidAt      DateTime?
+  createdById String?
+  createdAt   DateTime @default(now())
+  merchant    Merchant @relation(fields: [merchantId], references: [id])
+  entries     LedgerEntry[]
+}
+
+enum InvoiceStatus {
+  OPEN
+  PAID
+  VOID
+  OVERDUE
+}
+
+enum InvoiceLineKind {
+  SUBSCRIPTION
+  COMMISSION
+  ADVERTISING
+  LEAD
+  CERTIFICATION
+  REPORT
+  ADJUSTMENT
+}
+
+model Invoice {
+  id          String        @id @default(cuid())
+  number      String        @unique
+  merchantId  String
+  status      InvoiceStatus @default(OPEN)
+  totalCents  Int
+  issuedAt    DateTime      @default(now())
+  dueAt       DateTime
+  paidAt      DateTime?
+  remindedAt  DateTime?
+  merchant    Merchant      @relation(fields: [merchantId], references: [id])
+  lines       InvoiceLine[]
+  payments    Payment[]
+
+  @@index([merchantId, status])
+}
+
+model InvoiceLine {
+  id          String          @id @default(cuid())
+  invoiceId   String
+  kind        InvoiceLineKind
+  description String
+  amountCents Int
+  refType     String?
+  refId       String?
+  invoice     Invoice         @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+}
+
+// ───────────────────────────── Restaurants ─────────────────────────────
+
+model Restaurant {
+  id                 String        @id @default(cuid())
+  merchantId         String
+  locationId         String?
+  slug               String        @unique
+  name               String
+  about              Json?
+  coverId            String?
+  coverUrl           String?
+  gallery            String[] // media ids or urls
+  videoUrl           String?
+  cuisines           String[]
+  priceLevel         Int           @default(2) // 1-4
+  hours              Json // {mon:[["09:00","23:00"]], ...}
+  kidsMenu           Boolean       @default(false)
+  highChairs         Boolean       @default(false)
+  playArea           Boolean       @default(false)
+  outdoorSeating     Boolean       @default(false)
+  strollerAccess     Boolean       @default(false)
+  changingFacilities Boolean       @default(false)
+  parking            Boolean       @default(false)
+  birthdaySuitable   Boolean       @default(false)
+  acceptsReservations Boolean      @default(true)
+  depositCents       Int           @default(0)
+  maxPartySize       Int           @default(20)
+  status             ListingStatus @default(DRAFT)
+  ratingAvg          Float         @default(0)
+  ratingCount        Int           @default(0)
+  popularity         Int           @default(0)
+  searchText         String        @default("")
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  merchant           Merchant      @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  location           MerchantLocation? @relation(fields: [locationId], references: [id])
+  reservations       RestaurantReservation[]
+  reviews            Review[]
+
+  @@index([status])
+}
+
+enum ReservationStatus {
+  REQUESTED
+  ACCEPTED
+  REJECTED
+  PROPOSED // restaurant proposed another time; waiting for the parent
+  CANCELED
+  NO_SHOW
+  COMPLETED
+}
+
+model RestaurantReservation {
+  id             String            @id @default(cuid())
+  code           String            @unique
+  restaurantId   String
+  userId         String
+  startsAt       DateTime
+  proposedAt     DateTime?
+  adults         Int
+  children       Int
+  requests       String?
+  status         ReservationStatus @default(REQUESTED)
+  completedGuests Int?
+  verifiedAt     DateTime?
+  verifiedById   String?
+  depositCents   Int               @default(0)
+  depositPaid    Boolean           @default(false)
+  merchantNote   String?
+  contactPhone   String
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  restaurant     Restaurant        @relation(fields: [restaurantId], references: [id])
+  user           User              @relation(fields: [userId], references: [id])
+  reviews        Review[]
+
+  @@index([restaurantId, startsAt])
+  @@index([userId])
+}
+
+// ───────────────────────────── Birthdays ─────────────────────────────
+
+model BirthdayInquiry {
+  id           String   @id @default(cuid())
+  userId       String
+  childAge     Int
+  date         DateTime
+  area         String
+  guests       Int
+  budgetCents  Int
+  services     String[] // venue, entertainer, decoration, cake, photographer, package, activity
+  notes        String?
+  contactPhone String
+  qualified    Boolean  @default(false) // set by rules/admin; only qualified inquiries can be sold as leads
+  status       String   @default("OPEN") // OPEN | BOOKED | CLOSED
+  consentAt    DateTime
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id])
+  quotes       BirthdayQuote[]
+  leads        BirthdayLead[]
+}
+
+/// A parent asked this merchant for a quote (free for merchants).
+model BirthdayQuote {
+  id          String   @id @default(cuid())
+  inquiryId   String
+  merchantId  String
+  status      String   @default("SENT") // SENT | QUOTED | DECLINED | ACCEPTED
+  priceCents  Int?
+  message     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  inquiry     BirthdayInquiry @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+  merchant    Merchant @relation(fields: [merchantId], references: [id])
+
+  @@unique([inquiryId, merchantId])
+}
+
+/// Birthday Radar: a Featured merchant purchased a qualified inquiry. Unique pair = no duplicate charges.
+model BirthdayLead {
+  id          String   @id @default(cuid())
+  inquiryId   String
+  merchantId  String
+  priceCents  Int
+  invoiceId   String?
+  creditedCents Int    @default(0)
+  convertedAt DateTime?
+  createdAt   DateTime @default(now())
+  inquiry     BirthdayInquiry @relation(fields: [inquiryId], references: [id])
+  merchant    Merchant @relation(fields: [merchantId], references: [id])
+
+  @@unique([inquiryId, merchantId])
+}
+
+// ───────────────────────────── Shop ─────────────────────────────
+
+model Product {
+  id             String        @id @default(cuid())
+  merchantId     String
+  categoryId     String
+  slug           String        @unique
+  title          Json
+  description    Json?
+  deliveryInfo   Json?
+  images         String[] // media ids or urls
+  priceCents     Int
+  salePriceCents Int?
+  ageMin         Int?
+  ageMax         Int?
+  status         ListingStatus @default(DRAFT)
+  ratingAvg      Float         @default(0)
+  ratingCount    Int           @default(0)
+  popularity     Int           @default(0)
+  searchText     String        @default("")
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  merchant       Merchant      @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  category       Category      @relation(fields: [categoryId], references: [id])
+  variants       ProductVariant[]
+  reviews        Review[]
+  flashPromos    FlashPromotion[]
+
+  @@index([status, categoryId])
+}
+
+model ProductVariant {
+  id         String   @id @default(cuid())
+  productId  String
+  name       String // "Default", "Size 4", "Blue"...
+  sku        String?
+  priceCents Int? // overrides the product price
+  stock      Int      @default(0)
+  active     Boolean  @default(true)
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+}
+
+model Cart {
+  id        String     @id @default(cuid())
+  userId    String?    @unique
+  deviceId  String?    @unique
+  discountCode String?
+  updatedAt DateTime   @updatedAt
+  user      User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+}
+
+model CartItem {
+  id        String         @id @default(cuid())
+  cartId    String
+  variantId String
+  quantity  Int
+  cart      Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@unique([cartId, variantId])
+}
+
+model DiscountCode {
+  id            String    @id @default(cuid())
+  code          String    @unique
+  merchantId    String? // null = platform-wide (EVNT pays the discount)
+  percentOff    Int? // 1-100
+  amountOffCents Int?
+  minSubtotalCents Int    @default(0)
+  appliesTo     String    @default("ALL") // ALL | SHOP | BOOKINGS
+  maxUses       Int?
+  uses          Int       @default(0)
+  startsAt      DateTime?
+  endsAt        DateTime?
+  active        Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  merchant      Merchant? @relation(fields: [merchantId], references: [id])
+}
+
+/// A checkout. Split into one Order per merchant.
+model OrderGroup {
+  id            String        @id @default(cuid())
+  number        String        @unique
+  userId        String
+  paymentMethod PaymentMethod
+  totalCents    Int
+  createdAt     DateTime      @default(now())
+  user          User          @relation(fields: [userId], references: [id])
+  orders        Order[]
+  payments      Payment[]
+}
+
+enum OrderStatus {
+  PENDING
+  AWAITING_PAYMENT
+  CONFIRMED
+  PREPARING
+  SHIPPED
+  DELIVERED
+  CANCELED
+  REFUNDED
+}
+
+model Order {
+  id             String      @id @default(cuid())
+  number         String      @unique
+  groupId        String
+  merchantId     String
+  status         OrderStatus @default(PENDING)
+  paymentMethod  PaymentMethod
+  subtotalCents  Int
+  deliveryCents  Int
+  discountCents  Int         @default(0)
+  totalCents     Int
+  refundedCents  Int         @default(0)
+  customerName   String
+  phone          String
+  area           String
+  address        String
+  building       String
+  floor          String?
+  instructions   String?
+  codCollectedCents Int?
+  codCollectedAt DateTime?
+  paidAt         DateTime?
+  deliveredAt    DateTime?
+  canceledAt     DateTime?
+  cancelReason   String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  group          OrderGroup  @relation(fields: [groupId], references: [id])
+  merchant       Merchant    @relation(fields: [merchantId], references: [id])
+  items          OrderItem[]
+  history        OrderStatusEvent[]
+  reviews        Review[]
+
+  @@index([merchantId, createdAt])
+  @@index([status])
+}
+
+model OrderItem {
+  id             String         @id @default(cuid())
+  orderId        String
+  productId      String
+  variantId      String
+  title          String
+  variantName    String
+  unitPriceCents Int
+  quantity       Int
+  order          Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variant        ProductVariant @relation(fields: [variantId], references: [id])
+}
+
+model OrderStatusEvent {
+  id        String      @id @default(cuid())
+  orderId   String
+  status    OrderStatus
+  actorId   String?
+  note      String?
+  createdAt DateTime    @default(now())
+  order     Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+// ───────────────────────────── Reviews & favorites ─────────────────────────────
+
+model Review {
+  id            String   @id @default(cuid())
+  userId        String
+  merchantId    String
+  eventId       String?
+  restaurantId  String?
+  productId     String?
+  bookingId     String?
+  orderId       String?
+  reservationId String?
+  rating        Int
+  body          String
+  photos        String[]
+  verified      Boolean  @default(false) // only true when linked to a completed booking/order/reservation
+  status        String   @default("PUBLISHED") // PUBLISHED | HIDDEN
+  merchantReply String?
+  repliedAt     DateTime?
+  createdAt     DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id])
+  merchant      Merchant @relation(fields: [merchantId], references: [id])
+  event         Event?   @relation(fields: [eventId], references: [id])
+  restaurant    Restaurant? @relation(fields: [restaurantId], references: [id])
+  product       Product? @relation(fields: [productId], references: [id])
+  booking       Booking? @relation(fields: [bookingId], references: [id])
+  order         Order?   @relation(fields: [orderId], references: [id])
+  reservation   RestaurantReservation? @relation(fields: [reservationId], references: [id])
+  reports       ReviewReport[]
+
+  @@unique([userId, eventId])
+  @@unique([userId, restaurantId])
+  @@unique([userId, productId])
+  @@index([merchantId])
+}
+
+model ReviewReport {
+  id         String   @id @default(cuid())
+  reviewId   String
+  reporterId String?
+  reason     String
+  status     String   @default("OPEN") // OPEN | DISMISSED | ACTIONED
+  createdAt  DateTime @default(now())
+  review     Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+}
+
+model Favorite {
+  userId     String
+  targetType String // event | restaurant | product
+  targetId   String
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, targetType, targetId])
+}
+
+// ───────────────────────────── EVNT+ & loyalty ─────────────────────────────
+
+model Membership {
+  id                String             @id @default(cuid())
+  userId            String             @unique
+  interval          BillingInterval
+  status            SubscriptionStatus
+  cardNumber        String             @unique
+  priceCents        Int
+  currentPeriodEnd  DateTime?
+  cancelAtPeriodEnd Boolean            @default(false)
+  startedAt         DateTime           @default(now())
+  remindedAt        DateTime?
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payments          Payment[]
+}
+
+model LoyaltyEntry {
+  id        String   @id @default(cuid())
+  userId    String
+  points    Int
+  reason    String
+  refType   String?
+  refId     String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, refType, refId, reason])
+  @@index([userId])
+}
+
+// ───────────────────────────── Farah Approved ─────────────────────────────
+
+enum CertificationStatus {
+  AWAITING_PAYMENT
+  PAID
+  SCHEDULED
+  ASSESSED
+  APPROVED
+  REJECTED
+  EXPIRED
+  CANCELED
+}
+
+model Certification {
+  id           String              @id @default(cuid())
+  merchantId   String
+  locationId   String?
+  kind         String // INITIAL | RENEWAL | REEVALUATION
+  status       CertificationStatus @default(AWAITING_PAYMENT)
+  feeCents     Int
+  invoiceId    String?
+  scheduledAt  DateTime?
+  evaluatorId  String?
+  checklist    Json? // [{key, passed, note}]
+  score        Int?
+  findings     String?
+  decidedById  String?
+  decidedAt    DateTime?
+  decisionNote String?
+  validFrom    DateTime?
+  validUntil   DateTime?
+  createdAt    DateTime            @default(now())
+  merchant     Merchant            @relation(fields: [merchantId], references: [id])
+
+  @@index([status])
+}
+
+// ───────────────────────────── Advertising ─────────────────────────────
+
+model AdPlacement {
+  code       String   @id // HOMEPAGE_FEATURED, CATEGORY_SPONSOR, ...
+  name       Json
+  description Json?
+  priceCents Int
+  unit       String // WEEK | MONTH | CAMPAIGN | ITEM | PERCENT_SALES
+  exclusive  Boolean  @default(false)
+  slots      Int      @default(1) // concurrent campaigns allowed (per category for category sponsorship)
+  requiresPlan PlanCode?
+  active     Boolean  @default(true)
+  sort       Int      @default(0)
+  campaigns  AdCampaign[]
+}
+
+enum CampaignStatus {
+  DRAFT
+  PENDING_PAYMENT
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  ENDED
+  CANCELED
+}
+
+model AdCampaign {
+  id            String         @id @default(cuid())
+  merchantId    String
+  placementCode String
+  categoryId    String?
+  eventId       String?
+  productId     String?
+  restaurantId  String?
+  headline      String
+  creativeId    String?
+  startsAt      DateTime
+  endsAt        DateTime
+  priceCents    Int
+  status        CampaignStatus @default(DRAFT)
+  invoiceId     String?
+  rejectionReason String?
+  whatsappAudienceSize Int?
+  approvedById  String?
+  approvedAt    DateTime?
+  impressions   Int            @default(0)
+  clicks        Int            @default(0)
+  leads         Int            @default(0)
+  conversions   Int            @default(0)
+  revenueCents  Int            @default(0)
+  createdAt     DateTime       @default(now())
+  merchant      Merchant       @relation(fields: [merchantId], references: [id])
+  placement     AdPlacement    @relation(fields: [placementCode], references: [code])
+  category      Category?      @relation(fields: [categoryId], references: [id])
+
+  @@index([placementCode, status, startsAt])
+}
+
+model FlashPromotion {
+  id         String   @id @default(cuid())
+  merchantId String
+  eventId    String?
+  productId  String?
+  percentOff Int
+  startsAt   DateTime
+  endsAt     DateTime
+  createdAt  DateTime @default(now())
+  merchant   Merchant @relation(fields: [merchantId], references: [id])
+  event      Event?   @relation(fields: [eventId], references: [id])
+  product    Product? @relation(fields: [productId], references: [id])
+
+  @@index([merchantId, createdAt])
+}
+
+// ───────────────────────────── Attribution ─────────────────────────────
+
+/// A parent tapped WhatsApp/phone/website on an EVNT listing (starts the 72h external-booking window).
+model ContactClick {
+  id         String   @id @default(cuid())
+  merchantId String
+  userId     String?
+  deviceId   String?
+  channel    String // whatsapp | phone | website
+  targetType String?
+  targetId   String?
+  createdAt  DateTime @default(now())
+  merchant   Merchant @relation(fields: [merchantId], references: [id])
+
+  @@index([merchantId, createdAt])
+}
+
+/// A booking completed outside EVNT that EVNT generated (50% commission if verified within 72h of a click).
+model ExternalBooking {
+  id           String   @id @default(cuid())
+  merchantId   String
+  clickId      String   @unique
+  amountCents  Int
+  category     CommissionCategory
+  bookedAt     DateTime
+  status       String   @default("CLAIMED") // CLAIMED | VERIFIED | DISPUTED | REJECTED
+  note         String?
+  reportedById String?
+  verifiedById String?
+  createdAt    DateTime @default(now())
+  merchant     Merchant @relation(fields: [merchantId], references: [id])
+}
+
+// ───────────────────────────── CMS ─────────────────────────────
+
+model HomeSection {
+  id        String   @id @default(cuid())
+  title     Json
+  subtitle  Json?
+  bannerUrl String?
+  bannerId  String?
+  source    String   @default("EVENTS") // EVENTS | RESTAURANTS | PRODUCTS | CATEGORIES | FARAH
+  mode      String   @default("AUTO") // AUTO | MANUAL
+  layout    String   @default("CAROUSEL") // CAROUSEL | GRID
+  filters   Json? // {categorySlugs, ageMin, ageMax, areas, maxPriceCents, free, weekend, sort}
+  itemIds   String[]
+  limit     Int      @default(12)
+  sponsored Boolean  @default(false)
+  ctaText   Json?
+  ctaHref   String?
+  sort      Int      @default(0)
+  visible   Boolean  @default(true)
+  startsAt  DateTime?
+  endsAt    DateTime?
+  updatedAt DateTime @updatedAt
+}
+
+model Article {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  title       Json
+  excerpt     Json?
+  body        Json // Localized markdown-ish text
+  coverUrl    String?
+  coverId     String?
+  status      String    @default("DRAFT") // DRAFT | PUBLISHED
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+/// Admin overrides for interface texts (keyed by the English text).
+model TranslationOverride {
+  locale String
+  key    String
+  value  String
+
+  @@id([locale, key])
+}
+
+// ───────────────────────────── Notifications, analytics, audit ─────────────────────────────
+
+model Notification {
+  id         String    @id @default(cuid())
+  userId     String?
+  merchantId String?
+  kind       String
+  title      String
+  body       String
+  link       String?
+  readAt     DateTime?
+  createdAt  DateTime  @default(now())
+  user       User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([merchantId, createdAt])
+}
+
+model DailyStat {
+  merchantId String
+  day        DateTime @db.Date
+  targetType String
+  targetId   String
+  views      Int      @default(0)
+  clicks     Int      @default(0)
+  merchant   Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  @@id([merchantId, day, targetType, targetId])
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  topic     String
+  message   String
+  userId    String?
+  handled   Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  action     String
+  entityType String
+  entityId   String?
+  data       Json?
+  ipHash     String?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}

@@ -1,0 +1,104 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sans: "Plus Jakarta Sans Variable", "IBM Plex Sans Arabic", system-ui, sans-serif;
+}
+html[lang="ar"] {
+  --font-sans: "IBM Plex Sans Arabic", "Plus Jakarta Sans Variable", system-ui, sans-serif;
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+  scroll-behavior: smooth;
+}
+body {
+  @apply bg-white text-ink antialiased;
+  font-feature-settings: "ss01";
+}
+html[lang="ar"] body {
+  /* Arabic reads better slightly larger with more line height. */
+  line-height: 1.7;
+}
+
+@layer components {
+  .container-x {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+  .btn {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold transition active:scale-[.98] disabled:pointer-events-none disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply btn bg-ink text-white hover:bg-black;
+  }
+  .btn-soft {
+    @apply btn bg-mint-soft text-ink hover:bg-mint;
+  }
+  .btn-outline {
+    @apply btn border border-ink/15 bg-white text-ink hover:border-ink/40;
+  }
+  .btn-ghost {
+    @apply btn text-ink hover:bg-ink/5;
+  }
+  .btn-danger {
+    @apply btn bg-red-50 text-red-700 hover:bg-red-100;
+  }
+  .btn-sm {
+    @apply min-h-9 px-4 text-xs;
+  }
+  .input {
+    @apply block w-full rounded-2xl border border-ink/10 bg-white px-4 py-3 text-[15px] text-ink outline-none transition placeholder:text-ink-muted focus:border-ink/40 focus:ring-4 focus:ring-mint/40;
+  }
+  .label {
+    @apply mb-1.5 block text-sm font-medium text-ink-soft;
+  }
+  .card {
+    @apply rounded-3xl border border-ink/[.06] bg-white shadow-card;
+  }
+  .chip {
+    @apply inline-flex min-h-9 items-center gap-1.5 whitespace-nowrap rounded-full border border-ink/10 bg-white px-3.5 text-sm text-ink-soft transition hover:border-ink/30;
+  }
+  .chip-on {
+    @apply border-ink bg-ink text-white hover:border-ink;
+  }
+  .h-section {
+    @apply text-xl font-bold tracking-tight sm:text-2xl;
+  }
+  .scroll-row {
+    @apply -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8;
+    scrollbar-width: none;
+  }
+  .scroll-row::-webkit-scrollbar {
+    display: none;
+  }
+  .prose-evnt p {
+    @apply mb-3 leading-relaxed text-ink-soft;
+  }
+  .prose-evnt h2 {
+    @apply mb-2 mt-6 text-lg font-bold;
+  }
+  .prose-evnt ul {
+    @apply mb-3 list-disc space-y-1 ps-5 text-ink-soft;
+  }
+}
+
+/* Mobile bottom navigation space */
+.pb-nav {
+  padding-bottom: calc(76px + env(safe-area-inset-bottom));
+}
+@media (min-width: 1024px) {
+  .pb-nav {
+    padding-bottom: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

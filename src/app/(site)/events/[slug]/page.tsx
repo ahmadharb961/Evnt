@@ -9,6 +9,7 @@ import { isMember } from "@/server/membership";
 import { listReviews } from "@/server/reviews";
 import { searchEvents } from "@/server/listings";
 import { prisma } from "@/server/db";
+import { trackView } from "@/server/analytics";
 import { getLocale, getT } from "@/i18n/server";
 import { BookingPanel } from "@/components/booking/booking-panel";
 import { FavoriteButton } from "@/components/favorite-button";
@@ -42,6 +43,7 @@ export default async function EventPage({ params, searchParams }: { params: Prom
   if (!e) notFound();
   const staffView = user && (user.roles.length > 0 || (await prisma.merchantStaff.findFirst({ where: { userId: user.id, merchantId: e.merchant.id } })));
   if ((e.status !== "PUBLISHED" || !e.merchantApproved) && !staffView) notFound();
+  if (!staffView) void trackView(e.merchant.id, "event", e.id);
   if (sp.ad && /^[a-z0-9]{20,40}$/.test(sp.ad)) await prisma.adCampaign.updateMany({ where: { id: sp.ad, eventId: e.id }, data: { clicks: { increment: 1 } } });
 
   const [saved, feeCents, member, holdMinutes, reviews, related, completed] = await Promise.all([

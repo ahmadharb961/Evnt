@@ -22,20 +22,20 @@ enum Role {
 }
 
 model User {
-  id                 String    @id @default(cuid())
-  email              String    @unique
-  phone              String?
-  name               String
-  passwordHash       String?
-  locale             String    @default("en")
-  disabled           Boolean   @default(false)
-  emailVerifiedAt    DateTime?
-  marketingEmail     Boolean   @default(false)
-  marketingWhatsapp  Boolean   @default(false)
-  notifyEmail        Boolean   @default(true)
-  notifyWhatsapp     Boolean   @default(false)
-  createdAt          DateTime  @default(now())
-  lastLoginAt        DateTime?
+  id                String    @id @default(cuid())
+  email             String    @unique
+  phone             String?
+  name              String
+  passwordHash      String?
+  locale            String    @default("en")
+  disabled          Boolean   @default(false)
+  emailVerifiedAt   DateTime?
+  marketingEmail    Boolean   @default(false)
+  marketingWhatsapp Boolean   @default(false)
+  notifyEmail       Boolean   @default(true)
+  notifyWhatsapp    Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  lastLoginAt       DateTime?
 
   roles          UserRole[]
   sessions       Session[]
@@ -97,15 +97,15 @@ model PasswordReset {
 
 /// Optional and minimal: age bands only, never names or birth dates of children.
 model FamilyProfile {
-  id              String   @id @default(cuid())
-  userId          String   @unique
-  ageBands        String[] // e.g. "0-2", "3-5", "6-8", "9-12"
-  interests       String[] // category slugs
-  preferredAreas  String[]
-  maxBudgetCents  Int?
-  consentAt       DateTime // parental consent to store this profile
-  updatedAt       DateTime @updatedAt
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  ageBands       String[] // e.g. "0-2", "3-5", "6-8", "9-12"
+  interests      String[] // category slugs
+  preferredAreas String[]
+  maxBudgetCents Int?
+  consentAt      DateTime // parental consent to store this profile
+  updatedAt      DateTime @updatedAt
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 // ───────────────────────────── Media ─────────────────────────────
@@ -158,39 +158,40 @@ enum StaffRole {
 }
 
 model Merchant {
-  id               String         @id @default(cuid())
-  slug             String         @unique
-  name             String
-  type             MerchantType
-  status           MerchantStatus @default(ONBOARDING)
-  onboardingStep   Int            @default(1)
-  about            Json? // Localized
-  logoId           String?
-  coverId          String?
-  phone            String?
-  whatsapp         String?
-  email            String?
-  website          String?
-  instagram        String?
-  plan             PlanCode       @default(BASIC) // cached from the active subscription
-  attributionCode  String         @unique // merchant-originated links: /r/<code>
+  id                    String         @id @default(cuid())
+  slug                  String         @unique
+  name                  String
+  type                  MerchantType
+  status                MerchantStatus @default(ONBOARDING)
+  onboardingStep        Int            @default(1)
+  about                 Json? // Localized
+  logoId                String?
+  coverId               String?
+  phone                 String?
+  whatsapp              String?
+  email                 String?
+  website               String?
+  instagram             String?
+  plan                  PlanCode       @default(BASIC) // cached from the active subscription
+  attributionCode       String         @unique // merchant-originated links: /r/<code>
   // Settlement details
-  payoutMethod     String? // whish | bank
-  payoutName       String?
-  payoutAccount    String? // IBAN or Whish number
+  payoutMethod          String? // whish | bank
+  payoutName            String?
+  payoutAccount         String? // IBAN or Whish number
   // Shop settings
-  deliveryFeeCents Int            @default(300)
+  deliveryFeeCents      Int            @default(300)
   freeDeliveryOverCents Int?
-  codEnabled       Boolean        @default(true)
+  codEnabled            Boolean        @default(true)
   // Trust
-  ratingAvg        Float          @default(0)
-  ratingCount      Int            @default(0)
-  farahUntil       DateTime? // Farah Approved certification valid until
-  verifiedAt       DateTime?
-  rejectionReason  String?
-  restrictedAt     DateTime? // service restricted for unpaid invoices
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
+  ratingAvg             Float          @default(0)
+  ratingCount           Int            @default(0)
+  farahUntil            DateTime? // Farah Approved certification valid until
+  rank                  Int? // admin ordering: this business's listings show first (lower first); null = not pinned
+  verifiedAt            DateTime?
+  rejectionReason       String?
+  restrictedAt          DateTime? // service restricted for unpaid invoices
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
 
   staff          MerchantStaff[]
   locations      MerchantLocation[]
@@ -232,15 +233,15 @@ model MerchantStaff {
 }
 
 model MerchantLocation {
-  id         String   @id @default(cuid())
-  merchantId String
-  name       String
-  area       String // Lebanese area slug, e.g. "beirut", "jounieh"
-  address    String
-  lat        Float?
-  lng        Float?
-  merchant   Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
-  events     Event[]
+  id          String       @id @default(cuid())
+  merchantId  String
+  name        String
+  area        String // Lebanese area slug, e.g. "beirut", "jounieh"
+  address     String
+  lat         Float?
+  lng         Float?
+  merchant    Merchant     @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  events      Event[]
   restaurants Restaurant[]
 
   @@index([merchantId])
@@ -250,20 +251,20 @@ model MerchantLocation {
 // ───────────────────────────── Plans, rates, settings ─────────────────────────────
 
 model SubscriptionPlan {
-  code                  PlanCode @id
-  name                  String
-  monthlyCents          Int
-  yearlyCents           Int
-  flashPromosPerMonth   Int
+  code                    PlanCode @id
+  name                    String
+  monthlyCents            Int
+  yearlyCents             Int
+  flashPromosPerMonth     Int
   restaurantGuestFeeCents Int // per verified completed restaurant guest
-  bookingManagement     Boolean
-  advancedAnalytics     Boolean
-  birthdayRadar         Boolean
-  demandIntelligence    Boolean
-  priorityPlacement     Boolean
-  sponsoredRoundups     Boolean
-  features              Json // Localized bullet list for the pricing page
-  updatedAt             DateTime @updatedAt
+  bookingManagement       Boolean
+  advancedAnalytics       Boolean
+  birthdayRadar           Boolean
+  demandIntelligence      Boolean
+  priorityPlacement       Boolean
+  sponsoredRoundups       Boolean
+  features                Json // Localized bullet list for the pricing page
+  updatedAt               DateTime @updatedAt
 }
 
 enum CommissionCategory {
@@ -276,10 +277,10 @@ enum CommissionCategory {
 }
 
 model CommissionRate {
-  category CommissionCategory
-  plan     PlanCode
-  rateBps  Int
-  updatedAt DateTime @updatedAt
+  category  CommissionCategory
+  plan      PlanCode
+  rateBps   Int
+  updatedAt DateTime           @updatedAt
 
   @@id([category, plan])
 }
@@ -375,41 +376,42 @@ enum SeatingMode {
 }
 
 model Event {
-  id               String        @id @default(cuid())
-  merchantId       String
-  locationId       String?
-  categoryId       String
-  slug             String        @unique
-  title            Json
-  summary          Json?
-  description      Json?
-  included         Json?
-  importantInfo    Json?
+  id                 String        @id @default(cuid())
+  merchantId         String
+  locationId         String?
+  categoryId         String
+  slug               String        @unique
+  title              Json
+  summary            Json?
+  description        Json?
+  included           Json?
+  importantInfo      Json?
   cancellationPolicy Json?
-  coverId          String?
-  coverUrl         String?
-  videoUrl         String?
-  ageMin           Int           @default(0)
-  ageMax           Int           @default(12)
-  setting          VenueSetting      @default(INDOOR)
-  isFree           Boolean       @default(false)
-  fromPriceCents   Int           @default(0) // cached lowest active ticket price
-  seatingMode      SeatingMode   @default(GENERAL)
-  seatingMapId     String?
-  accessible       Boolean       @default(false)
-  facilities       String[]
-  memberEarlyAccess Boolean      @default(false) // EVNT+ members can book 48h before sales open
-  payAtVenue       Boolean       @default(false) // authorized pay-at-venue reservations
-  externalUrl      String?
-  status           ListingStatus @default(DRAFT)
-  rejectionReason  String?
-  ratingAvg        Float         @default(0)
-  ratingCount      Int           @default(0)
-  popularity       Int           @default(0)
-  searchText       String        @default("")
-  publishedAt      DateTime?
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  coverId            String?
+  coverUrl           String?
+  videoUrl           String?
+  ageMin             Int           @default(0)
+  ageMax             Int           @default(12)
+  setting            VenueSetting  @default(INDOOR)
+  isFree             Boolean       @default(false)
+  fromPriceCents     Int           @default(0) // cached lowest active ticket price
+  seatingMode        SeatingMode   @default(GENERAL)
+  seatingMapId       String?
+  accessible         Boolean       @default(false)
+  facilities         String[]
+  memberEarlyAccess  Boolean       @default(false) // EVNT+ members can book 48h before sales open
+  payAtVenue         Boolean       @default(false) // authorized pay-at-venue reservations
+  externalUrl        String?
+  status             ListingStatus @default(DRAFT)
+  rejectionReason    String?
+  ratingAvg          Float         @default(0)
+  ratingCount        Int           @default(0)
+  popularity         Int           @default(0)
+  rank               Int? // admin ordering: lower shows first; null = not pinned
+  searchText         String        @default("")
+  publishedAt        DateTime?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
 
   merchant    Merchant          @relation(fields: [merchantId], references: [id], onDelete: Cascade)
   location    MerchantLocation? @relation(fields: [locationId], references: [id])
@@ -427,13 +429,13 @@ model Event {
 }
 
 model EventMedia {
-  id      String @id @default(cuid())
+  id      String  @id @default(cuid())
   eventId String
   mediaId String?
   url     String?
-  kind    String @default("image") // image | video
-  sort    Int    @default(0)
-  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  kind    String  @default("image") // image | video
+  sort    Int     @default(0)
+  event   Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
 }
 
 enum SessionStatus {
@@ -442,35 +444,35 @@ enum SessionStatus {
 }
 
 model EventSession {
-  id            String        @id @default(cuid())
-  eventId       String
-  startsAt      DateTime
-  endsAt        DateTime
-  capacity      Int // general admission capacity (assigned seating uses seats)
-  reserved      Int           @default(0) // held + confirmed spots (general admission)
-  salesStartAt  DateTime?
-  status        SessionStatus @default(SCHEDULED)
-  event         Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  holds         InventoryHold[]
-  seatClaims    SeatClaim[]
-  bookings      Booking[]
-  tickets       Ticket[]
+  id           String          @id @default(cuid())
+  eventId      String
+  startsAt     DateTime
+  endsAt       DateTime
+  capacity     Int // general admission capacity (assigned seating uses seats)
+  reserved     Int             @default(0) // held + confirmed spots (general admission)
+  salesStartAt DateTime?
+  status       SessionStatus   @default(SCHEDULED)
+  event        Event           @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  holds        InventoryHold[]
+  seatClaims   SeatClaim[]
+  bookings     Booking[]
+  tickets      Ticket[]
 
   @@index([eventId, startsAt])
   @@index([startsAt])
 }
 
 model TicketType {
-  id         String   @id @default(cuid())
+  id         String        @id @default(cuid())
   eventId    String
   name       Json
   priceCents Int
   zone       String? // seating zone/category this ticket applies to (assigned seating)
-  minQty     Int      @default(1)
-  maxQty     Int      @default(10)
-  active     Boolean  @default(true)
-  sort       Int      @default(0)
-  event      Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  minQty     Int           @default(1)
+  maxQty     Int           @default(10)
+  active     Boolean       @default(true)
+  sort       Int           @default(0)
+  event      Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
   items      BookingItem[]
 }
 
@@ -500,17 +502,17 @@ model SeatingMap {
 }
 
 model Seat {
-  id         String   @id @default(cuid())
+  id         String      @id @default(cuid())
   mapId      String
   label      String
   row        String?
   x          Int
   y          Int
-  kind       SeatKind @default(SEAT)
+  kind       SeatKind    @default(SEAT)
   zone       String
-  accessible Boolean  @default(false)
-  blocked    Boolean  @default(false)
-  map        SeatingMap @relation(fields: [mapId], references: [id], onDelete: Cascade)
+  accessible Boolean     @default(false)
+  blocked    Boolean     @default(false)
+  map        SeatingMap  @relation(fields: [mapId], references: [id], onDelete: Cascade)
   claims     SeatClaim[]
 
   @@unique([mapId, label])
@@ -524,17 +526,17 @@ enum ClaimStatus {
 
 /// One row per seat per session. The unique index is what makes double booking impossible.
 model SeatClaim {
-  id         String       @id @default(cuid())
-  sessionId  String
-  seatId     String
-  status     ClaimStatus
-  holdId     String?
-  bookingId  String?
-  expiresAt  DateTime?
-  createdAt  DateTime     @default(now())
-  session    EventSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  seat       Seat         @relation(fields: [seatId], references: [id], onDelete: Cascade)
-  hold       InventoryHold? @relation(fields: [holdId], references: [id], onDelete: SetNull)
+  id        String         @id @default(cuid())
+  sessionId String
+  seatId    String
+  status    ClaimStatus
+  holdId    String?
+  bookingId String?
+  expiresAt DateTime?
+  createdAt DateTime       @default(now())
+  session   EventSession   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  seat      Seat           @relation(fields: [seatId], references: [id], onDelete: Cascade)
+  hold      InventoryHold? @relation(fields: [holdId], references: [id], onDelete: SetNull)
 
   @@unique([sessionId, seatId])
   @@index([holdId])
@@ -585,41 +587,41 @@ enum Attribution {
 }
 
 model Booking {
-  id             String        @id @default(cuid())
-  code           String        @unique
-  userId         String
-  merchantId     String
-  eventId        String
-  sessionId      String
-  status         BookingStatus @default(PENDING_PAYMENT)
-  paymentMethod  PaymentMethod
-  attribution    Attribution   @default(EVNT)
-  subtotalCents  Int
-  feeCents       Int           @default(0) // EVNT booking convenience fee
-  discountCents  Int           @default(0)
-  totalCents     Int
-  refundedCents  Int           @default(0)
-  memberApplied  Boolean       @default(false)
-  contactName    String
-  contactPhone   String
-  contactEmail   String
-  attendees      Json? // [{name, ticketTypeId}]
-  locale         String        @default("en")
-  holdExpiresAt  DateTime?
-  confirmedAt    DateTime?
-  canceledAt     DateTime?
-  cancelReason   String?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  id            String        @id @default(cuid())
+  code          String        @unique
+  userId        String
+  merchantId    String
+  eventId       String
+  sessionId     String
+  status        BookingStatus @default(PENDING_PAYMENT)
+  paymentMethod PaymentMethod
+  attribution   Attribution   @default(EVNT)
+  subtotalCents Int
+  feeCents      Int           @default(0) // EVNT booking convenience fee
+  discountCents Int           @default(0)
+  totalCents    Int
+  refundedCents Int           @default(0)
+  memberApplied Boolean       @default(false)
+  contactName   String
+  contactPhone  String
+  contactEmail  String
+  attendees     Json? // [{name, ticketTypeId}]
+  locale        String        @default("en")
+  holdExpiresAt DateTime?
+  confirmedAt   DateTime?
+  canceledAt    DateTime?
+  cancelReason  String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
-  user      User          @relation(fields: [userId], references: [id])
-  merchant  Merchant      @relation(fields: [merchantId], references: [id])
-  event     Event         @relation(fields: [eventId], references: [id])
-  session   EventSession  @relation(fields: [sessionId], references: [id])
-  items     BookingItem[]
-  tickets   Ticket[]
-  payments  Payment[]
-  reviews   Review[]
+  user     User          @relation(fields: [userId], references: [id])
+  merchant Merchant      @relation(fields: [merchantId], references: [id])
+  event    Event         @relation(fields: [eventId], references: [id])
+  session  EventSession  @relation(fields: [sessionId], references: [id])
+  items    BookingItem[]
+  tickets  Ticket[]
+  payments Payment[]
+  reviews  Review[]
 
   @@index([userId, createdAt])
   @@index([merchantId, createdAt])
@@ -730,17 +732,17 @@ enum RefundStatus {
 }
 
 model Refund {
-  id           String       @id @default(cuid())
-  paymentId    String?
-  bookingId    String?
-  orderId      String?
-  amountCents  Int
-  reason       String
-  status       RefundStatus @default(REQUESTED)
+  id            String       @id @default(cuid())
+  paymentId     String?
+  bookingId     String?
+  orderId       String?
+  amountCents   Int
+  reason        String
+  status        RefundStatus @default(REQUESTED)
   processedById String?
-  processedAt  DateTime?
-  createdAt    DateTime     @default(now())
-  payment      Payment?     @relation(fields: [paymentId], references: [id])
+  processedAt   DateTime?
+  createdAt     DateTime     @default(now())
+  payment       Payment?     @relation(fields: [paymentId], references: [id])
 }
 
 enum CommissionSource {
@@ -758,24 +760,24 @@ enum CommissionStatus {
 }
 
 model Commission {
-  id          String             @id @default(cuid())
-  merchantId  String
-  source      CommissionSource
-  sourceId    String
-  category    CommissionCategory?
-  plan        PlanCode
-  attribution Attribution
-  rateBps     Int // effective rate after attribution
-  baseCents   Int
-  guests      Int?
-  amountCents Int
-  leadCreditCents Int            @default(0) // Birthday Radar fee credited against this commission
-  status      CommissionStatus   @default(PENDING)
-  earnedAt    DateTime?
-  invoiceId   String?
-  createdAt   DateTime           @default(now())
-  merchant    Merchant           @relation(fields: [merchantId], references: [id])
-  disputes    CommissionDispute[]
+  id              String              @id @default(cuid())
+  merchantId      String
+  source          CommissionSource
+  sourceId        String
+  category        CommissionCategory?
+  plan            PlanCode
+  attribution     Attribution
+  rateBps         Int // effective rate after attribution
+  baseCents       Int
+  guests          Int?
+  amountCents     Int
+  leadCreditCents Int                 @default(0) // Birthday Radar fee credited against this commission
+  status          CommissionStatus    @default(PENDING)
+  earnedAt        DateTime?
+  invoiceId       String?
+  createdAt       DateTime            @default(now())
+  merchant        Merchant            @relation(fields: [merchantId], references: [id])
+  disputes        CommissionDispute[]
 
   @@unique([source, sourceId])
   @@index([merchantId, status])
@@ -804,34 +806,34 @@ enum LedgerType {
 
 /// Merchant balance = sum(amountCents). Positive: EVNT owes the merchant. Negative: merchant owes EVNT.
 model LedgerEntry {
-  id          String     @id @default(cuid())
-  merchantId  String
-  type        LedgerType
-  amountCents Int
-  memo        String
-  refType     String?
-  refId       String?
+  id           String      @id @default(cuid())
+  merchantId   String
+  type         LedgerType
+  amountCents  Int
+  memo         String
+  refType      String?
+  refId        String?
   settlementId String?
-  createdById String?
-  createdAt   DateTime   @default(now())
-  merchant    Merchant   @relation(fields: [merchantId], references: [id])
-  settlement  Settlement? @relation(fields: [settlementId], references: [id])
+  createdById  String?
+  createdAt    DateTime    @default(now())
+  merchant     Merchant    @relation(fields: [merchantId], references: [id])
+  settlement   Settlement? @relation(fields: [settlementId], references: [id])
 
   @@index([merchantId, createdAt])
 }
 
 model Settlement {
-  id          String   @id @default(cuid())
-  number      String   @unique
+  id          String        @id @default(cuid())
+  number      String        @unique
   merchantId  String
   periodEnd   DateTime
   amountCents Int // positive: paid to merchant; negative: collected from merchant
-  status      String   @default("DRAFT") // DRAFT | PAID | VOID
+  status      String        @default("DRAFT") // DRAFT | PAID | VOID
   reference   String?
   paidAt      DateTime?
   createdById String?
-  createdAt   DateTime @default(now())
-  merchant    Merchant @relation(fields: [merchantId], references: [id])
+  createdAt   DateTime      @default(now())
+  merchant    Merchant      @relation(fields: [merchantId], references: [id])
   entries     LedgerEntry[]
 }
 
@@ -853,18 +855,18 @@ enum InvoiceLineKind {
 }
 
 model Invoice {
-  id          String        @id @default(cuid())
-  number      String        @unique
-  merchantId  String
-  status      InvoiceStatus @default(OPEN)
-  totalCents  Int
-  issuedAt    DateTime      @default(now())
-  dueAt       DateTime
-  paidAt      DateTime?
-  remindedAt  DateTime?
-  merchant    Merchant      @relation(fields: [merchantId], references: [id])
-  lines       InvoiceLine[]
-  payments    Payment[]
+  id         String        @id @default(cuid())
+  number     String        @unique
+  merchantId String
+  status     InvoiceStatus @default(OPEN)
+  totalCents Int
+  issuedAt   DateTime      @default(now())
+  dueAt      DateTime
+  paidAt     DateTime?
+  remindedAt DateTime?
+  merchant   Merchant      @relation(fields: [merchantId], references: [id])
+  lines      InvoiceLine[]
+  payments   Payment[]
 
   @@index([merchantId, status])
 }
@@ -883,41 +885,42 @@ model InvoiceLine {
 // ───────────────────────────── Restaurants ─────────────────────────────
 
 model Restaurant {
-  id                 String        @id @default(cuid())
-  merchantId         String
-  locationId         String?
-  slug               String        @unique
-  name               String
-  about              Json?
-  coverId            String?
-  coverUrl           String?
-  gallery            String[] // media ids or urls
-  videoUrl           String?
-  cuisines           String[]
-  priceLevel         Int           @default(2) // 1-4
-  hours              Json // {mon:[["09:00","23:00"]], ...}
-  kidsMenu           Boolean       @default(false)
-  highChairs         Boolean       @default(false)
-  playArea           Boolean       @default(false)
-  outdoorSeating     Boolean       @default(false)
-  strollerAccess     Boolean       @default(false)
-  changingFacilities Boolean       @default(false)
-  parking            Boolean       @default(false)
-  birthdaySuitable   Boolean       @default(false)
-  acceptsReservations Boolean      @default(true)
-  depositCents       Int           @default(0)
-  maxPartySize       Int           @default(20)
-  status             ListingStatus @default(DRAFT)
-  ratingAvg          Float         @default(0)
-  ratingCount        Int           @default(0)
-  popularity         Int           @default(0)
-  searchText         String        @default("")
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
-  merchant           Merchant      @relation(fields: [merchantId], references: [id], onDelete: Cascade)
-  location           MerchantLocation? @relation(fields: [locationId], references: [id])
-  reservations       RestaurantReservation[]
-  reviews            Review[]
+  id                  String                  @id @default(cuid())
+  merchantId          String
+  locationId          String?
+  slug                String                  @unique
+  name                String
+  about               Json?
+  coverId             String?
+  coverUrl            String?
+  gallery             String[] // media ids or urls
+  videoUrl            String?
+  cuisines            String[]
+  priceLevel          Int                     @default(2) // 1-4
+  hours               Json // {mon:[["09:00","23:00"]], ...}
+  kidsMenu            Boolean                 @default(false)
+  highChairs          Boolean                 @default(false)
+  playArea            Boolean                 @default(false)
+  outdoorSeating      Boolean                 @default(false)
+  strollerAccess      Boolean                 @default(false)
+  changingFacilities  Boolean                 @default(false)
+  parking             Boolean                 @default(false)
+  birthdaySuitable    Boolean                 @default(false)
+  acceptsReservations Boolean                 @default(true)
+  depositCents        Int                     @default(0)
+  maxPartySize        Int                     @default(20)
+  status              ListingStatus           @default(DRAFT)
+  ratingAvg           Float                   @default(0)
+  ratingCount         Int                     @default(0)
+  popularity          Int                     @default(0)
+  rank                Int? // admin ordering: lower shows first; null = not pinned
+  searchText          String                  @default("")
+  createdAt           DateTime                @default(now())
+  updatedAt           DateTime                @updatedAt
+  merchant            Merchant                @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  location            MerchantLocation?       @relation(fields: [locationId], references: [id])
+  reservations        RestaurantReservation[]
+  reviews             Review[]
 
   @@index([status])
 }
@@ -933,28 +936,28 @@ enum ReservationStatus {
 }
 
 model RestaurantReservation {
-  id             String            @id @default(cuid())
-  code           String            @unique
-  restaurantId   String
-  userId         String
-  startsAt       DateTime
-  proposedAt     DateTime?
-  adults         Int
-  children       Int
-  requests       String?
-  status         ReservationStatus @default(REQUESTED)
+  id              String            @id @default(cuid())
+  code            String            @unique
+  restaurantId    String
+  userId          String
+  startsAt        DateTime
+  proposedAt      DateTime?
+  adults          Int
+  children        Int
+  requests        String?
+  status          ReservationStatus @default(REQUESTED)
   completedGuests Int?
-  verifiedAt     DateTime?
-  verifiedById   String?
-  depositCents   Int               @default(0)
-  depositPaid    Boolean           @default(false)
-  merchantNote   String?
-  contactPhone   String
-  createdAt      DateTime          @default(now())
-  updatedAt      DateTime          @updatedAt
-  restaurant     Restaurant        @relation(fields: [restaurantId], references: [id])
-  user           User              @relation(fields: [userId], references: [id])
-  reviews        Review[]
+  verifiedAt      DateTime?
+  verifiedById    String?
+  depositCents    Int               @default(0)
+  depositPaid     Boolean           @default(false)
+  merchantNote    String?
+  contactPhone    String
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  restaurant      Restaurant        @relation(fields: [restaurantId], references: [id])
+  user            User              @relation(fields: [userId], references: [id])
+  reviews         Review[]
 
   @@index([restaurantId, startsAt])
   @@index([userId])
@@ -963,7 +966,7 @@ model RestaurantReservation {
 // ───────────────────────────── Birthdays ─────────────────────────────
 
 model BirthdayInquiry {
-  id           String   @id @default(cuid())
+  id           String          @id @default(cuid())
   userId       String
   childAge     Int
   date         DateTime
@@ -973,43 +976,43 @@ model BirthdayInquiry {
   services     String[] // venue, entertainer, decoration, cake, photographer, package, activity
   notes        String?
   contactPhone String
-  qualified    Boolean  @default(false) // set by rules/admin; only qualified inquiries can be sold as leads
-  status       String   @default("OPEN") // OPEN | BOOKED | CLOSED
+  qualified    Boolean         @default(false) // set by rules/admin; only qualified inquiries can be sold as leads
+  status       String          @default("OPEN") // OPEN | BOOKED | CLOSED
   consentAt    DateTime
-  createdAt    DateTime @default(now())
-  user         User     @relation(fields: [userId], references: [id])
+  createdAt    DateTime        @default(now())
+  user         User            @relation(fields: [userId], references: [id])
   quotes       BirthdayQuote[]
   leads        BirthdayLead[]
 }
 
 /// A parent asked this merchant for a quote (free for merchants).
 model BirthdayQuote {
-  id          String   @id @default(cuid())
-  inquiryId   String
-  merchantId  String
-  status      String   @default("SENT") // SENT | QUOTED | DECLINED | ACCEPTED
-  priceCents  Int?
-  message     String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  inquiry     BirthdayInquiry @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
-  merchant    Merchant @relation(fields: [merchantId], references: [id])
+  id         String          @id @default(cuid())
+  inquiryId  String
+  merchantId String
+  status     String          @default("SENT") // SENT | QUOTED | DECLINED | ACCEPTED
+  priceCents Int?
+  message    String?
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  inquiry    BirthdayInquiry @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+  merchant   Merchant        @relation(fields: [merchantId], references: [id])
 
   @@unique([inquiryId, merchantId])
 }
 
 /// Birthday Radar: a Featured merchant purchased a qualified inquiry. Unique pair = no duplicate charges.
 model BirthdayLead {
-  id          String   @id @default(cuid())
-  inquiryId   String
-  merchantId  String
-  priceCents  Int
-  invoiceId   String?
-  creditedCents Int    @default(0)
-  convertedAt DateTime?
-  createdAt   DateTime @default(now())
-  inquiry     BirthdayInquiry @relation(fields: [inquiryId], references: [id])
-  merchant    Merchant @relation(fields: [merchantId], references: [id])
+  id            String          @id @default(cuid())
+  inquiryId     String
+  merchantId    String
+  priceCents    Int
+  invoiceId     String?
+  creditedCents Int             @default(0)
+  convertedAt   DateTime?
+  createdAt     DateTime        @default(now())
+  inquiry       BirthdayInquiry @relation(fields: [inquiryId], references: [id])
+  merchant      Merchant        @relation(fields: [merchantId], references: [id])
 
   @@unique([inquiryId, merchantId])
 }
@@ -1017,10 +1020,10 @@ model BirthdayLead {
 // ───────────────────────────── Shop ─────────────────────────────
 
 model Product {
-  id             String        @id @default(cuid())
+  id             String           @id @default(cuid())
   merchantId     String
   categoryId     String
-  slug           String        @unique
+  slug           String           @unique
   title          Json
   description    Json?
   deliveryInfo   Json?
@@ -1029,15 +1032,16 @@ model Product {
   salePriceCents Int?
   ageMin         Int?
   ageMax         Int?
-  status         ListingStatus @default(DRAFT)
-  ratingAvg      Float         @default(0)
-  ratingCount    Int           @default(0)
-  popularity     Int           @default(0)
-  searchText     String        @default("")
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  merchant       Merchant      @relation(fields: [merchantId], references: [id], onDelete: Cascade)
-  category       Category      @relation(fields: [categoryId], references: [id])
+  status         ListingStatus    @default(DRAFT)
+  ratingAvg      Float            @default(0)
+  ratingCount    Int              @default(0)
+  popularity     Int              @default(0)
+  rank           Int? // admin ordering: lower shows first; null = not pinned
+  searchText     String           @default("")
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  merchant       Merchant         @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  category       Category         @relation(fields: [categoryId], references: [id])
   variants       ProductVariant[]
   reviews        Review[]
   flashPromos    FlashPromotion[]
@@ -1046,26 +1050,26 @@ model Product {
 }
 
 model ProductVariant {
-  id         String   @id @default(cuid())
+  id         String      @id @default(cuid())
   productId  String
   name       String // "Default", "Size 4", "Blue"...
   sku        String?
   priceCents Int? // overrides the product price
-  stock      Int      @default(0)
-  active     Boolean  @default(true)
-  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  stock      Int         @default(0)
+  active     Boolean     @default(true)
+  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
   cartItems  CartItem[]
   orderItems OrderItem[]
 }
 
 model Cart {
-  id        String     @id @default(cuid())
-  userId    String?    @unique
-  deviceId  String?    @unique
+  id           String     @id @default(cuid())
+  userId       String?    @unique
+  deviceId     String?    @unique
   discountCode String?
-  updatedAt DateTime   @updatedAt
-  user      User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items     CartItem[]
+  updatedAt    DateTime   @updatedAt
+  user         User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items        CartItem[]
 }
 
 model CartItem {
@@ -1080,20 +1084,20 @@ model CartItem {
 }
 
 model DiscountCode {
-  id            String    @id @default(cuid())
-  code          String    @unique
-  merchantId    String? // null = platform-wide (EVNT pays the discount)
-  percentOff    Int? // 1-100
-  amountOffCents Int?
-  minSubtotalCents Int    @default(0)
-  appliesTo     String    @default("ALL") // ALL | SHOP | BOOKINGS
-  maxUses       Int?
-  uses          Int       @default(0)
-  startsAt      DateTime?
-  endsAt        DateTime?
-  active        Boolean   @default(true)
-  createdAt     DateTime  @default(now())
-  merchant      Merchant? @relation(fields: [merchantId], references: [id])
+  id               String    @id @default(cuid())
+  code             String    @unique
+  merchantId       String? // null = platform-wide (EVNT pays the discount)
+  percentOff       Int? // 1-100
+  amountOffCents   Int?
+  minSubtotalCents Int       @default(0)
+  appliesTo        String    @default("ALL") // ALL | SHOP | BOOKINGS
+  maxUses          Int?
+  uses             Int       @default(0)
+  startsAt         DateTime?
+  endsAt           DateTime?
+  active           Boolean   @default(true)
+  createdAt        DateTime  @default(now())
+  merchant         Merchant? @relation(fields: [merchantId], references: [id])
 }
 
 /// A checkout. Split into one Order per merchant.
@@ -1121,37 +1125,37 @@ enum OrderStatus {
 }
 
 model Order {
-  id             String      @id @default(cuid())
-  number         String      @unique
-  groupId        String
-  merchantId     String
-  status         OrderStatus @default(PENDING)
-  paymentMethod  PaymentMethod
-  subtotalCents  Int
-  deliveryCents  Int
-  discountCents  Int         @default(0)
-  totalCents     Int
-  refundedCents  Int         @default(0)
-  customerName   String
-  phone          String
-  area           String
-  address        String
-  building       String
-  floor          String?
-  instructions   String?
+  id                String             @id @default(cuid())
+  number            String             @unique
+  groupId           String
+  merchantId        String
+  status            OrderStatus        @default(PENDING)
+  paymentMethod     PaymentMethod
+  subtotalCents     Int
+  deliveryCents     Int
+  discountCents     Int                @default(0)
+  totalCents        Int
+  refundedCents     Int                @default(0)
+  customerName      String
+  phone             String
+  area              String
+  address           String
+  building          String
+  floor             String?
+  instructions      String?
   codCollectedCents Int?
-  codCollectedAt DateTime?
-  paidAt         DateTime?
-  deliveredAt    DateTime?
-  canceledAt     DateTime?
-  cancelReason   String?
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
-  group          OrderGroup  @relation(fields: [groupId], references: [id])
-  merchant       Merchant    @relation(fields: [merchantId], references: [id])
-  items          OrderItem[]
-  history        OrderStatusEvent[]
-  reviews        Review[]
+  codCollectedAt    DateTime?
+  paidAt            DateTime?
+  deliveredAt       DateTime?
+  canceledAt        DateTime?
+  cancelReason      String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  group             OrderGroup         @relation(fields: [groupId], references: [id])
+  merchant          Merchant           @relation(fields: [merchantId], references: [id])
+  items             OrderItem[]
+  history           OrderStatusEvent[]
+  reviews           Review[]
 
   @@index([merchantId, createdAt])
   @@index([status])
@@ -1183,7 +1187,7 @@ model OrderStatusEvent {
 // ───────────────────────────── Reviews & favorites ─────────────────────────────
 
 model Review {
-  id            String   @id @default(cuid())
+  id            String                 @id @default(cuid())
   userId        String
   merchantId    String
   eventId       String?
@@ -1195,18 +1199,18 @@ model Review {
   rating        Int
   body          String
   photos        String[]
-  verified      Boolean  @default(false) // only true when linked to a completed booking/order/reservation
-  status        String   @default("PUBLISHED") // PUBLISHED | HIDDEN
+  verified      Boolean                @default(false) // only true when linked to a completed booking/order/reservation
+  status        String                 @default("PUBLISHED") // PUBLISHED | HIDDEN
   merchantReply String?
   repliedAt     DateTime?
-  createdAt     DateTime @default(now())
-  user          User     @relation(fields: [userId], references: [id])
-  merchant      Merchant @relation(fields: [merchantId], references: [id])
-  event         Event?   @relation(fields: [eventId], references: [id])
-  restaurant    Restaurant? @relation(fields: [restaurantId], references: [id])
-  product       Product? @relation(fields: [productId], references: [id])
-  booking       Booking? @relation(fields: [bookingId], references: [id])
-  order         Order?   @relation(fields: [orderId], references: [id])
+  createdAt     DateTime               @default(now())
+  user          User                   @relation(fields: [userId], references: [id])
+  merchant      Merchant               @relation(fields: [merchantId], references: [id])
+  event         Event?                 @relation(fields: [eventId], references: [id])
+  restaurant    Restaurant?            @relation(fields: [restaurantId], references: [id])
+  product       Product?               @relation(fields: [productId], references: [id])
+  booking       Booking?               @relation(fields: [bookingId], references: [id])
+  order         Order?                 @relation(fields: [orderId], references: [id])
   reservation   RestaurantReservation? @relation(fields: [reservationId], references: [id])
   reports       ReviewReport[]
 
@@ -1307,17 +1311,17 @@ model Certification {
 // ───────────────────────────── Advertising ─────────────────────────────
 
 model AdPlacement {
-  code       String   @id // HOMEPAGE_FEATURED, CATEGORY_SPONSOR, ...
-  name       Json
-  description Json?
-  priceCents Int
-  unit       String // WEEK | MONTH | CAMPAIGN | ITEM | PERCENT_SALES
-  exclusive  Boolean  @default(false)
-  slots      Int      @default(1) // concurrent campaigns allowed (per category for category sponsorship)
+  code         String       @id // HOMEPAGE_FEATURED, CATEGORY_SPONSOR, ...
+  name         Json
+  description  Json?
+  priceCents   Int
+  unit         String // WEEK | MONTH | CAMPAIGN | ITEM | PERCENT_SALES
+  exclusive    Boolean      @default(false)
+  slots        Int          @default(1) // concurrent campaigns allowed (per category for category sponsorship)
   requiresPlan PlanCode?
-  active     Boolean  @default(true)
-  sort       Int      @default(0)
-  campaigns  AdCampaign[]
+  active       Boolean      @default(true)
+  sort         Int          @default(0)
+  campaigns    AdCampaign[]
 }
 
 enum CampaignStatus {
@@ -1331,33 +1335,33 @@ enum CampaignStatus {
 }
 
 model AdCampaign {
-  id            String         @id @default(cuid())
-  merchantId    String
-  placementCode String
-  categoryId    String?
-  eventId       String?
-  productId     String?
-  restaurantId  String?
-  headline      String
-  creativeId    String?
-  startsAt      DateTime
-  endsAt        DateTime
-  priceCents    Int
-  status        CampaignStatus @default(DRAFT)
-  invoiceId     String?
-  rejectionReason String?
+  id                   String         @id @default(cuid())
+  merchantId           String
+  placementCode        String
+  categoryId           String?
+  eventId              String?
+  productId            String?
+  restaurantId         String?
+  headline             String
+  creativeId           String?
+  startsAt             DateTime
+  endsAt               DateTime
+  priceCents           Int
+  status               CampaignStatus @default(DRAFT)
+  invoiceId            String?
+  rejectionReason      String?
   whatsappAudienceSize Int?
-  approvedById  String?
-  approvedAt    DateTime?
-  impressions   Int            @default(0)
-  clicks        Int            @default(0)
-  leads         Int            @default(0)
-  conversions   Int            @default(0)
-  revenueCents  Int            @default(0)
-  createdAt     DateTime       @default(now())
-  merchant      Merchant       @relation(fields: [merchantId], references: [id])
-  placement     AdPlacement    @relation(fields: [placementCode], references: [code])
-  category      Category?      @relation(fields: [categoryId], references: [id])
+  approvedById         String?
+  approvedAt           DateTime?
+  impressions          Int            @default(0)
+  clicks               Int            @default(0)
+  leads                Int            @default(0)
+  conversions          Int            @default(0)
+  revenueCents         Int            @default(0)
+  createdAt            DateTime       @default(now())
+  merchant             Merchant       @relation(fields: [merchantId], references: [id])
+  placement            AdPlacement    @relation(fields: [placementCode], references: [code])
+  category             Category?      @relation(fields: [categoryId], references: [id])
 
   @@index([placementCode, status, startsAt])
 }
@@ -1397,42 +1401,42 @@ model ContactClick {
 
 /// A booking completed outside EVNT that EVNT generated (50% commission if verified within 72h of a click).
 model ExternalBooking {
-  id           String   @id @default(cuid())
+  id           String             @id @default(cuid())
   merchantId   String
-  clickId      String   @unique
+  clickId      String             @unique
   amountCents  Int
   category     CommissionCategory
   bookedAt     DateTime
-  status       String   @default("CLAIMED") // CLAIMED | VERIFIED | DISPUTED | REJECTED
+  status       String             @default("CLAIMED") // CLAIMED | VERIFIED | DISPUTED | REJECTED
   note         String?
   reportedById String?
   verifiedById String?
-  createdAt    DateTime @default(now())
-  merchant     Merchant @relation(fields: [merchantId], references: [id])
+  createdAt    DateTime           @default(now())
+  merchant     Merchant           @relation(fields: [merchantId], references: [id])
 }
 
 // ───────────────────────────── CMS ─────────────────────────────
 
 model HomeSection {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   title     Json
   subtitle  Json?
   bannerUrl String?
   bannerId  String?
-  source    String   @default("EVENTS") // EVENTS | RESTAURANTS | PRODUCTS | CATEGORIES | FARAH
-  mode      String   @default("AUTO") // AUTO | MANUAL
-  layout    String   @default("CAROUSEL") // CAROUSEL | GRID
+  source    String    @default("EVENTS") // EVENTS | RESTAURANTS | PRODUCTS | CATEGORIES | FARAH
+  mode      String    @default("AUTO") // AUTO | MANUAL
+  layout    String    @default("CAROUSEL") // CAROUSEL | GRID
   filters   Json? // {categorySlugs, ageMin, ageMax, areas, maxPriceCents, free, weekend, sort}
   itemIds   String[]
-  limit     Int      @default(12)
-  sponsored Boolean  @default(false)
+  limit     Int       @default(12)
+  sponsored Boolean   @default(false)
   ctaText   Json?
   ctaHref   String?
-  sort      Int      @default(0)
-  visible   Boolean  @default(true)
+  sort      Int       @default(0)
+  visible   Boolean   @default(true)
   startsAt  DateTime?
   endsAt    DateTime?
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime  @updatedAt
 }
 
 model Article {

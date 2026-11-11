@@ -19,7 +19,7 @@ export default async function FarahPage() {
   const [locale, t, user] = await Promise.all([getLocale(), getT(), getCurrentUser()]);
   const now = new Date();
   const [merchants, events, restaurants, saved] = await Promise.all([
-    prisma.merchant.findMany({ where: { status: "APPROVED", farahUntil: { gt: now } }, include: { locations: { take: 1 } }, orderBy: { name: "asc" } }),
+    prisma.merchant.findMany({ where: { status: "APPROVED", farahUntil: { gt: now } }, include: { locations: { take: 1 } }, orderBy: [{ rank: { sort: "asc", nulls: "last" } }, { name: "asc" }] }),
     searchEvents({ farah: true, limit: 12 }, locale),
     searchRestaurants({ farah: true, limit: 12 }, locale),
     favoriteIds(user?.id),

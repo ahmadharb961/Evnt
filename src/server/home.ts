@@ -10,7 +10,7 @@ export type ResolvedSection = {
   title: string;
   subtitle: string;
   bannerUrl: string | null;
-  layout: "CAROUSEL" | "GRID";
+  layout: "CAROUSEL" | "GRID" | "SPOTLIGHT";
   ctaText: string;
   ctaHref: string | null;
   sponsored: boolean;
@@ -52,7 +52,7 @@ export async function liveCampaigns(placementCode: string, opts: { categoryId?: 
 
 export async function resolveSection(s: HomeSection, locale: Locale): Promise<ResolvedSection> {
   const f = (s.filters ?? {}) as SectionFilters;
-  const manual = s.mode === "MANUAL" && s.itemIds.length ? s.itemIds : undefined;
+  const manual = s.mode === "MANUAL" && s.itemIds?.length ? s.itemIds : undefined;
   let items: CardData[] = [];
   if (s.source === "EVENTS") {
     items = (
@@ -80,17 +80,27 @@ export async function resolveSection(s: HomeSection, locale: Locale): Promise<Re
   } else if (s.source === "FARAH") {
     const [ev, rs] = await Promise.all([searchEvents({ farah: true, limit: s.limit }, locale), searchRestaurants({ farah: true, limit: s.limit }, locale)]);
     items = [...rs.items, ...ev.items].slice(0, s.limit);
+  } else if (s.source === "HANDPICKED") {
+    // Editorial picks: any mix of activities, restaurants and products in the admin's order
+    // (ids are unique across tables). Without picks, falls back to the recommended activities,
+    // which already honour the admin's ordering. Paid homepage placements follow, labelled sponsored.
+    const picked = manual ?? [];
+    const [ev, rs, pr, camps] = await Promise.all([
+      searchEvents(picked.length ? { ids: picked, limit: 40 } : { limit: s.limit }, locale),
+      picked.length ? searchRestaurants({ ids: picked, limit: 40 }, locale) : { items: [] },
+      picked.length ? searchProducts({ ids: picked, limit: 40 }, locale) : { items: [] },
+      liveCampaigns("HOMEPAGE_FEATURED"),
+    ]);
+    const all = [...ev.items, ...rs.items, ...pr.items];
+    items = picked.length ? picked.map((id) => all.find((i) => i.id === id)).filter((i): i is CardData => !!i) : all;
+    const paid = await sponsoredItems(camps, locale);
+    // A listing that is both picked and paid appears once, with its sponsored label.
+    const paidIds = new Set(paid.map((p) => p.id));
+    items = [...items.filter((i) => !paidIds.has(i.id)).slice(0, Math.max(s.limit, picked.length)), ...paid];
+    if (camps.length) await prisma.adCampaign.updateMany({ where: { id: { in: camps.map((c) => c.id) } }, data: { impressions: { increment: 1 } } });
   } else if (s.source === "SPONSORED") {
     const camps = await liveCampaigns("HOMEPAGE_FEATURED");
-    const evIds = camps.filter((c) => c.eventId).map((c) => c.eventId!);
-    const rsIds = camps.filter((c) => c.restaurantId).map((c) => c.restaurantId!);
-    const prIds = camps.filter((c) => c.productId).map((c) => c.productId!);
-    const [ev, rs, pr] = await Promise.all([
-      evIds.length ? searchEvents({ ids: evIds, limit: 20 }, locale) : { items: [] },
-      rsIds.length ? searchRestaurants({ ids: rsIds, limit: 20 }, locale) : { items: [] },
-      prIds.length ? searchProducts({ ids: prIds, limit: 20 }, locale) : { items: [] },
-    ]);
-    items = [...ev.items, ...rs.items, ...pr.items].map((i) => ({ ...i, sponsored: true }));
+    items = await sponsoredItems(camps, locale);
     if (camps.length) await prisma.adCampaign.updateMany({ where: { id: { in: camps.map((c) => c.id) } }, data: { impressions: { increment: 1 } } });
   }
   if (s.sponsored) items = items.map((i) => ({ ...i, sponsored: true }));
@@ -99,12 +109,25 @@ export async function resolveSection(s: HomeSection, locale: Locale): Promise<Re
     title: loc(s.title, locale),
     subtitle: loc(s.subtitle, locale),
     bannerUrl: s.bannerId ? `/media/${s.bannerId}` : s.bannerUrl,
-    layout: s.layout === "GRID" ? "GRID" : "CAROUSEL",
+    layout: s.layout === "GRID" ? "GRID" : s.layout === "SPOTLIGHT" ? "SPOTLIGHT" : "CAROUSEL",
     ctaText: loc(s.ctaText, locale),
     ctaHref: s.ctaHref,
     sponsored: s.sponsored,
     items,
   };
+}
+
+/** Listings promoted by approved, running paid campaigns — always flagged as sponsored. */
+async function sponsoredItems(camps: Awaited<ReturnType<typeof liveCampaigns>>, locale: Locale): Promise<CardData[]> {
+  const evIds = camps.filter((c) => c.eventId).map((c) => c.eventId!);
+  const rsIds = camps.filter((c) => c.restaurantId).map((c) => c.restaurantId!);
+  const prIds = camps.filter((c) => c.productId).map((c) => c.productId!);
+  const [ev, rs, pr] = await Promise.all([
+    evIds.length ? searchEvents({ ids: evIds, limit: 20 }, locale) : { items: [] },
+    rsIds.length ? searchRestaurants({ ids: rsIds, limit: 20 }, locale) : { items: [] },
+    prIds.length ? searchProducts({ ids: prIds, limit: 20 }, locale) : { items: [] },
+  ]);
+  return [...ev.items, ...rs.items, ...pr.items].map((i) => ({ ...i, sponsored: true }));
 }
 
 export async function favoriteIds(userId: string | null | undefined): Promise<Set<string>> {

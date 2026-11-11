@@ -90,6 +90,8 @@ const RESTAURANT_PHOTOS: Record<string, string[]> = {
   "the-garden-table": ["stone-courtyard-restaurant", "family-dinner", "terrace-restaurant"],
   "seaside-family-grill": ["terrace-restaurant", "family-dinner", "family-burger"],
 };
+const HANDPICKED_EVENTS = ["The Lantern Fox — Family Musical", "Morning at the Farm", "Clay & Colour Pottery Workshop", "Splash Day at the Water Park"];
+const HANDPICKED_RESTAURANT = "the-garden-table";
 const CATEGORY_PHOTOS: Record<string, string> = {
   "activities-workshops": "painting",
   "camps-after-school": "climbing-wall",
@@ -174,8 +176,21 @@ async function applyDemoPhotos(prisma: PrismaClient) {
     await prisma.restaurant.updateMany({ where: { slug: s, coverId: null }, data: { coverUrl: P(photos[0]), gallery: photos.slice(1).map(P) } });
   }
   for (const [s, n] of Object.entries(CATEGORY_PHOTOS)) await prisma.category.updateMany({ where: { slug: s, imageId: null }, data: { imageUrl: P(n) } });
+  // The hero uses the brand video by default; drop the old demo-only photo override if it was never edited.
   const hero = await prisma.setting.findUnique({ where: { key: "hero" } });
-  if (!hero) await prisma.setting.create({ data: { key: "hero", value: { posterUrl: "/demo/photos/hero-mosaic.jpg" } } });
+  const hv = hero?.value as Record<string, unknown> | undefined;
+  if (hv && Object.keys(hv).length === 1 && hv.posterUrl === "/demo/photos/hero-mosaic.jpg") await prisma.setting.delete({ where: { key: "hero" } });
+  // Fill an empty Handpicked showcase with a mix of demo activities, a restaurant and a product.
+  const spot = (await prisma.homeSection.findMany({ where: { source: "HANDPICKED" } })).find((x) => !x.itemIds?.length);
+  if (spot) {
+    const pick = async (t: string) => (await prisma.event.findUnique({ where: { slug: slug(t) }, select: { id: true } }))?.id;
+    const ids = [
+      await pick(HANDPICKED_EVENTS[0]),
+      (await prisma.restaurant.findFirst({ where: { slug: HANDPICKED_RESTAURANT }, select: { id: true } }))?.id,
+      ...(await Promise.all(HANDPICKED_EVENTS.slice(1).map(pick))),
+    ].filter((x): x is string => !!x);
+    if (ids.length) await prisma.homeSection.update({ where: { id: spot.id }, data: { itemIds: ids } });
+  }
   if (added) {
     const { reindexAll } = await import("../src/server/reindex");
     await reindexAll(prisma);

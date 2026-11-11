@@ -3,6 +3,7 @@ import { BadgeCheck, Crown } from "lucide-react";
 import { Hero } from "@/components/home/hero";
 import { CategoryTiles } from "@/components/home/category-tiles";
 import { SectionRow } from "@/components/home/section-row";
+import { Spotlight } from "@/components/home/spotlight";
 import { activeSections, favoriteIds, resolveSection } from "@/server/home";
 import { recommendedEvents } from "@/server/recommend";
 import { getSetting } from "@/server/settings";
@@ -37,8 +38,8 @@ export default async function HomePage() {
   return (
     <>
       <Hero
-        videoSrc={hero.videoId ? `/media/${hero.videoId}` : hero.videoUrl || null}
-        poster={hero.posterUrl || "/brand/hero-poster.svg"}
+        videoSrc={hero.mode === "IMAGE" ? null : hero.videoId ? `/media/${hero.videoId}` : hero.videoUrl || null}
+        poster={hero.posterUrl || "/brand/hero-poster.jpg"}
         headline={loc(hero.headline, locale)}
         subline={loc(hero.subline, locale)}
         ctaText={loc(hero.ctaText, locale)}
@@ -53,9 +54,13 @@ export default async function HomePage() {
         <SectionRow title={t("Picked for your family")} subtitle={t("Based on your kids' ages, interests and favorites")} items={forYou} t={t} locale={locale} saved={saved} href="/account/family" ctaText={t("Edit preferences")} />
       )}
 
-      {resolved.map((s) => (
+      {resolved.map((s) =>
+        s.layout === "SPOTLIGHT" ? (
+          <Spotlight key={s.id} title={s.title} subtitle={s.subtitle} href={s.ctaHref} ctaText={s.ctaText} items={s.items} t={t} locale={locale} saved={saved} />
+        ) : (
         <SectionRow key={s.id} title={s.title} subtitle={s.subtitle} href={s.ctaHref} ctaText={s.ctaText} items={s.items} layout={s.layout} banner={s.bannerUrl} t={t} locale={locale} saved={saved} />
-      ))}
+        ),
+      )}
 
       <section className="container-x mt-16 grid gap-4 md:grid-cols-2">
         <Link href="/plus" className="group relative overflow-hidden rounded-4xl bg-gradient-to-br from-powder to-blush p-7 sm:p-9">

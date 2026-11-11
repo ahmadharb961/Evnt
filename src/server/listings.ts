@@ -77,8 +77,22 @@ async function categoryIdsFor(slug?: string): Promise<string[] | null> {
   return [c.id, ...c.children.map((x) => x.id)];
 }
 
+/**
+ * Admin ordering for the "recommended" sort: listings the admin pinned come first (by their rank),
+ * then listings of pinned businesses (by the business rank), then everything else in organic order.
+ */
+export function pinKey(listingRank: number | null | undefined, merchantRank: number | null | undefined) {
+  if (listingRank != null) return listingRank;
+  if (merchantRank != null) return 100_000 + merchantRank;
+  return Number.POSITIVE_INFINITY;
+}
+
+function pinCompare(a: number, b: number) {
+  return a === b ? 0 : a - b;
+}
+
 const eventInclude = {
-  merchant: { select: { name: true, farahUntil: true } },
+  merchant: { select: { name: true, farahUntil: true, rank: true } },
   location: { select: { area: true, lat: true, lng: true } },
   category: { select: { name: true } },
   sessions: {
@@ -217,8 +231,10 @@ export async function searchEvents(f: EventFilters, locale: Locale): Promise<{ i
         case "distance":
           if (!f.near) return 0;
           return (a.lat == null ? 1e9 : distanceKm(f.near, { lat: a.lat, lng: a.lng! })) - (b.lat == null ? 1e9 : distanceKm(f.near, { lat: b.lat, lng: b.lng! }));
-        default:
-          return score(b) - score(a);
+        default: {
+          const ra = byId.get(a.id)!, rb = byId.get(b.id)!;
+          return pinCompare(pinKey(ra.rank, ra.merchant.rank), pinKey(rb.rank, rb.merchant.rank)) || score(b) - score(a);
+        }
       }
     });
   const total = items.length;
@@ -280,7 +296,7 @@ export async function searchRestaurants(f: RestaurantFilters, locale: Locale): P
   };
   const rows = await prisma.restaurant.findMany({
     where,
-    include: { merchant: { select: { farahUntil: true } }, location: { select: { area: true, lat: true, lng: true } } },
+    include: { merchant: { select: { farahUntil: true, rank: true } }, location: { select: { area: true, lat: true, lng: true } } },
     take: 300,
   });
   let items = rows.map(
@@ -312,7 +328,8 @@ export async function searchRestaurants(f: RestaurantFilters, locale: Locale): P
       if (sort === "distance" && f.near)
         return (a.lat == null ? 1e9 : distanceKm(f.near, { lat: a.lat, lng: a.lng! })) - (b.lat == null ? 1e9 : distanceKm(f.near, { lat: b.lat, lng: b.lng! }));
       const s = (x: RestaurantCardData) => pop.get(x.id)!.popularity * 2 + x.rating * Math.min(x.ratingCount, 20) + x.facilities.length * 2;
-      return s(b) - s(a);
+      const ra = pop.get(a.id)!, rb = pop.get(b.id)!;
+      return pinCompare(pinKey(ra.rank, ra.merchant.rank), pinKey(rb.rank, rb.merchant.rank)) || s(b) - s(a);
     });
   const offset = f.offset ?? 0;
   return { items: items.slice(offset, offset + (f.limit ?? 24)), total: items.length };
@@ -357,7 +374,7 @@ export async function searchProducts(f: ProductFilters, locale: Locale): Promise
   }
   const rows = await prisma.product.findMany({
     where,
-    include: { merchant: { select: { name: true } }, variants: { where: { active: true }, select: { stock: true, priceCents: true } } },
+    include: { merchant: { select: { name: true, rank: true } }, variants: { where: { active: true }, select: { stock: true, priceCents: true } } },
     take: 300,
   });
   const flash = await productFlash(rows.map((r) => r.id));
@@ -390,7 +407,8 @@ export async function searchProducts(f: ProductFilters, locale: Locale): Promise
       if (sort === "price-desc") return eff(b) - eff(a);
       if (sort === "newest") return pop.get(b.id)!.createdAt.getTime() - pop.get(a.id)!.createdAt.getTime();
       if (sort === "rating") return b.rating - a.rating;
-      return pop.get(b.id)!.popularity - pop.get(a.id)!.popularity + (b.rating - a.rating);
+      const ra = pop.get(a.id)!, rb = pop.get(b.id)!;
+      return pinCompare(pinKey(ra.rank, ra.merchant.rank), pinKey(rb.rank, rb.merchant.rank)) || rb.popularity - ra.popularity + (b.rating - a.rating);
     });
   const offset = f.offset ?? 0;
   return { items: items.slice(offset, offset + (f.limit ?? 24)), total: items.length };

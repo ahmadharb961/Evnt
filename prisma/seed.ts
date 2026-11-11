@@ -175,10 +175,10 @@ const PLACEMENTS: { code: string; name: L; priceCents: number; unit: string; exc
   { code: "MARKET_REPORT", name: { en: "Custom market intelligence report", ar: "تقرير مخصّص عن السوق", fr: "Rapport d'études de marché sur mesure" }, priceCents: 29900, unit: "ITEM", exclusive: false, slots: 10, description: { en: "A tailored report on family demand in your category and area.", ar: "تقرير مخصّص عن طلب العائلات في فئتك ومنطقتك.", fr: "Un rapport sur la demande des familles dans votre catégorie et zone." } },
 ];
 
-const SECTIONS: { title: L; subtitle?: L; source: string; filters?: object; layout?: string; sponsored?: boolean; ctaHref?: string }[] = [
+const SECTIONS: { title: L; subtitle?: L; source: string; filters?: object; layout?: string; mode?: string; limit?: number; sponsored?: boolean; ctaHref?: string }[] = [
   { title: { en: "This Weekend with Kids", ar: "نهاية هذا الأسبوع مع الأطفال", fr: "Ce week-end avec les enfants" }, source: "EVENTS", filters: { weekend: true, sort: "soonest" }, ctaHref: "/discover?when=weekend" },
   { title: { en: "Trending This Week", ar: "الأكثر رواجاً هذا الأسبوع", fr: "Tendances de la semaine" }, source: "EVENTS", filters: { sort: "popular" } },
-  { title: { en: "EVNT Featured", ar: "مختارات EVNT المموّلة", fr: "À la une sur EVNT" }, subtitle: { en: "Sponsored", ar: "إعلان", fr: "Sponsorisé" }, source: "SPONSORED", sponsored: true },
+  { title: { en: "Handpicked experiences", ar: "تجارب مختارة بعناية", fr: "Expériences triées sur le volet" }, subtitle: { en: "The places and moments our team would pick for their own kids.", ar: "الأماكن واللحظات التي يختارها فريقنا لأطفاله.", fr: "Les lieux et moments que notre équipe choisirait pour ses propres enfants." }, source: "HANDPICKED", layout: "SPOTLIGHT", mode: "MANUAL", limit: 8 },
   { title: { en: "Free Things to Do", ar: "نشاطات مجانية", fr: "Sorties gratuites" }, source: "EVENTS", filters: { free: true }, ctaHref: "/discover?price=free" },
   { title: { en: "Perfect for Toddlers", ar: "مثالية للأطفال الصغار", fr: "Parfait pour les tout-petits" }, source: "EVENTS", filters: { ageMax: 3 }, ctaHref: "/discover?age=0-2" },
   { title: { en: "Under $20", ar: "بأقل من 20$", fr: "Moins de 20 $" }, source: "EVENTS", filters: { maxPriceCents: 2000 }, ctaHref: "/discover?maxPrice=20" },
@@ -256,9 +256,16 @@ async function main() {
     let i = 0;
     for (const s of SECTIONS) {
       await prisma.homeSection.create({
-        data: { title: s.title, subtitle: s.subtitle, source: s.source, filters: s.filters ?? {}, layout: s.layout ?? "CAROUSEL", sponsored: !!s.sponsored, ctaHref: s.ctaHref, sort: i++ },
+        data: { title: s.title, subtitle: s.subtitle, source: s.source, filters: s.filters ?? {}, layout: s.layout ?? "CAROUSEL", mode: s.mode ?? "AUTO", limit: s.limit ?? 12, sponsored: !!s.sponsored, ctaHref: s.ctaHref, sort: i++ },
       });
     }
+  }
+  // Upgrade: the old "EVNT Featured" paid row becomes the editorial "Handpicked experiences" showcase
+  // (paid homepage placements still appear inside it, labelled sponsored).
+  for (const old of await prisma.homeSection.findMany({ where: { source: "SPONSORED" } })) {
+    if ((old.title as { en?: string })?.en !== "EVNT Featured") continue;
+    const h = SECTIONS.find((x) => x.source === "HANDPICKED")!;
+    await prisma.homeSection.update({ where: { id: old.id }, data: { title: h.title, subtitle: h.subtitle, source: "HANDPICKED", layout: "SPOTLIGHT", mode: "MANUAL", limit: 8, sponsored: false } });
   }
 
   // First super admin

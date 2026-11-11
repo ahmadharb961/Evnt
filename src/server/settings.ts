@@ -6,6 +6,8 @@ import type { Localized } from "@/i18n/core";
 // and is editable by super admin from /admin/settings without a deployment.
 
 export type Hero = {
+  /** VIDEO plays the looping video (poster shown while it loads); IMAGE shows only the photo. */
+  mode?: "VIDEO" | "IMAGE";
   videoUrl: string;
   videoId?: string | null;
   posterUrl: string;
@@ -44,9 +46,10 @@ export const DEFAULTS = {
   "support.whatsapp": "",
   "support.email": "hello@evnt.co",
   hero: {
-    videoUrl: "",
+    mode: "VIDEO",
+    videoUrl: "/brand/hero.mp4",
     videoId: null,
-    posterUrl: "/brand/hero-poster.svg",
+    posterUrl: "/brand/hero-poster.jpg",
     headline: { en: "Little moments. Big memories.", ar: "لحظات صغيرة. ذكريات كبيرة.", fr: "Petits moments. Grands souvenirs." },
     subline: {
       en: "Discover the best things to do, places to visit, and experiences to enjoy with your kids.",

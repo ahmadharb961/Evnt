@@ -8,12 +8,12 @@ import { Logo } from "@/components/logo";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import {
   LayoutDashboard, Store, CalendarDays, Armchair, Ticket, ScanLine, UtensilsCrossed, ShoppingBag, Package, Cake, Megaphone, BarChart3,
-  CreditCard, Receipt, Star, Users, Settings, BadgeCheck, Zap, Home, Wallet, Scale, Crown, Languages, Calculator, FileText, Bell, Mail, Circle, Radar, ShieldCheck,
+  CreditCard, Receipt, Star, Users, Settings, BadgeCheck, Zap, Home, Wallet, Scale, Crown, Languages, Calculator, FileText, Bell, Mail, Circle, Radar, ShieldCheck, ListOrdered,
 } from "lucide-react";
 
 const Icons = {
   LayoutDashboard, Store, CalendarDays, Armchair, Ticket, ScanLine, UtensilsCrossed, ShoppingBag, Package, Cake, Megaphone, BarChart3,
-  CreditCard, Receipt, Star, Users, Settings, BadgeCheck, Zap, Home, Wallet, Scale, Crown, Languages, Calculator, FileText, Bell, Mail, Circle, Radar, ShieldCheck,
+  CreditCard, Receipt, Star, Users, Settings, BadgeCheck, Zap, Home, Wallet, Scale, Crown, Languages, Calculator, FileText, Bell, Mail, Circle, Radar, ShieldCheck, ListOrdered,
 };
 
 export type NavItem = { href: string; label: string; icon: keyof typeof Icons; badge?: number };

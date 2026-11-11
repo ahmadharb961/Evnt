@@ -9,6 +9,8 @@ import { LocalizedField } from "@/components/localized-field";
 import { MediaInput } from "@/components/uploader";
 import { saveSectionAction } from "@/actions/admin";
 import { AREAS } from "@/lib/areas";
+import { resolvePickable } from "@/server/picker";
+import { OrderedPicker } from "@/components/admin/ordered-picker";
 
 export const metadata = { title: "Section" };
 
@@ -23,6 +25,7 @@ export default async function SectionEdit({ params }: { params: Promise<{ id: st
   if (id !== "new" && !s) notFound();
   const cats = await prisma.category.findMany({ where: { active: true }, orderBy: [{ parentId: "asc" }, { sort: "asc" }] });
   const f = (s?.filters ?? {}) as F;
+  const picked = await resolvePickable(s?.itemIds ?? [], locale);
   return (
     <div className="max-w-3xl">
       <PageHeader title={s ? loc(s.title, locale) : t("New section")} />
@@ -47,6 +50,7 @@ export default async function SectionEdit({ params }: { params: Promise<{ id: st
               <label className="block">
                 <span className="label">{t("Shows")}</span>
                 <select name="source" defaultValue={s?.source ?? "EVENTS"} className="input">
+                  <option value="HANDPICKED">{t("Handpicked (any mix, plus paid placements)")}</option>
                   <option value="EVENTS">{t("Activities & events")}</option>
                   <option value="RESTAURANTS">{t("Restaurants")}</option>
                   <option value="PRODUCTS">{t("Products")}</option>
@@ -58,7 +62,7 @@ export default async function SectionEdit({ params }: { params: Promise<{ id: st
                 <span className="label">{t("Selection")}</span>
                 <select name="mode" defaultValue={s?.mode ?? "AUTO"} className="input">
                   <option value="AUTO">{t("Automatic (filters)")}</option>
-                  <option value="MANUAL">{t("Hand-picked (IDs below)")}</option>
+                  <option value="MANUAL">{t("Hand-picked (list below)")}</option>
                 </select>
               </label>
               <label className="block">
@@ -66,13 +70,15 @@ export default async function SectionEdit({ params }: { params: Promise<{ id: st
                 <select name="layout" defaultValue={s?.layout ?? "CAROUSEL"} className="input">
                   <option value="CAROUSEL">{t("Carousel")}</option>
                   <option value="GRID">{t("Grid")}</option>
+                  <option value="SPOTLIGHT">{t("Spotlight (special showcase)")}</option>
                 </select>
               </label>
             </div>
-            <label className="block">
-              <span className="label">{t("Hand-picked listing IDs (comma separated, in order)")}</span>
-              <textarea name="itemIds" rows={2} defaultValue={s?.itemIds.join(", ") ?? ""} className="input font-mono text-xs" />
-            </label>
+            <div>
+              <span className="label">{t("Hand-picked items, in order")}</span>
+              <p className="mb-2 text-xs text-ink-muted">{t("Used when Selection is hand-picked. Add only items matching what the section shows; Handpicked sections accept any mix.")}</p>
+              <OrderedPicker name="itemIds" kinds={["event", "restaurant", "product"]} initial={picked} max={40} emptyText={t("No items picked yet. Search below to add.")} />
+            </div>
             <div className="grid gap-4 sm:grid-cols-3">
               <label className="block">
                 <span className="label">{t("Category")}</span>

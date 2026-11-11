@@ -19,6 +19,9 @@ import { commissionFor, withinExternalWindow } from "@/lib/commission";
 import { parseMoney } from "@/lib/money";
 import { slugify } from "@/lib/codes";
 import { localizedFromForm } from "@/i18n/core";
+import { getLocale } from "@/i18n/server";
+import { searchPickable } from "@/server/picker";
+import { PICK_KINDS, type PickItem, type PickKind } from "@/lib/picker";
 
 export type FormResult = { error?: string; message?: string } | undefined;
 
@@ -258,12 +261,15 @@ export async function saveHeroAction(_: FormResult, form: FormData): Promise<For
   return guard(["CONTENT", "ADMIN"], async (actor) => {
     const videoId = String(form.get("videoId") ?? "") || null;
     const poster = String(form.get("posterId") ?? "");
+    const videoUrl = String(form.get("videoUrl") ?? "").trim();
+    if (videoUrl && !videoUrl.startsWith("/") && !videoUrl.startsWith("https://")) throw new UserError("Links must start with / or https://");
     await setSetting(
       "hero",
       {
-        videoUrl: String(form.get("videoUrl") ?? "").trim(),
+        mode: form.get("mode") === "IMAGE" ? "IMAGE" : "VIDEO",
+        videoUrl,
         videoId,
-        posterUrl: poster ? (poster.startsWith("/") ? poster : `/media/${poster}`) : "/brand/hero-poster.svg",
+        posterUrl: poster ? (poster.startsWith("/") || poster.startsWith("https://") ? poster : `/media/${poster}`) : "/brand/hero-poster.jpg",
         headline: localizedFromForm(form, "headline"),
         subline: localizedFromForm(form, "subline"),
         ctaText: localizedFromForm(form, "cta"),
@@ -510,4 +516,29 @@ export async function markContactHandledAction(id: string) {
   return guard(["ADMIN", "CONTENT"], async () => {
     await prisma.contactMessage.update({ where: { id }, data: { handled: true } });
   }, "/admin/marketing");
+}
+
+// ───────────── Ordering & hand-picked items ─────────────
+
+export async function pickerSearchAction(kinds: PickKind[], q: string): Promise<PickItem[]> {
+  await requireAdmin("CONTENT", "ADMIN");
+  const allowed = kinds.filter((k) => PICK_KINDS.includes(k));
+  return searchPickable(allowed, String(q).slice(0, 80), await getLocale());
+}
+
+/** Saves the admin order for one kind: listed ids get rank 1..n, everything else is unpinned. */
+export async function saveRankingAction(_: FormResult, form: FormData): Promise<FormResult> {
+  return guard(["CONTENT", "ADMIN"], async (actor) => {
+    const kind = String(form.get("kind") ?? "") as PickKind;
+    if (!PICK_KINDS.includes(kind)) throw new UserError("Unknown list");
+    const ids = String(form.get("ids") ?? "").split(",").filter(Boolean).slice(0, 100);
+    type Ranked = { updateMany: (a: { where: object; data: { rank: number | null } }) => Promise<unknown> };
+    await prisma.$transaction(async (tx) => {
+      const model = { merchant: tx.merchant, event: tx.event, restaurant: tx.restaurant, product: tx.product }[kind] as unknown as Ranked;
+      await model.updateMany({ where: { rank: { not: null }, id: { notIn: ids } }, data: { rank: null } });
+      for (const [k, id] of ids.entries()) await model.updateMany({ where: { id }, data: { rank: k + 1 } });
+    });
+    await audit(actor, "ranking.saved", kind, undefined, { ids });
+    revalidatePath("/");
+  }, "/admin/ranking");
 }

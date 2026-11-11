@@ -25,6 +25,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     ...(ops ? [{ href: "/admin/users", label: t("Users"), icon: "Users" as const }] : []),
     ...(content || ops ? [{ href: "/admin/cms", label: t("Homepage & content"), icon: "Home" as const }] : []),
     ...(content || ops ? [{ href: "/admin/listings", label: t("Listings"), icon: "CalendarDays" as const }] : []),
+    ...(content || ops ? [{ href: "/admin/ranking", label: t("Ordering & priority"), icon: "ListOrdered" as const }] : []),
     ...(ops ? [{ href: "/admin/bookings", label: t("Bookings"), icon: "Ticket" as const }] : []),
     ...(ops ? [{ href: "/admin/orders", label: t("Shop orders"), icon: "ShoppingBag" as const }] : []),
     ...(ops ? [{ href: "/admin/reservations", label: t("Restaurants"), icon: "UtensilsCrossed" as const }] : []),

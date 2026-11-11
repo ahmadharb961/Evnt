@@ -37,7 +37,9 @@ afterAll(async () => {
 async function bookPayAtVenue(eventSlug: string, qty = 1) {
   const e = await prisma.event.findUniqueOrThrow({ where: { slug: eventSlug }, include: { sessions: { where: { startsAt: { gt: new Date() } }, orderBy: { startsAt: "desc" } }, ticketTypes: true } });
   await prisma.event.update({ where: { id: e.id }, data: { payAtVenue: true } });
-  const { code } = await startBooking({ userId: parent, sessionId: e.sessions[0].id, items: [{ ticketTypeId: e.ticketTypes[0].id, quantity: qty }], locale: "en" });
+  // Use a session with room left, so repeated runs on the same database don't exhaust one date.
+  const session = e.sessions.find((x) => x.capacity - x.reserved >= qty) ?? e.sessions[0];
+  const { code } = await startBooking({ userId: parent, sessionId: session.id, items: [{ ticketTypeId: e.ticketTypes[0].id, quantity: qty }], locale: "en" });
   await confirmWithoutOnlinePayment(code, parent, "PAY_AT_VENUE");
   return prisma.booking.findUniqueOrThrow({ where: { code }, include: { tickets: true, merchant: true, event: true } });
 }

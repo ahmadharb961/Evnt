@@ -19,7 +19,7 @@ export default async function CategoriesAdmin({ searchParams }: { searchParams: 
   return (
     <div className="max-w-4xl space-y-6">
       <PageHeader title={t("Categories")} subtitle={t("The 7 primary categories are fixed; names, images, order and subcategories are editable.")} />
-      <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
+      <div className="grid gap-6 grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1fr)_380px]">
         <Panel>
           <ul className="space-y-3 text-sm">
             {cats.map((c) => (

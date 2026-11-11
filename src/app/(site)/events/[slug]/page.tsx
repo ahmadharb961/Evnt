@@ -89,7 +89,7 @@ export default async function EventPage({ params, searchParams }: { params: Prom
       />
       <Gallery images={e.gallery} video={e.videoUrl} title={e.title} />
 
-      <div className="mt-6 grid gap-10 lg:grid-cols-[1fr_400px]">
+      <div className="mt-6 grid grid-cols-[minmax(0,1fr)] gap-10 lg:grid-cols-[minmax(0,1fr)_400px]">
         <div className="min-w-0">
           <div className="flex items-start justify-between gap-4">
             <div>
@@ -194,7 +194,7 @@ export default async function EventPage({ params, searchParams }: { params: Prom
           </div>
         </div>
 
-        <aside id="book" className="lg:sticky lg:top-24 lg:self-start">
+        <aside id="book" className="min-w-0 lg:sticky lg:top-24 lg:self-start">
           <div className="lg:card lg:p-6">
             <h2 className="mb-4 text-lg font-bold">{t("Book your spot")}</h2>
             <BookingPanel

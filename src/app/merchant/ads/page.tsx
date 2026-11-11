@@ -83,7 +83,7 @@ export default async function AdsPage() {
         )}
       </Panel>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
+      <div className="grid gap-6 grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1fr)_380px]">
         <Panel title={t("Placements & prices")}>
           <div className="grid gap-3 sm:grid-cols-2">
             {placements.map((p) => (

@@ -14,7 +14,7 @@ export async function generateMetadata() {
 export default async function ContactPage() {
   const [t, user, s] = await Promise.all([getT(), getCurrentUser(), getSettings(["support.whatsapp", "support.email"])]);
   return (
-    <div className="container-x grid max-w-5xl gap-10 py-10 lg:grid-cols-[1fr_380px]">
+    <div className="container-x grid max-w-5xl gap-10 py-10 grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1fr)_380px]">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">{t("Contact & support")}</h1>
         <p className="mt-2 text-ink-muted">{t("Questions about a booking, an order or your business account? We usually reply within a working day.")}</p>

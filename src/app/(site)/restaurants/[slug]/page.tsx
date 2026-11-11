@@ -74,7 +74,7 @@ export default async function RestaurantPage({ params }: { params: Promise<{ slu
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <Breadcrumbs items={[{ href: "/", label: t("Home") }, { href: "/restaurants", label: t("Restaurants") }, { label: r.name }]} />
       <Gallery images={[mediaSrc(r.coverId, r.coverUrl), ...r.gallery.map(img)]} video={r.videoUrl} title={r.name} />
-      <div className="mt-6 grid gap-10 lg:grid-cols-[1fr_380px]">
+      <div className="mt-6 grid gap-10 grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1fr)_380px]">
         <div>
           <div className="flex items-start justify-between gap-4">
             <div>

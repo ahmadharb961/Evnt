@@ -45,6 +45,9 @@ const EVENTS: {
   { m: "sunny-camp-lebanon", cat: "winter-camps", title: T("Snow Week Winter Camp", "مخيم أسبوع الثلج الشتوي", "Camp d'hiver semaine neige"), summary: T("Five days of snow play, crafts and hot chocolate in Faraya.", "خمسة أيام من اللعب بالثلج والأشغال والشوكولا الساخنة في فاريا.", "Cinq jours de neige, d'activités et de chocolat chaud à Faraya."), age: [6, 12], setting: "BOTH", prices: [{ name: T("Full week", "أسبوع كامل", "Semaine complète"), cents: 22000 }], capacity: 30, times: [[20, 9], [27, 9]] },
   { m: "sunny-camp-lebanon", cat: "after-school", title: T("After-School Football Club", "نادي كرة القدم بعد المدرسة", "Club de foot après l'école"), summary: T("Fun football sessions with certified coaches.", "حصص كرة قدم ممتعة مع مدربين معتمدين.", "Des séances de foot ludiques avec des coachs certifiés."), age: [6, 12], setting: "OUTDOOR", prices: [{ name: T("Session", "حصة", "Séance"), cents: 1200 }], capacity: 20, times: [[1, 15], [3, 15], [8, 15], [10, 15]] },
   { m: "party-lane", cat: "party-packages", title: T("Superhero Party Package", "باقة حفلة الأبطال الخارقين", "Formule fête super-héros"), summary: T("Venue, host, games, decoration and cake for up to 20 kids.", "المكان ومنشّط وألعاب وزينة وقالب حلوى لحتى 20 طفلاً.", "Salle, animateur, jeux, déco et gâteau jusqu'à 20 enfants."), age: [3, 10], setting: "INDOOR", prices: [{ name: T("Party for 20", "حفلة لـ20 طفلاً", "Fête pour 20"), cents: 45000 }], capacity: 1, times: [[6, 14], [7, 14], [13, 14], [14, 14]] },
+  { m: "sunny-camp-lebanon", cat: "outdoor-nature", title: T("Splash Day at the Water Park", "يوم المرح في المسبح المائي", "Journée glisse au parc aquatique"), summary: T("Slides, splash pools and lifeguard-supervised games for a sunny family day.", "زحاليق ومسابح وألعاب بإشراف منقذين ليوم عائلي مشمس.", "Toboggans, pataugeoires et jeux surveillés pour une journée ensoleillée en famille."), age: [4, 12], setting: "OUTDOOR", prices: [{ name: T("Child", "طفل", "Enfant"), cents: 1800 }, { name: T("Adult", "بالغ", "Adulte"), cents: 1200 }], capacity: 60, times: [[6, 10], [7, 10], [13, 10], [14, 10]] },
+  { m: "green-valley-farm", cat: "outdoor-nature", title: T("Junior Quad Ride in the Hills", "جولة دراجات رباعية للصغار في الجبل", "Balade en quad junior dans les collines"), summary: T("Kid-size quads on a safe dirt track with helmets and a trained guide.", "دراجات رباعية بحجم الأطفال على مسار آمن مع خوذات ومرشد مدرَّب.", "Des quads adaptés aux enfants sur une piste sécurisée, avec casques et guide formé."), age: [7, 12], setting: "OUTDOOR", prices: [{ name: T("30-minute ride", "جولة 30 دقيقة", "Balade de 30 minutes"), cents: 2500 }], capacity: 8, times: [[5, 15], [6, 11], [12, 15]] },
+  { m: "cedar-kids-theater", cat: "cinema", title: T("Family Movie Night Under the Stars", "سهرة سينما عائلية تحت النجوم", "Soirée cinéma en famille sous les étoiles"), summary: T("An animated classic on the big outdoor screen, with bean bags and popcorn.", "فيلم رسوم متحركة على شاشة كبيرة في الهواء الطلق مع وسائد وفشار.", "Un grand classique animé sur écran géant en plein air, poufs et pop-corn compris."), age: [3, 12], setting: "OUTDOOR", prices: [{ name: T("Bean bag spot", "مكان على وسادة", "Place sur pouf"), cents: 1000 }], capacity: 80, times: [[5, 19], [12, 19]] },
   { m: "party-lane", cat: "entertainers", title: T("Magic Show with Captain Bubbles", "عرض سحري مع الكابتن فقاعات", "Spectacle de magie avec Capitaine Bulles"), summary: T("A giant-bubble magic show at our studio every Saturday.", "عرض سحري بالفقاعات العملاقة في الاستوديو كل سبت.", "Un spectacle de bulles géantes chaque samedi."), age: [2, 9], setting: "INDOOR", prices: [{ name: T("Ticket", "تذكرة", "Billet"), cents: 1200 }], capacity: 50, times: [[5, 11], [12, 11]] },
 ];
 
@@ -64,10 +67,124 @@ const PRODUCTS: { m: string; cat: string; title: L; cents: number; sale?: number
   { m: "mini-mode", cat: "baby-essentials", title: T("Muslin Swaddle Set", "مجموعة لفّات موسلين", "Lot de langes en mousseline"), cents: 2200, variants: [["Default", 15]], age: [0, 1] },
 ];
 
+// Demo photos (public/demo/photos). First = cover, the rest = gallery.
+const P = (n: string) => `/demo/photos/${n}.webp`;
+const EVENT_PHOTOS: Record<string, string[]> = {
+  "Clay & Colour Pottery Workshop": ["painting", "cupcake-baking", "face-painting"],
+  "Junior Robotics Lab": ["science-lab", "painting"],
+  "The Lantern Fox — Family Musical": ["stage-show", "outdoor-cinema"],
+  "Morning at the Farm": ["farm-goats", "rope-course", "family-dinner"],
+  "Free Nature Story Walk": ["rope-course", "farm-goats"],
+  "Mini Bakers: Manakish & Cookies": ["cupcake-baking", "birthday-cake"],
+  "Toddler Sensory Play": ["indoor-playground", "bouncy-castle"],
+  "Snow Week Winter Camp": ["climbing-wall", "rope-course", "trampoline"],
+  "After-School Football Club": ["trampoline", "climbing-wall"],
+  "Superhero Party Package": ["birthday-cake", "bouncy-castle", "face-painting"],
+  "Magic Show with Captain Bubbles": ["face-painting", "stage-show", "bouncy-castle"],
+  "Splash Day at the Water Park": ["water-slide", "family-burger"],
+  "Junior Quad Ride in the Hills": ["quad-bikes", "rope-course"],
+  "Family Movie Night Under the Stars": ["outdoor-cinema", "stage-show"],
+};
+const RESTAURANT_PHOTOS: Record<string, string[]> = {
+  "cafe-bloom": ["rainbow-cafe", "family-burger", "indoor-playground"],
+  "the-garden-table": ["stone-courtyard-restaurant", "family-dinner", "terrace-restaurant"],
+  "seaside-family-grill": ["terrace-restaurant", "family-dinner", "family-burger"],
+};
+const CATEGORY_PHOTOS: Record<string, string> = {
+  "activities-workshops": "painting",
+  "camps-after-school": "climbing-wall",
+  "birthdays-parties": "birthday-cake",
+  "family-experiences": "farm-goats",
+  "shows-entertainment": "stage-show",
+  "restaurants-cafes": "rainbow-cafe",
+};
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
+
+type Ids = Map<string, { merchantId: string; locationId: string }>;
+async function createDemoEvent(prisma: PrismaClient, ev: (typeof EVENTS)[number], e: number, ids: Ids, cats: Map<string, { id: string }>, mapId: string | null) {
+  const now = new Date();
+  const m = ids.get(ev.m)!;
+  const cat = cats.get(ev.cat)!;
+  const created = await prisma.event.create({
+    data: {
+      merchantId: m.merchantId,
+      locationId: m.locationId,
+      categoryId: cat.id,
+      slug: slug(ev.title.en),
+      title: ev.title,
+      summary: ev.summary,
+      description: T(
+        `${ev.summary.en}\n\nSessions are small and led by friendly, experienced staff. Parents are welcome to stay.`,
+        `${ev.summary.ar}\n\nالمجموعات صغيرة ويشرف عليها فريق ودود وذو خبرة. يمكن للأهل البقاء.`,
+        `${ev.summary.fr}\n\nPetits groupes encadrés par une équipe chaleureuse et expérimentée. Les parents peuvent rester.`,
+      ),
+      included: T("All materials\nSnack and water", "جميع المواد\nوجبة خفيفة ومياه", "Tout le matériel\nGoûter et eau"),
+      importantInfo: T("Please arrive 10 minutes early.", "يرجى الحضور قبل 10 دقائق.", "Merci d'arriver 10 minutes en avance."),
+      cancellationPolicy: T(
+        "Free cancellation up to 48 hours before the session. No refunds after that.",
+        "إلغاء مجاني حتى 48 ساعة قبل الموعد. لا استرداد بعد ذلك.",
+        "Annulation gratuite jusqu'à 48 h avant la séance. Aucun remboursement ensuite.",
+      ),
+      coverUrl: cover(e),
+      ageMin: ev.age[0],
+      ageMax: ev.age[1],
+      setting: ev.setting,
+      isFree: !!ev.free,
+      fromPriceCents: Math.min(...ev.prices.map((p) => p.cents)),
+      seatingMode: ev.seating ? "ASSIGNED" : "GENERAL",
+      seatingMapId: ev.seating ? mapId : null,
+      accessible: e % 3 === 0,
+      payAtVenue: e % 2 === 0, // demo: authorized pay-at-venue on some listings
+      status: "PUBLISHED",
+      publishedAt: new Date(now.getTime() - e * 2 * 86400_000),
+      popularity: 40 - e * 3,
+      ticketTypes: { create: ev.prices.map((p, k) => ({ name: p.name, priceCents: p.cents, zone: p.zone, maxQty: ev.capacity === 1 ? 1 : 10, sort: k })) },
+    },
+  });
+  for (const [d, h] of ev.times) {
+    const startsAt = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + d, h - 2));
+    await prisma.eventSession.create({ data: { eventId: created.id, startsAt, endsAt: new Date(startsAt.getTime() + 2 * 3600_000), capacity: ev.seating ? 0 : ev.capacity } });
+  }
+}
+
+/**
+ * Adds demo activities that don't exist yet and applies the demo photos to listings, merchants,
+ * categories and the homepage hero. Safe to run on every seed.
+ */
+async function applyDemoPhotos(prisma: PrismaClient) {
+  const merchants = await prisma.merchant.findMany({ where: { slug: { in: MERCHANTS.map((m) => m.slug) } }, include: { locations: true } });
+  const ids: Ids = new Map(merchants.map((m) => [m.slug, { merchantId: m.id, locationId: m.locations[0]?.id }]));
+  const cats = new Map((await prisma.category.findMany()).map((c) => [c.slug, c]));
+  const map = await prisma.seatingMap.findFirst({ where: { merchantId: ids.get("cedar-kids-theater")?.merchantId } });
+  let added = 0;
+  for (const [e, ev] of EVENTS.entries()) {
+    if (!ids.get(ev.m) || (await prisma.event.findUnique({ where: { slug: slug(ev.title.en) } }))) continue;
+    await createDemoEvent(prisma, ev, e, ids, cats, map?.id ?? null);
+    added++;
+  }
+  for (const [title, photos] of Object.entries(EVENT_PHOTOS)) {
+    const ev = await prisma.event.findUnique({ where: { slug: slug(title) } });
+    if (!ev || ev.coverId) continue; // never overwrite a real upload
+    await prisma.event.update({ where: { id: ev.id }, data: { coverUrl: P(photos[0]) } });
+    await prisma.eventMedia.deleteMany({ where: { eventId: ev.id, mediaId: null } });
+    await prisma.eventMedia.createMany({ data: photos.slice(1).map((n, k) => ({ eventId: ev.id, url: P(n), sort: k })) });
+  }
+  for (const [s, photos] of Object.entries(RESTAURANT_PHOTOS)) {
+    await prisma.restaurant.updateMany({ where: { slug: s, coverId: null }, data: { coverUrl: P(photos[0]), gallery: photos.slice(1).map(P) } });
+  }
+  for (const [s, n] of Object.entries(CATEGORY_PHOTOS)) await prisma.category.updateMany({ where: { slug: s, imageId: null }, data: { imageUrl: P(n) } });
+  const hero = await prisma.setting.findUnique({ where: { key: "hero" } });
+  if (!hero) await prisma.setting.create({ data: { key: "hero", value: { posterUrl: "/demo/photos/hero-mosaic.jpg" } } });
+  if (added) {
+    const { reindexAll } = await import("../src/server/reindex");
+    await reindexAll(prisma);
+  }
+  console.log(`[seed] demo photos applied${added ? ` (+${added} activities)` : ""}`);
+}
+
 export async function seedDemo(prisma: PrismaClient) {
-  if (await prisma.merchant.findUnique({ where: { slug: MERCHANTS[0].slug } })) return;
+  if (await prisma.merchant.findUnique({ where: { slug: MERCHANTS[0].slug } })) return applyDemoPhotos(prisma);
   const pw = await bcrypt.hash("demo12345", 10);
   const cats = new Map((await prisma.category.findMany()).map((c) => [c.slug, c]));
   const now = new Date();
@@ -136,53 +253,7 @@ export async function seedDemo(prisma: PrismaClient) {
   }
   await prisma.seat.createMany({ data: seatData });
 
-  let e = 0;
-  for (const ev of EVENTS) {
-    const m = ids.get(ev.m)!;
-    const cat = cats.get(ev.cat)!;
-    const created = await prisma.event.create({
-      data: {
-        merchantId: m.merchantId,
-        locationId: m.locationId,
-        categoryId: cat.id,
-        slug: slug(ev.title.en),
-        title: ev.title,
-        summary: ev.summary,
-        description: T(
-          `${ev.summary.en}\n\nSessions are small and led by friendly, experienced staff. Parents are welcome to stay.`,
-          `${ev.summary.ar}\n\nالمجموعات صغيرة ويشرف عليها فريق ودود وذو خبرة. يمكن للأهل البقاء.`,
-          `${ev.summary.fr}\n\nPetits groupes encadrés par une équipe chaleureuse et expérimentée. Les parents peuvent rester.`,
-        ),
-        included: T("All materials\nSnack and water", "جميع المواد\nوجبة خفيفة ومياه", "Tout le matériel\nGoûter et eau"),
-        importantInfo: T("Please arrive 10 minutes early.", "يرجى الحضور قبل 10 دقائق.", "Merci d'arriver 10 minutes en avance."),
-        cancellationPolicy: T(
-          "Free cancellation up to 48 hours before the session. No refunds after that.",
-          "إلغاء مجاني حتى 48 ساعة قبل الموعد. لا استرداد بعد ذلك.",
-          "Annulation gratuite jusqu'à 48 h avant la séance. Aucun remboursement ensuite.",
-        ),
-        coverUrl: cover(e),
-        ageMin: ev.age[0],
-        ageMax: ev.age[1],
-        setting: ev.setting,
-        isFree: !!ev.free,
-        fromPriceCents: Math.min(...ev.prices.map((p) => p.cents)),
-        seatingMode: ev.seating ? "ASSIGNED" : "GENERAL",
-        seatingMapId: ev.seating ? map.id : null,
-        accessible: e % 3 === 0,
-        payAtVenue: e % 2 === 0, // demo: authorized pay-at-venue on some listings
-        status: "PUBLISHED",
-        publishedAt: new Date(now.getTime() - e * 2 * 86400_000),
-        popularity: 40 - e * 3,
-        media: { create: [cover(e + 3), cover(e + 7)].map((url, k) => ({ url, sort: k })) },
-        ticketTypes: { create: ev.prices.map((p, k) => ({ name: p.name, priceCents: p.cents, zone: p.zone, maxQty: ev.capacity === 1 ? 1 : 10, sort: k })) },
-      },
-    });
-    for (const [d, h] of ev.times) {
-      const startsAt = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + d, h - 2));
-      await prisma.eventSession.create({ data: { eventId: created.id, startsAt, endsAt: new Date(startsAt.getTime() + 2 * 3600_000), capacity: ev.seating ? 0 : ev.capacity } });
-    }
-    e++;
-  }
+  for (const [e, ev] of EVENTS.entries()) await createDemoEvent(prisma, ev, e, ids, cats, map.id);
 
   let r = 0;
   for (const rs of RESTAURANTS) {
@@ -234,5 +305,6 @@ export async function seedDemo(prisma: PrismaClient) {
   const { reindexAll } = await import("../src/server/reindex");
   await reindexAll(prisma);
   await prisma.user.create({ data: { email: "parent@demo.evnt.local", name: "Maya Demo", passwordHash: pw, phone: "96171000000" } });
+  await applyDemoPhotos(prisma);
   console.log("[seed] demo data loaded (no fake reviews or ratings: those come only from real bookings)");
 }

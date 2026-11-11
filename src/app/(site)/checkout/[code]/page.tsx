@@ -39,7 +39,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ code:
       </Link>
       <h1 className="mt-3 text-2xl font-bold tracking-tight sm:text-3xl">{t("Checkout")}</h1>
       <div className="mt-3">{b.holdExpiresAt && <Countdown until={b.holdExpiresAt.toISOString()} />}</div>
-      <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_380px]">
+      <div className="mt-8 grid gap-10 grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1fr)_380px]">
         <div>
           {expired ? (
             <div className="rounded-3xl bg-canvas p-6">

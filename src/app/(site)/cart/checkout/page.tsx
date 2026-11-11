@@ -18,7 +18,7 @@ export default async function ShopCheckout() {
   return (
     <div className="container-x py-6 sm:py-10">
       <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t("Delivery & payment")}</h1>
-      <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_340px]">
+      <div className="mt-6 grid gap-8 grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1fr)_340px]">
         <CheckoutForm name={user.name} phone={user.phone ?? ""} codAvailable={v.groups.every((g) => g.codEnabled)} whishAvailable={whish} total={formatMoney(v.totalCents, locale)} />
         <aside className="lg:sticky lg:top-24 lg:self-start">
           <div className="card space-y-3 p-5 text-sm">

@@ -30,7 +30,7 @@ export function RevenueSimulator({ initial }: { initial: Partial<Scenario> }) {
     </label>
   );
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
+    <div className="grid gap-6 grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1fr)_380px]">
       <div className="space-y-5 rounded-3xl border border-ink/[.06] bg-white p-6">
         <p className="text-sm font-semibold">{t("Assumptions (monthly)")}</p>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">

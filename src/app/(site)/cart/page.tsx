@@ -18,7 +18,7 @@ export default async function CartPage() {
     <div className="container-x py-6 sm:py-10">
       <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t("Your cart")}</h1>
       {v.problems.length > 0 && <p className="mt-4 rounded-2xl bg-peach-soft p-3 text-sm text-peach-deep">{t("These items are no longer available and won't be ordered: {list}", { list: v.problems.join(", ") })}</p>}
-      <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_360px]">
+      <div className="mt-6 grid gap-8 grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-5">
           {v.groups.map((g) => (
             <section key={g.merchantId} className="card p-5">

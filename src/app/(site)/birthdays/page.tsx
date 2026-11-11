@@ -34,7 +34,7 @@ export default async function BirthdaysPage() {
   return (
     <>
       <section className="bg-gradient-to-b from-blush-soft to-white">
-        <div className="container-x grid gap-10 py-10 sm:py-16 lg:grid-cols-[1fr_440px]">
+        <div className="container-x grid gap-10 py-10 sm:py-16 grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1fr)_440px]">
           <div>
             <PartyPopper className="h-9 w-9 text-blush-deep" />
             <h1 className="mt-4 text-4xl font-extrabold tracking-tight sm:text-5xl">{t("Plan a birthday they'll never forget")}</h1>

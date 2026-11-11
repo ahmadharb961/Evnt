@@ -49,7 +49,7 @@ export default async function MerchantHome({ searchParams }: { searchParams: Pro
         <Stat label={k.commissionPayableCents ? t("Commission payable") : t("Payout due to you")} value={money(k.commissionPayableCents || k.payoutDueCents)} />
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_360px]">
+      <div className="mt-6 grid gap-6 grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1fr)_360px]">
         <Panel title={t("Latest bookings")} actions={<Link href="/merchant/bookings" className="text-sm font-semibold">{t("See all")}</Link>}>
           {recent.length ? (
             <ul className="divide-y divide-ink/[.06]">

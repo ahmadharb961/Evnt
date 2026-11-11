@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { BillingInterval, CommissionCategory, MerchantStatus, PlanCode, Role } from "@prisma/client";
@@ -34,6 +34,7 @@ async function guard<T>(roles: Role[], fn: (actorId: string) => Promise<T>, path
     throw e;
   }
   if (path) revalidatePath(path);
+  revalidateTag("home"); // any admin change shows on the homepage straight away
   return { message: "Saved" };
 }
 const audit = (actorId: string, action: string, entityType: string, entityId?: string, data?: object) => prisma.auditLog.create({ data: { actorId, action, entityType, entityId, data } });
@@ -543,5 +544,6 @@ export async function saveRankingAction(_: FormResult, form: FormData): Promise<
     });
     await audit(actor, "ranking.saved", kind, undefined, { ids });
     revalidatePath("/");
+    revalidateTag("home");
   }, "/admin/ranking");
 }

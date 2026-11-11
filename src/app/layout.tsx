@@ -10,6 +10,8 @@ import { dictFor, getLocale } from "@/i18n/server";
 import { dirOf } from "@/i18n/core";
 import { appUrl } from "@/server/urls";
 import { InstallPrompt } from "@/components/install-prompt";
+import { NavProgress } from "@/components/nav-progress";
+import { Suspense } from "react";
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
@@ -49,6 +51,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <I18nProvider locale={locale} dict={dict}>
           {children}
           <InstallPrompt />
+          <Suspense fallback={null}>
+            <NavProgress />
+          </Suspense>
         </I18nProvider>
       </body>
     </html>

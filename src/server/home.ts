@@ -1,4 +1,5 @@
 import "server-only";
+import { unstable_cache } from "next/cache";
 import type { HomeSection } from "@prisma/client";
 import { prisma } from "./db";
 import { searchEvents, searchProducts, searchRestaurants, type EventFilters } from "./listings";
@@ -15,6 +16,8 @@ export type ResolvedSection = {
   ctaHref: string | null;
   sponsored: boolean;
   items: CardData[];
+  /** Paid campaigns shown in this section: one impression is counted per page view. */
+  campaignIds: string[];
 };
 
 type SectionFilters = {
@@ -54,6 +57,7 @@ export async function resolveSection(s: HomeSection, locale: Locale): Promise<Re
   const f = (s.filters ?? {}) as SectionFilters;
   const manual = s.mode === "MANUAL" && s.itemIds?.length ? s.itemIds : undefined;
   let items: CardData[] = [];
+  let campaignIds: string[] = [];
   if (s.source === "EVENTS") {
     items = (
       await searchEvents(
@@ -97,11 +101,11 @@ export async function resolveSection(s: HomeSection, locale: Locale): Promise<Re
     // A listing that is both picked and paid appears once, with its sponsored label.
     const paidIds = new Set(paid.map((p) => p.id));
     items = [...items.filter((i) => !paidIds.has(i.id)).slice(0, Math.max(s.limit, picked.length)), ...paid];
-    if (camps.length) await prisma.adCampaign.updateMany({ where: { id: { in: camps.map((c) => c.id) } }, data: { impressions: { increment: 1 } } });
+    campaignIds = camps.map((c) => c.id);
   } else if (s.source === "SPONSORED") {
     const camps = await liveCampaigns("HOMEPAGE_FEATURED");
     items = await sponsoredItems(camps, locale);
-    if (camps.length) await prisma.adCampaign.updateMany({ where: { id: { in: camps.map((c) => c.id) } }, data: { impressions: { increment: 1 } } });
+    campaignIds = camps.map((c) => c.id);
   }
   if (s.sponsored) items = items.map((i) => ({ ...i, sponsored: true }));
   return {
@@ -114,6 +118,7 @@ export async function resolveSection(s: HomeSection, locale: Locale): Promise<Re
     ctaHref: s.ctaHref,
     sponsored: s.sponsored,
     items,
+    campaignIds,
   };
 }
 
@@ -134,4 +139,27 @@ export async function favoriteIds(userId: string | null | undefined): Promise<Se
   if (!userId) return new Set();
   const rows = await prisma.favorite.findMany({ where: { userId }, select: { targetId: true } });
   return new Set(rows.map((r) => r.targetId));
+}
+
+/**
+ * Everything on the homepage that is the same for every visitor (categories and sections), kept for 30 seconds
+ * so the page opens fast. Admin changes clear it straight away (tag "home"). Booking and checkout always check live.
+ */
+export const homeContent = unstable_cache(
+  async (locale: Locale) => {
+    const [cats, sections] = await Promise.all([
+      prisma.category.findMany({ where: { parentId: null, active: true }, orderBy: { sort: "asc" }, select: { slug: true, name: true, imageId: true, imageUrl: true } }),
+      activeSections(),
+    ]);
+    const resolved = await Promise.all(sections.map((s) => resolveSection(s, locale)));
+    return { cats, sections: resolved };
+  },
+  ["home-content-v1"],
+  { revalidate: 30, tags: ["home"] },
+);
+
+/** Counts one view for each paid campaign shown, without slowing the page down. */
+export async function countImpressions(ids: string[]) {
+  const unique = [...new Set(ids)];
+  if (unique.length) await prisma.adCampaign.updateMany({ where: { id: { in: unique } }, data: { impressions: { increment: 1 } } });
 }

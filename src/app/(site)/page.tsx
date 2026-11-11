@@ -4,11 +4,11 @@ import { Hero } from "@/components/home/hero";
 import { CategoryTiles } from "@/components/home/category-tiles";
 import { SectionRow } from "@/components/home/section-row";
 import { Spotlight } from "@/components/home/spotlight";
-import { activeSections, favoriteIds, resolveSection } from "@/server/home";
+import { countImpressions, favoriteIds, homeContent } from "@/server/home";
+import { after } from "next/server";
 import { recommendedEvents } from "@/server/recommend";
 import { getSetting } from "@/server/settings";
 import { getCurrentUser } from "@/server/auth";
-import { prisma } from "@/server/db";
 import { mediaSrc } from "@/server/media";
 import { getLocale, getT } from "@/i18n/server";
 import { loc } from "@/i18n/core";
@@ -27,13 +27,12 @@ export async function generateMetadata() {
 
 export default async function HomePage() {
   const [locale, t, user, hero] = await Promise.all([getLocale(), getT(), getCurrentUser(), getSetting("hero")]);
-  const [cats, sections, saved, forYou] = await Promise.all([
-    prisma.category.findMany({ where: { parentId: null, active: true }, orderBy: { sort: "asc" } }),
-    activeSections(),
+  const [{ cats, sections: resolved }, saved, forYou] = await Promise.all([
+    homeContent(locale),
     favoriteIds(user?.id),
     user ? recommendedEvents(user.id, locale, 12) : Promise.resolve([]),
   ]);
-  const resolved = await Promise.all(sections.map((s) => resolveSection(s, locale)));
+  after(() => countImpressions(resolved.flatMap((s) => s.campaignIds)).catch(() => {}));
 
   return (
     <>

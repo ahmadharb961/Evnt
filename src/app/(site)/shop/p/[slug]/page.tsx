@@ -62,7 +62,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       <Breadcrumbs items={[{ href: "/shop", label: t("Shop") }, { href: `/shop/c/${p.category.slug}`, label: loc(p.category.name, locale) }]} />
       <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
         <div>
-          <Gallery images={p.images.map(img)} title={title} />
+          <Gallery images={p.images.map(img)} title={title} variant="product" />
         </div>
         <div>
           <Link href={`/m/${p.merchant.slug}`} className="text-sm text-ink-muted hover:text-ink">

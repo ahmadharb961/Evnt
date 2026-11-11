@@ -67,6 +67,50 @@ const PRODUCTS: { m: string; cat: string; title: L; cents: number; sale?: number
   { m: "mini-mode", cat: "baby-essentials", title: T("Muslin Swaddle Set", "مجموعة لفّات موسلين", "Lot de langes en mousseline"), cents: 2200, variants: [["Default", 15]], age: [0, 1] },
 ];
 
+// Real toy photos for the demo shop (public/demo/toys). Added on every demo seed if missing.
+const TOYS: { cat: string; title: L; description: L; cents: number; sale?: number; image: string; variants: [string, number][]; age: [number, number] }[] = [
+  {
+    cat: "learning-creativity",
+    title: T("Interactive Activity House with Shape Sorter", "بيت النشاطات التفاعلي مع فرز الأشكال", "Maison d'activités interactive avec trieur de formes"),
+    description: T(
+      "A busy little house full of lights, songs and surprises: press the buttons to learn letters, fruits, shapes and music, slide the bead maze, and drop the six shapes down the stairs. Great for fine motor skills.",
+      "بيت صغير مليء بالأضواء والأغاني والمفاجآت: اضغطوا الأزرار لتعلّم الحروف والفواكه والأشكال والموسيقى، حرّكوا متاهة الخرز، وأسقطوا الأشكال الستة على الدرج. ممتاز لتنمية المهارات الحركية الدقيقة.",
+      "Une petite maison pleine de lumières, de chansons et de surprises : appuyez sur les boutons pour apprendre les lettres, les fruits, les formes et la musique, faites glisser les perles et lancez les six formes dans l'escalier. Idéal pour la motricité fine.",
+    ),
+    cents: 6900,
+    sale: 5900,
+    image: "/demo/toys/activity-house.webp",
+    variants: [["Default", 9]],
+    age: [1, 4],
+  },
+  {
+    cat: "toys-games",
+    title: T("Deluxe Castle Playset with Figure", "مجموعة القلعة الفاخرة مع مجسّم", "Coffret château deluxe avec figurine"),
+    description: T(
+      "A detailed grey stone castle with towers, glowing windows and a balcony, plus a figure, a grand piano, a bonsai tree and little accessories for endless stories.",
+      "قلعة حجرية رمادية مفصّلة بأبراج ونوافذ مضيئة وشرفة، مع مجسّم وبيانو كبير وشجرة بونساي وإكسسوارات صغيرة لقصص لا تنتهي.",
+      "Un château en pierre grise très détaillé avec tours, fenêtres lumineuses et balcon, plus une figurine, un piano à queue, un bonsaï et de petits accessoires pour des histoires sans fin.",
+    ),
+    cents: 8900,
+    image: "/demo/toys/castle-playset.webp",
+    variants: [["Default", 4]],
+    age: [4, 10],
+  },
+  {
+    cat: "toys-games",
+    title: T("Kids Workbench Work-Station", "طاولة عمل للأطفال", "Établi pour enfants Work-Station"),
+    description: T(
+      "A sturdy, child-height workbench with a tool wall, vice, hammer, saw, screwdriver, wrench and screws. Little builders can fix, tighten and tidy just like grown-ups.",
+      "طاولة عمل متينة بارتفاع مناسب للأطفال مع لوحة أدوات وملزمة ومطرقة ومنشار ومفك ومفتاح وبراغٍ. يصلّح البنّاؤون الصغار ويشدّون ويرتّبون تماماً مثل الكبار.",
+      "Un établi solide à hauteur d'enfant avec panneau à outils, étau, marteau, scie, tournevis, clé et vis. Les petits bricoleurs réparent, serrent et rangent comme les grands.",
+    ),
+    cents: 9900,
+    image: "/demo/toys/kids-workbench.webp",
+    variants: [["Default", 6]],
+    age: [3, 8],
+  },
+];
+
 // Demo photos (public/demo/photos). First = cover, the rest = gallery.
 const P = (n: string) => `/demo/photos/${n}.webp`;
 const EVENT_PHOTOS: Record<string, string[]> = {
@@ -176,6 +220,35 @@ async function applyDemoPhotos(prisma: PrismaClient) {
     await prisma.restaurant.updateMany({ where: { slug: s, coverId: null }, data: { coverUrl: P(photos[0]), gallery: photos.slice(1).map(P) } });
   }
   for (const [s, n] of Object.entries(CATEGORY_PHOTOS)) await prisma.category.updateMany({ where: { slug: s, imageId: null }, data: { imageUrl: P(n) } });
+  const shop = ids.get("toybox-beirut");
+  for (const toy of shop ? TOYS : []) {
+    const sl = slug(toy.title.en);
+    const existing = await prisma.product.findUnique({ where: { slug: sl } });
+    if (existing) {
+      // Refresh the demo photo unless a real upload replaced it.
+      if (existing.images[0]?.startsWith("/demo/")) await prisma.product.update({ where: { id: existing.id }, data: { images: [toy.image] } });
+      continue;
+    }
+    await prisma.product.create({
+      data: {
+        merchantId: shop!.merchantId,
+        categoryId: cats.get(toy.cat)!.id,
+        slug: sl,
+        title: toy.title,
+        description: toy.description,
+        deliveryInfo: T("Delivery across Lebanon in 1–3 working days.", "توصيل إلى كل لبنان خلال 1–3 أيام عمل.", "Livraison partout au Liban en 1 à 3 jours ouvrés."),
+        images: [toy.image],
+        priceCents: toy.cents,
+        salePriceCents: toy.sale ?? null,
+        ageMin: toy.age[0],
+        ageMax: toy.age[1],
+        status: "PUBLISHED",
+        popularity: 12,
+        variants: { create: toy.variants.map(([name, stock]) => ({ name, stock })) },
+      },
+    });
+    added++;
+  }
   // The hero uses the brand video by default; drop the old demo-only photo override if it was never edited.
   const hero = await prisma.setting.findUnique({ where: { key: "hero" } });
   const hv = hero?.value as Record<string, unknown> | undefined;
@@ -195,7 +268,7 @@ async function applyDemoPhotos(prisma: PrismaClient) {
     const { reindexAll } = await import("../src/server/reindex");
     await reindexAll(prisma);
   }
-  console.log(`[seed] demo photos applied${added ? ` (+${added} activities)` : ""}`);
+  console.log(`[seed] demo photos applied${added ? ` (+${added} listings)` : ""}`);
 }
 
 export async function seedDemo(prisma: PrismaClient) {

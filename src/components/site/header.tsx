@@ -3,7 +3,7 @@ import { Heart, ShoppingBag, User } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { SearchBox } from "@/components/site/search-box";
-import { NavLinks } from "@/components/site/nav-links";
+import { NavLinks, MobileSearchRow } from "@/components/site/nav-links";
 import { getCurrentUser } from "@/server/auth";
 import { cartCount } from "@/server/cart";
 import { getT } from "@/i18n/server";
@@ -51,9 +51,7 @@ export async function SiteHeader() {
           </Link>
         </div>
       </div>
-      <div className="container-x pb-3 md:hidden">
-        <SearchBox compact />
-      </div>
+      <MobileSearchRow />
     </header>
   );
 }

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { SearchBox } from "@/components/site/search-box";
 
 export function NavLinks({ items }: { items: { href: string; label: string }[] }) {
   const path = usePathname();
@@ -20,5 +21,16 @@ export function NavLinks({ items }: { items: { href: string; label: string }[] }
         );
       })}
     </nav>
+  );
+}
+
+/** Mobile search under the header, except on pages that have their own big search (home). */
+export function MobileSearchRow() {
+  const path = usePathname();
+  if (path === "/" || path === "/discover") return null;
+  return (
+    <div className="container-x pb-3 md:hidden">
+      <SearchBox compact />
+    </div>
   );
 }

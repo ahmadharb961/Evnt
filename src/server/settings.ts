@@ -11,6 +11,8 @@ export type Hero = {
   videoUrl: string;
   videoId?: string | null;
   posterUrl: string;
+  /** The still photo used when mode is IMAGE. */
+  photoUrl?: string;
   headline: Localized;
   subline: Localized;
   ctaText: Localized;
@@ -50,6 +52,7 @@ export const DEFAULTS = {
     videoUrl: "/brand/hero.mp4",
     videoId: null,
     posterUrl: "/brand/hero-poster.jpg",
+    photoUrl: "/brand/family.webp",
     headline: { en: "Little moments. Big memories.", ar: "لحظات صغيرة. ذكريات كبيرة.", fr: "Petits moments. Grands souvenirs." },
     subline: {
       en: "Discover the best things to do, places to visit, and experiences to enjoy with your kids.",

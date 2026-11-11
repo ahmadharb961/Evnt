@@ -34,4 +34,6 @@ export const B6: [string, string, string][] = [
   ["Activity", "نشاط", "Activité"],
   ["Restaurant", "مطعم", "Restaurant"],
   ["Product", "منتج", "Produit"],
+  ["Banner photo (Photo banner)", "صورة البانر (بانر بصورة)", "Photo de la bannière (bannière photo)"],
+  ["Video loading image", "صورة تحميل الفيديو", "Image de chargement de la vidéo"],
 ];

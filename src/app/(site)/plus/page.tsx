@@ -32,14 +32,17 @@ export default async function PlusPage() {
   ];
   return (
     <div>
-      <section className="bg-gradient-to-br from-powder via-blush-soft to-peach-soft">
-        <div className="container-x py-14 text-center sm:py-20">
+      <section className="relative isolate overflow-hidden">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/brand/family.webp" alt="" className="absolute inset-0 -z-10 h-full w-full object-cover object-[50%_30%]" />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-black/40 via-black/45 to-black/65" />
+        <div className="container-x py-16 text-center text-white sm:py-28">
           <Crown className="mx-auto h-10 w-10" />
           <h1 className="mt-4 text-5xl font-extrabold tracking-tight">EVNT+</h1>
-          <p className="mx-auto mt-3 max-w-lg text-lg text-ink-soft">{t("More moments, fewer fees. The membership for busy Lebanese families.")}</p>
+          <p className="mx-auto mt-3 max-w-lg text-lg text-white/90">{t("More moments, fewer fees. The membership for busy Lebanese families.")}</p>
         </div>
       </section>
-      <div className="container-x -mt-10">
+      <div className="container-x relative -mt-10">
         {active && m ? (
           <div className="mx-auto max-w-md rounded-4xl bg-ink p-7 text-white shadow-lift">
             <p className="text-xs uppercase tracking-[.3em] text-white/60">EVNT+ {t("member")}</p>

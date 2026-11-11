@@ -39,7 +39,7 @@ export default async function HomePage() {
     <>
       <Hero
         videoSrc={hero.mode === "IMAGE" ? null : hero.videoId ? `/media/${hero.videoId}` : hero.videoUrl || null}
-        poster={hero.posterUrl || "/brand/hero-poster.jpg"}
+        poster={hero.mode === "IMAGE" ? hero.photoUrl || "/brand/family.webp" : hero.posterUrl || "/brand/hero-poster.jpg"}
         headline={loc(hero.headline, locale)}
         subline={loc(hero.subline, locale)}
         ctaText={loc(hero.ctaText, locale)}

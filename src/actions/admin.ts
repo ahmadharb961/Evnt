@@ -261,6 +261,8 @@ export async function saveHeroAction(_: FormResult, form: FormData): Promise<For
   return guard(["CONTENT", "ADMIN"], async (actor) => {
     const videoId = String(form.get("videoId") ?? "") || null;
     const poster = String(form.get("posterId") ?? "");
+    const photo = String(form.get("photoId") ?? "");
+    const asUrl = (v: string, fallback: string) => (v ? (v.startsWith("/") || v.startsWith("https://") ? v : `/media/${v}`) : fallback);
     const videoUrl = String(form.get("videoUrl") ?? "").trim();
     if (videoUrl && !videoUrl.startsWith("/") && !videoUrl.startsWith("https://")) throw new UserError("Links must start with / or https://");
     await setSetting(
@@ -269,7 +271,8 @@ export async function saveHeroAction(_: FormResult, form: FormData): Promise<For
         mode: form.get("mode") === "IMAGE" ? "IMAGE" : "VIDEO",
         videoUrl,
         videoId,
-        posterUrl: poster ? (poster.startsWith("/") || poster.startsWith("https://") ? poster : `/media/${poster}`) : "/brand/hero-poster.jpg",
+        posterUrl: asUrl(poster, "/brand/hero-poster.jpg"),
+        photoUrl: asUrl(photo, "/brand/family.webp"),
         headline: localizedFromForm(form, "headline"),
         subline: localizedFromForm(form, "subline"),
         ctaText: localizedFromForm(form, "cta"),

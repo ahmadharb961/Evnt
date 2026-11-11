@@ -17,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description: "Discover, book and enjoy the best kids' activities, birthdays, family restaurants and shopping in Lebanon.",
     applicationName: "EVNT",
     icons: { icon: "/brand/icon.svg" },
-    openGraph: { siteName: "EVNT", type: "website", images: ["/brand/og.png"] },
+    openGraph: { siteName: "EVNT", type: "website", images: [{ url: "/brand/og-family.jpg", width: 1200, height: 630 }] },
   };
 }
 

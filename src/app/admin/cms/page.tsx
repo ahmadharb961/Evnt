@@ -84,9 +84,10 @@ export default async function CmsPage() {
               ))}
             </div>
           </fieldset>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <MediaInput name="posterId" initial={hero.posterUrl} aspect="aspect-video" label={t("Banner photo (also the video's loading image)")} />
+          <div className="grid gap-4 sm:grid-cols-3">
+            <MediaInput name="photoId" initial={hero.photoUrl} aspect="aspect-video" label={t("Banner photo (Photo banner)")} />
             <MediaInput name="videoId" kind="video" initial={hero.videoId} aspect="aspect-video" label={t("Upload a video (MP4, under 35 MB, 10–20s loop)")} />
+            <MediaInput name="posterId" initial={hero.posterUrl} aspect="aspect-video" label={t("Video loading image")} />
           </div>
           <label className="block">
             <span className="label">{t("…or a video link")}</span>

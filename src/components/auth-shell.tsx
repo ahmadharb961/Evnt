@@ -1,6 +1,8 @@
 export function AuthShell({ title, subtitle, children, footer }: { title: string; subtitle?: string; children: React.ReactNode; footer?: React.ReactNode }) {
   return (
-    <div className="container-x flex min-h-[70vh] items-start justify-center py-10 sm:items-center">
+    <div className="container-x flex min-h-[70vh] items-start justify-center gap-12 py-10 sm:items-center">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/brand/family.webp" alt="" className="hidden aspect-[4/5] w-[44%] max-w-[520px] rounded-[2rem] object-cover shadow-lift lg:block" />
       <div className="w-full max-w-md">
         <div className="mb-6">
           <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{title}</h1>

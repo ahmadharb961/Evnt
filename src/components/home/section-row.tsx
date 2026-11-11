@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ScrollRow } from "@/components/scroll-row";
 import { ArrowRight } from "lucide-react";
 import { EventCard, ProductCard, RestaurantCard } from "@/components/cards";
 import type { CardData } from "@/lib/types";
@@ -74,11 +75,11 @@ export function SectionRow({
           <CardGrid items={items} t={t} locale={locale} saved={saved} />
         )
       ) : (
-        <div className="scroll-row">
+        <ScrollRow>
           {items.map((i) => (
             <Card key={i.kind + i.id} i={i} t={t} locale={locale} saved={saved} />
           ))}
-        </div>
+        </ScrollRow>
       )}
     </section>
   );

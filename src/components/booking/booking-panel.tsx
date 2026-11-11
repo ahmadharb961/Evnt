@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
+import { ScrollRow } from "@/components/scroll-row";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Minus, Plus, Loader2, Crown, CalendarX } from "lucide-react";
@@ -98,7 +99,7 @@ export function BookingPanel({
     <div className="space-y-6">
       <div>
         <p className="mb-2 text-sm font-semibold">{t("1. Choose a date")}</p>
-        <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+        <ScrollRow compact>
           {sessions.map((s) => {
             const d = new Date(s.startsAt);
             const soldOut = s.remaining <= 0;
@@ -134,7 +135,7 @@ export function BookingPanel({
               </button>
             );
           })}
-        </div>
+        </ScrollRow>
         {sessions.some((s) => s.reason === "members_only") && !isMember && (
           <Link href="/plus" className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-powder-deep">
             <Crown className="h-3.5 w-3.5" />

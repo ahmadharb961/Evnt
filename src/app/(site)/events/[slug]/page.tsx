@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { ScrollRow } from "@/components/scroll-row";
 import Link from "next/link";
 import { MapPin, Users, Sun, Home, Accessibility, MessageCircle, Clock, Zap } from "lucide-react";
 import { loadEventPage } from "@/server/event-page";
@@ -214,11 +215,11 @@ export default async function EventPage({ params, searchParams }: { params: Prom
       {related.items.length > 0 && (
         <section className="mt-16">
           <h2 className="h-section mb-4">{t("You might also like")}</h2>
-          <div className="scroll-row">
+          <ScrollRow>
             {related.items.map((r) => (
               <EventCard key={r.id} e={r} t={t} locale={locale} saved={saved.has(r.id)} />
             ))}
-          </div>
+          </ScrollRow>
         </section>
       )}
     </div>

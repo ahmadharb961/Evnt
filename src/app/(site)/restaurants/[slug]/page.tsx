@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { ScrollRow } from "@/components/scroll-row";
 import Link from "next/link";
 import { MapPin, MessageCircle, Phone, Clock } from "lucide-react";
 import { prisma } from "@/server/db";
@@ -166,11 +167,11 @@ export default async function RestaurantPage({ params }: { params: Promise<{ slu
       {nearby.items.length > 0 && (
         <section className="mt-16">
           <h2 className="h-section mb-4">{t("More family spots nearby")}</h2>
-          <div className="scroll-row">
+          <ScrollRow>
             {nearby.items.map((x) => (
               <RestaurantCard key={x.id} r={x} t={t} saved={saved.has(x.id)} />
             ))}
-          </div>
+          </ScrollRow>
         </section>
       )}
       <Link href="/restaurants" className="sr-only">

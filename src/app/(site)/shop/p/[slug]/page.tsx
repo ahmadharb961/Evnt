@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { ScrollRow } from "@/components/scroll-row";
 import Link from "next/link";
 import { Truck, Banknote } from "lucide-react";
 import { prisma } from "@/server/db";
@@ -110,11 +111,11 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       {related.items.length > 0 && (
         <section className="mt-14">
           <h2 className="h-section mb-4">{t("You might also like")}</h2>
-          <div className="scroll-row">
+          <ScrollRow>
             {related.items.map((r) => (
               <ProductCard key={r.id} p={r} t={t} locale={locale} saved={saved.has(r.id)} />
             ))}
-          </div>
+          </ScrollRow>
         </section>
       )}
     </div>

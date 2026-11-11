@@ -40,8 +40,8 @@ export function FarahBadge({ t, small = false }: { t: T; small?: boolean }) {
 export function EventCard({ e, t, locale, saved, wide = false }: { e: EventCardData; t: T; locale: Locale; saved?: boolean; wide?: boolean }) {
   const href = `/events/${e.slug}${e.sponsored ? "?src=sponsored" : ""}`;
   return (
-    <Link href={href} className={`group block ${wide ? "" : "w-[78vw] max-w-[300px] shrink-0 snap-start sm:w-[280px]"}`}>
-      <div className="relative aspect-[4/3] overflow-hidden rounded-3xl bg-powder-soft">
+    <Link href={href} className={`group flex flex-col overflow-hidden rounded-3xl border border-ink/[.07] bg-white shadow-card transition duration-300 hover:shadow-lift ${wide ? "" : "w-[78vw] max-w-[300px] shrink-0 snap-start sm:w-[280px]"}`}>
+      <div className="relative aspect-[4/3] overflow-hidden bg-powder-soft">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={e.image} alt="" loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]" />
         <div className="absolute inset-x-3 top-3 flex items-start justify-between gap-2">
@@ -55,7 +55,7 @@ export function EventCard({ e, t, locale, saved, wide = false }: { e: EventCardD
           <FavoriteButton type="event" id={e.id} saved={saved} />
         </div>
       </div>
-      <div className="px-1 pt-3">
+      <div className="flex flex-1 flex-col p-4">
         <div className="flex items-center justify-between gap-2 text-xs text-ink-muted">
           <span className="truncate">{e.categoryName}</span>
           <Rating value={e.rating} count={e.ratingCount} t={t} />
@@ -76,10 +76,10 @@ export function EventCard({ e, t, locale, saved, wide = false }: { e: EventCardD
             </span>
           )}
         </div>
-        <div className="mt-2 flex items-center justify-between">
+        <div className="mt-auto pt-3"><div className="flex items-center justify-between border-t border-ink/[.06] pt-3">
           <span className="rounded-full bg-powder-soft px-2.5 py-1 text-[11px] font-medium text-powder-deep">{ageLabel(t, e.ageMin, e.ageMax)}</span>
           <span className="text-sm font-bold">{e.isFree ? t("Free") : t("From {price}", { price: formatMoney(e.fromPriceCents, locale) })}</span>
-        </div>
+        </div></div>
       </div>
     </Link>
   );
@@ -99,8 +99,8 @@ export const facilityLabel = (t: T, k: string) => t(FACILITY_LABEL[k] ?? k);
 
 export function RestaurantCard({ r, t, saved, wide = false }: { r: RestaurantCardData; t: T; saved?: boolean; wide?: boolean }) {
   return (
-    <Link href={`/restaurants/${r.slug}`} className={`group block ${wide ? "" : "w-[78vw] max-w-[300px] shrink-0 snap-start sm:w-[280px]"}`}>
-      <div className="relative aspect-[4/3] overflow-hidden rounded-3xl bg-mint-soft">
+    <Link href={`/restaurants/${r.slug}`} className={`group flex flex-col overflow-hidden rounded-3xl border border-ink/[.07] bg-white shadow-card transition duration-300 hover:shadow-lift ${wide ? "" : "w-[78vw] max-w-[300px] shrink-0 snap-start sm:w-[280px]"}`}>
+      <div className="relative aspect-[4/3] overflow-hidden bg-mint-soft">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={r.image} alt="" loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]" />
         <div className="absolute inset-x-3 top-3 flex items-start justify-between">
@@ -111,7 +111,7 @@ export function RestaurantCard({ r, t, saved, wide = false }: { r: RestaurantCar
           <FavoriteButton type="restaurant" id={r.id} saved={saved} />
         </div>
       </div>
-      <div className="px-1 pt-3">
+      <div className="flex flex-1 flex-col p-4">
         <div className="flex items-center justify-between gap-2 text-xs text-ink-muted">
           <span className="truncate">
             {r.cuisines.join(" · ")} · {"$".repeat(r.priceLevel)}
@@ -123,7 +123,7 @@ export function RestaurantCard({ r, t, saved, wide = false }: { r: RestaurantCar
           <MapPin className="h-3.5 w-3.5" />
           {r.areaName}
         </p>
-        <div className="mt-2 flex flex-wrap gap-1.5">
+        <div className="mt-auto flex flex-wrap gap-1.5 pt-3">
           {r.facilities.slice(0, 3).map((f) => (
             <span key={f} className="rounded-full bg-mint-soft px-2.5 py-1 text-[11px] font-medium text-mint-deep">
               {facilityLabel(t, f)}
@@ -137,8 +137,8 @@ export function RestaurantCard({ r, t, saved, wide = false }: { r: RestaurantCar
 
 export function ProductCard({ p, t, locale, saved, wide = false }: { p: ProductCardData; t: T; locale: Locale; saved?: boolean; wide?: boolean }) {
   return (
-    <Link href={`/shop/p/${p.slug}`} className={`group block ${wide ? "" : "w-[44vw] max-w-[220px] shrink-0 snap-start sm:w-[220px]"}`}>
-      <div className="relative aspect-square overflow-hidden rounded-3xl bg-blush-soft">
+    <Link href={`/shop/p/${p.slug}`} className={`group flex flex-col overflow-hidden rounded-3xl border border-ink/[.07] bg-white shadow-card transition duration-300 hover:shadow-lift ${wide ? "" : "w-[44vw] max-w-[220px] shrink-0 snap-start sm:w-[220px]"}`}>
+      <div className="relative aspect-square overflow-hidden bg-blush-soft">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={p.image} alt="" loading="lazy" className={`h-full w-full object-cover transition duration-500 group-hover:scale-[1.03] ${p.inStock ? "" : "opacity-60"}`} />
         <div className="absolute inset-x-2.5 top-2.5 flex items-start justify-between">
@@ -150,10 +150,10 @@ export function ProductCard({ p, t, locale, saved, wide = false }: { p: ProductC
           <FavoriteButton type="product" id={p.id} saved={saved} />
         </div>
       </div>
-      <div className="px-1 pt-2.5">
+      <div className="flex flex-1 flex-col p-3 sm:p-3.5">
         <p className="truncate text-xs text-ink-muted">{p.merchantName}</p>
         <h3 className="mt-0.5 line-clamp-2 text-sm font-semibold leading-snug">{p.title}</h3>
-        <div className="mt-1 flex items-baseline gap-2">
+        <div className="mt-auto flex items-baseline gap-2 pt-2">
           <span className="text-sm font-bold">{formatMoney(p.salePriceCents ?? p.priceCents, locale)}</span>
           {p.salePriceCents != null && <span className="text-xs text-ink-muted line-through">{formatMoney(p.priceCents, locale)}</span>}
         </div>

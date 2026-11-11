@@ -66,7 +66,7 @@ html[lang="ar"] body {
     @apply text-xl font-bold tracking-tight sm:text-2xl;
   }
   .scroll-row {
-    @apply -mx-4 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:scroll-px-6 sm:px-6 lg:-mx-8 lg:scroll-px-8 lg:px-8;
+    @apply -mx-4 -my-3 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 py-3 sm:-mx-6 sm:scroll-px-6 sm:px-6 lg:-mx-8 lg:scroll-px-8 lg:px-8;
     scrollbar-width: none;
   }
   .scroll-row::-webkit-scrollbar {

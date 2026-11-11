@@ -169,6 +169,7 @@ export async function seedDemo(prisma: PrismaClient) {
         seatingMode: ev.seating ? "ASSIGNED" : "GENERAL",
         seatingMapId: ev.seating ? map.id : null,
         accessible: e % 3 === 0,
+        payAtVenue: e % 2 === 0, // demo: authorized pay-at-venue on some listings
         status: "PUBLISHED",
         publishedAt: new Date(now.getTime() - e * 2 * 86400_000),
         popularity: 40 - e * 3,

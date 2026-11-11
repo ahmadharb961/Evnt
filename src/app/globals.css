@@ -48,7 +48,22 @@ html[lang="ar"] body {
     @apply min-h-9 px-4 text-xs;
   }
   .input {
-    @apply block w-full rounded-2xl border border-ink/10 bg-white px-4 py-3 text-[15px] text-ink outline-none transition placeholder:text-ink-muted focus:border-ink/40 focus:ring-4 focus:ring-mint/40;
+    @apply block w-full min-w-0 rounded-2xl border border-ink/10 bg-white px-4 py-3 text-[15px] text-ink outline-none transition placeholder:text-ink-muted focus:border-ink/40 focus:ring-4 focus:ring-mint/40;
+  }
+  /* iPhone Safari gives date/time fields a fixed minimum width (they overflowed their column),
+     centres the value and collapses an empty date field. Keep them like every other field. */
+  .input[type="date"],
+  .input[type="time"],
+  .input[type="datetime-local"] {
+    -webkit-appearance: none;
+    appearance: none;
+    max-width: 100%;
+    min-height: 3rem;
+    text-align: start;
+  }
+  .input::-webkit-date-and-time-value {
+    margin: 0;
+    text-align: start;
   }
   .label {
     @apply mb-1.5 block text-sm font-medium text-ink-soft;

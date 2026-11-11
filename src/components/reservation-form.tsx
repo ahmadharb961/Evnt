@@ -25,7 +25,7 @@ export function ReservationForm({ restaurantId, maxParty, signedIn, phone, minDa
       <div className="grid grid-cols-2 gap-3">
         <label className="block">
           <span className="label">{t("Date")}</span>
-          <input name="date" type="date" min={minDate} required className="input" />
+          <input name="date" type="date" min={minDate} defaultValue={minDate} required className="input" />
         </label>
         <label className="block">
           <span className="label">{t("Time")}</span>

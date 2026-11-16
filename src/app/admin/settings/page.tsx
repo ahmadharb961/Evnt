@@ -2,11 +2,11 @@ import { requireAdmin, hasRole } from "@/server/auth";
 import { getSetting, DEFAULTS, type SettingKey } from "@/server/settings";
 import { whishAvailable } from "@/server/payments";
 import { getT } from "@/i18n/server";
-import { PageHeader, Panel } from "@/components/portal/shell";
 import type { Tone } from "@/lib/tones";
-import { ActionForm } from "@/components/portal/action-form";
+import { SettingsForm, NumberTile, ToggleTile, TextTile } from "@/components/admin/settings-ui";
+import { TONES } from "@/lib/tones";
 import { saveSettingsAction } from "@/actions/admin";
-import { CheckCircle2, AlertCircle } from "lucide-react";
+import { CheckCircle2, AlertCircle, Ticket, Scale, Crown, Cake, ShieldCheck, Sparkles, Receipt, CreditCard, SlidersHorizontal } from "lucide-react";
 
 export const metadata = { title: "Platform settings" };
 
@@ -42,7 +42,7 @@ const META: Record<Exclude<SettingKey, "hero">, { label: string; help: string; u
   "support.email": { label: "Support email", help: "Where help requests go.", unit: "text" },
 };
 
-const ICONS = ["Ticket", "Crown", "Scale", "Cake", "ShieldCheck", "Sparkles", "Receipt", "CreditCard"] as const;
+const ICONS = [Ticket, Crown, Scale, Cake, ShieldCheck, Sparkles, Receipt, CreditCard];
 const GROUPS: { title: string; desc: string; icon: (typeof ICONS)[number]; tone: Tone; keys: Exclude<SettingKey, "hero">[] }[] = [
   { title: "Bookings", desc: "How booking an activity works", icon: ICONS[0], tone: "mint", keys: ["booking.holdMinutes", "booking.feeCents"] },
   { title: "EVNT+ & loyalty", desc: "Family membership and reward points", icon: ICONS[1], tone: "violet", keys: ["membership.monthlyCents", "membership.yearlyCents", "membership.earlyAccessHours", "loyalty.pointsPerDollar", "loyalty.memberMultiplier"] },
@@ -61,52 +61,66 @@ export default async function SettingsAdmin() {
   const values = Object.fromEntries(await Promise.all((Object.keys(META) as SettingKey[]).map(async (k) => [k, await getSetting(k)])));
   const whishReady = await whishAvailable();
   const whishEnv = !!(process.env.WHISH_API_BASE && process.env.WHISH_CHANNEL && process.env.WHISH_SECRET);
-  const unitLabel = (u: Unit) => (u === "$" || u === "text" ? "" : t(u));
+  const unitLabel = (u: Unit) => (u === "$" || u === "text" ? undefined : t(u));
   return (
-    <div className="max-w-4xl space-y-6">
-      <PageHeader title={t("Platform settings")} subtitle={t("Prices are in US dollars. Changes apply straight away and are recorded in the activity log.")} />
-      <div className={`flex items-start gap-3 rounded-3xl p-4 text-sm ${whishReady ? "bg-emerald-50 text-emerald-900" : "bg-amber-50 text-amber-900"}`}>
-        {whishReady ? <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" /> : <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />}
-        <p>
-          <b>{t("Online card payments")}:</b> {whishReady ? t("Live") : whishEnv ? t("Credentials set — switch on below after testing in sandbox") : t("Not configured (no credentials). Online payment shows as unavailable.")}
-        </p>
+    <div className="mx-auto max-w-5xl">
+      <div className="relative isolate mb-6 overflow-hidden rounded-[2rem] bg-gradient-to-br from-slate-800 via-ink to-violet-900 p-6 text-white sm:p-8">
+        <div aria-hidden className="absolute -end-10 -top-16 -z-10 h-56 w-56 rounded-full bg-violet-500/40 blur-3xl" />
+        <div aria-hidden className="absolute -bottom-20 start-1/4 -z-10 h-56 w-56 rounded-full bg-peach/30 blur-3xl" />
+        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10">
+          <SlidersHorizontal className="h-6 w-6" />
+        </span>
+        <h1 className="mt-4 text-3xl font-extrabold tracking-tight sm:text-4xl">{t("Platform settings")}</h1>
+        <p className="mt-2 max-w-xl text-sm text-white/75">{t("Prices are in US dollars. Changes apply straight away and are recorded in the activity log.")}</p>
+        <div className={`mt-5 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ${whishReady ? "bg-emerald-400/20 text-emerald-200" : "bg-amber-400/20 text-amber-100"}`}>
+          {whishReady ? <CheckCircle2 className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+          {t("Online card payments")}: {whishReady ? t("Live") : whishEnv ? t("Credentials set — switch on below after testing in sandbox") : t("Not configured (no credentials). Online payment shows as unavailable.")}
+        </div>
       </div>
-      <ActionForm action={saveSettingsAction} submit={t("Save settings")} className="space-y-6">
-        {GROUPS.map((g) => (
-          <Panel key={g.title} title={t(g.title)} subtitle={t(g.desc)} icon={g.icon} tone={g.tone}>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {g.keys.map((k) => {
-                const m = META[k];
-                const v = values[k];
-                if (typeof DEFAULTS[k] === "boolean")
-                  return (
-                    <label key={k} className="flex cursor-pointer items-start gap-3 rounded-2xl bg-canvas p-4 sm:col-span-2">
-                      <input type="checkbox" name={k} defaultChecked={!!v} className="peer sr-only" />
-                      <span className="relative mt-0.5 h-6 w-11 shrink-0 rounded-full bg-ink/20 transition after:absolute after:start-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow after:transition peer-checked:bg-emerald-500 peer-checked:after:translate-x-5 rtl:peer-checked:after:-translate-x-5" />
-                      <span>
-                        <span className="block text-sm font-semibold">{t(m.label)}</span>
-                        <span className="mt-0.5 block text-xs text-ink-muted">{t(m.help)}</span>
-                      </span>
-                    </label>
-                  );
-                const isMoney = k.endsWith("Cents");
-                const isNum = typeof DEFAULTS[k] === "number";
-                return (
-                  <label key={k} className={`flex flex-col rounded-2xl bg-canvas p-4 ${m.unit === "text" ? "sm:col-span-2" : ""}`}>
-                    <span className="block text-sm font-semibold">{t(m.label)}</span>
-                    <span className="mb-2.5 mt-0.5 block text-xs leading-relaxed text-ink-muted">{t(m.help)}</span>
-                    <span className="mt-auto flex items-center overflow-hidden rounded-2xl border border-ink/10 bg-white focus-within:ring-2 focus-within:ring-ink/20">
-                      {isMoney && <span className="ps-4 text-sm font-semibold text-ink-muted">$</span>}
-                      <input name={k} defaultValue={isMoney ? Number(v) / 100 : String(v)} className="min-w-0 flex-1 bg-transparent px-3 py-2.5 text-sm font-semibold outline-none" inputMode={isNum ? "decimal" : undefined} dir={m.unit === "text" ? "ltr" : undefined} />
-                      {unitLabel(m.unit) && <span className="pe-4 text-xs font-medium text-ink-muted">{unitLabel(m.unit)}</span>}
-                    </span>
-                  </label>
-                );
-              })}
-            </div>
-          </Panel>
-        ))}
-      </ActionForm>
+
+      <nav className="sticky top-14 z-20 -mx-4 mb-6 flex gap-2 overflow-x-auto bg-canvas/90 px-4 py-3 backdrop-blur [scrollbar-width:none] lg:-mx-8 lg:px-8">
+        {GROUPS.map((g, i) => {
+          const Icon = g.icon;
+          return (
+            <a key={g.title} href={`#g${i}`} className={`inline-flex shrink-0 items-center gap-2 rounded-full py-1.5 pe-4 ps-1.5 text-sm font-semibold ring-1 ring-ink/[.06] transition hover:shadow-card ${TONES[g.tone].soft}`}>
+              <span className={`flex h-7 w-7 items-center justify-center rounded-full bg-white ${TONES[g.tone].text}`}>
+                <Icon className="h-4 w-4" />
+              </span>
+              {t(g.title)}
+            </a>
+          );
+        })}
+      </nav>
+
+      <SettingsForm action={saveSettingsAction}>
+        {GROUPS.map((g, i) => {
+          const Icon = g.icon;
+          const c = TONES[g.tone];
+          return (
+            <section key={g.title} id={`g${i}`} className={`scroll-mt-32 rounded-[2rem] p-4 sm:p-6 ${c.soft}`}>
+              <div className="mb-5 flex items-center gap-3 px-1">
+                <span className={`flex h-12 w-12 items-center justify-center rounded-2xl ${c.tile} ${c.text}`}>
+                  <Icon className="h-6 w-6" />
+                </span>
+                <div>
+                  <h2 className="text-xl font-extrabold tracking-tight">{t(g.title)}</h2>
+                  <p className="text-sm text-ink-soft">{t(g.desc)}</p>
+                </div>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {g.keys.map((k) => {
+                  const m = META[k];
+                  const v = values[k];
+                  if (typeof DEFAULTS[k] === "boolean") return <ToggleTile key={k} name={k} label={t(m.label)} help={t(m.help)} defaultChecked={!!v} />;
+                  if (m.unit === "text") return <TextTile key={k} name={k} label={t(m.label)} help={t(m.help)} defaultValue={String(v ?? "")} />;
+                  const money = k.endsWith("Cents");
+                  return <NumberTile key={k} name={k} label={t(m.label)} help={t(m.help)} unit={unitLabel(m.unit)} money={money} defaultValue={money ? Number(v) / 100 : Number(v)} accent={c.deep} />;
+                })}
+              </div>
+            </section>
+          );
+        })}
+      </SettingsForm>
     </div>
   );
 }

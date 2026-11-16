@@ -173,4 +173,9 @@ export const B7: [string, string, string][] = [
   ["{n} accounts · {m} EVNT+ members · {s} admin team", "{n} حساب · {m} عضو EVNT+ · {s} في فريق الإدارة", "{n} comptes · {m} membres EVNT+ · {s} admins"],
   ["{n} in total", "{n} بالمجموع", "{n} au total"],
   ["{n} on the free plan", "{n} على الباقة المجانية", "{n} sur la formule gratuite"],
+  ["On", "مفعّل", "Activé"],
+  ["Off", "متوقف", "Désactivé"],
+  ["You have unsaved changes", "لديك تغييرات غير محفوظة", "Vous avez des modifications non enregistrées"],
+  ["All changes saved", "تم حفظ كل التغييرات", "Toutes les modifications sont enregistrées"],
+  ["Change any number, then save", "غيّر أي رقم ثم احفظ", "Modifiez un nombre, puis enregistrez"],
 ];

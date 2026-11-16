@@ -18,6 +18,12 @@ export default async function BirthdaysAdmin() {
     <div className="max-w-6xl">
       <PageHeader title={t("Birthday requests")} subtitle={t("Qualified requests appear in Birthday Radar for Featured merchants (max 3 buyers each).")} />
       <Panel>
+        {list.length === 0 && (
+          <div className="py-10 text-center">
+            <p className="text-4xl">🎂</p>
+            <p className="mt-2 text-sm font-semibold text-ink-muted">{t("Nothing here yet.")}</p>
+          </div>
+        )}
         <ul className="divide-y divide-ink/[.06] text-sm">
           {list.map((i) => (
             <li key={i.id} className="flex flex-wrap items-center justify-between gap-3 py-3">

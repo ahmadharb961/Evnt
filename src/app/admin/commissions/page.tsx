@@ -1,4 +1,6 @@
 import { requireAdmin } from "@/server/auth";
+import { ATTRIBUTION, CATEGORY, COMMISSION_SOURCE, COMMISSION_STATUS, PLAN, labelOf } from "@/lib/status";
+import { StatusPill } from "@/components/status-pill";
 import { prisma } from "@/server/db";
 import { getLocale, getT } from "@/i18n/server";
 import { PageHeader, Panel } from "@/components/portal/shell";
@@ -25,7 +27,7 @@ export default async function CommissionsAdmin() {
       <div className="grid gap-3 sm:grid-cols-3">
         {byAttr.map((a) => (
           <div key={a.attribution} className="rounded-3xl border border-ink/[.06] bg-white p-5">
-            <p className="text-xs text-ink-muted">{a.attribution}</p>
+            <p className="text-xs text-ink-muted">{t(labelOf(ATTRIBUTION, a.attribution))}</p>
             <p className="mt-1 text-2xl font-bold">{money(a._sum.amountCents ?? 0)}</p>
             <p className="text-xs text-ink-muted">{t("{n} transactions", { n: a._count._all })}</p>
           </div>
@@ -60,10 +62,10 @@ export default async function CommissionsAdmin() {
             {external.map((e) => (
               <li key={e.id} className="flex justify-between py-2">
                 <span>
-                  {e.merchant.name} · {e.category}
+                  {e.merchant.name} · {t(labelOf(CATEGORY, e.category))}
                 </span>
                 <span>
-                  {money(e.amountCents)} · {fmtDate(e.bookedAt, locale, { day: "numeric", month: "short" })} · {e.status}
+                  {money(e.amountCents)} · {fmtDate(e.bookedAt, locale, { day: "numeric", month: "short" })} · {t(labelOf(COMMISSION_STATUS, e.status))}
                 </span>
               </li>
             ))}
@@ -86,17 +88,17 @@ export default async function CommissionsAdmin() {
               {recent.map((c) => (
                 <tr key={c.id} className="border-t border-ink/[.06]">
                   <td className="py-2">{c.merchant.name}</td>
-                  <td className="py-2">{c.source}</td>
-                  <td className="py-2 text-xs">{c.category ?? "—"}</td>
-                  <td className="py-2">{c.plan}</td>
-                  <td className="py-2 text-xs">{c.attribution}</td>
+                  <td className="py-2"><StatusPill map={COMMISSION_SOURCE} status={c.source} t={t} /></td>
+                  <td className="py-2 text-xs">{t(labelOf(CATEGORY, c.category))}</td>
+                  <td className="py-2"><StatusPill map={PLAN} status={c.plan} t={t} /></td>
+                  <td className="py-2"><StatusPill map={ATTRIBUTION} status={c.attribution} t={t} /></td>
                   <td className="py-2">{c.source === "RESERVATION" ? t("{n} guests", { n: c.guests ?? 0 }) : `${c.rateBps / 100}%`}</td>
                   <td className="py-2">{c.baseCents ? money(c.baseCents) : "—"}</td>
                   <td className="py-2 font-semibold">
                     {money(c.amountCents)}
                     {c.leadCreditCents > 0 && <span className="block text-xs font-normal text-ink-muted">{t("lead credit {amount}", { amount: money(c.leadCreditCents) })}</span>}
                   </td>
-                  <td className="py-2 text-xs">{c.status}</td>
+                  <td className="py-2"><StatusPill map={COMMISSION_STATUS} status={c.status} t={t} /></td>
                 </tr>
               ))}
             </tbody>

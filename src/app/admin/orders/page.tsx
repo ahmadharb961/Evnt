@@ -1,9 +1,11 @@
 import type { OrderStatus } from "@prisma/client";
+import { PAYMENT_METHOD } from "@/lib/status";
 import Link from "next/link";
 import { requireAdmin } from "@/server/auth";
 import { prisma } from "@/server/db";
 import { getLocale, getT } from "@/i18n/server";
 import { PageHeader } from "@/components/portal/shell";
+import { FilterCards } from "@/components/admin/filter-cards";
 import { StatusPill } from "@/components/status-pill";
 import { ActionButton } from "@/components/portal/action-button";
 import { adminOrderStatusAction } from "@/actions/admin-ops";
@@ -17,15 +19,25 @@ export default async function OrdersAdmin({ searchParams }: { searchParams: Prom
   await requireAdmin("ADMIN");
   const [locale, t, sp] = await Promise.all([getLocale(), getT(), searchParams]);
   const status = Object.keys(ORDER_STATUS).includes(sp.status ?? "") ? (sp.status as OrderStatus) : undefined;
+  const counts = await prisma.order.groupBy({ by: ["status"], _count: { _all: true } });
   const orders = await prisma.order.findMany({ where: status ? { status } : {}, include: { merchant: { select: { name: true } } }, orderBy: { createdAt: "desc" }, take: 200 });
   return (
     <div className="max-w-6xl">
       <PageHeader title={t("Shop orders")} />
+      <FilterCards
+        items={[
+          { href: "/admin/orders", label: t("All"), value: counts.reduce((a, c) => a + c._count._all, 0), tone: "violet", on: !status },
+          ...(["PENDING", "CONFIRMED", "SHIPPED", "DELIVERED", "CANCELED"] as const).map((s, i) => ({
+            href: `/admin/orders?status=${s}`,
+            label: t(ORDER_STATUS[s].label),
+            value: counts.find((c) => c.status === s)?._count._all ?? 0,
+            tone: (["peach", "sky", "blush", "mint", "rose"] as const)[i],
+            on: status === s,
+          })),
+        ]}
+      />
       <div className="mb-4 flex flex-wrap gap-2">
-        <Link href="/admin/orders" className={`chip ${!status ? "chip-on" : ""}`}>
-          {t("All")}
-        </Link>
-        {Object.keys(ORDER_STATUS).map((s) => (
+        {(["AWAITING_PAYMENT", "PREPARING", "REFUNDED"] as const).map((s) => (
           <Link key={s} href={`/admin/orders?status=${s}`} className={`chip ${status === s ? "chip-on" : ""}`}>
             {t(ORDER_STATUS[s].label)}
           </Link>
@@ -56,7 +68,7 @@ export default async function OrdersAdmin({ searchParams }: { searchParams: Prom
                 <td className="p-3">{fmtDateTime(o.createdAt, locale)}</td>
                 <td className="p-3">{formatMoney(o.totalCents, locale)}</td>
                 <td className="p-3 text-xs">
-                  {o.paymentMethod}
+                  <StatusPill map={PAYMENT_METHOD} status={o.paymentMethod} t={t} />
                   {o.codCollectedAt ? ` ✓ ${formatMoney(o.codCollectedCents ?? 0, locale)}` : ""}
                 </td>
                 <td className="p-3">

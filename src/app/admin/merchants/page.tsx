@@ -1,9 +1,12 @@
 import Link from "next/link";
+import { MERCHANT_STATUS, MERCHANT_TYPE, PLAN } from "@/lib/status";
+import { StatusPill } from "@/components/status-pill";
 import type { MerchantStatus, Prisma } from "@prisma/client";
 import { requireAdmin } from "@/server/auth";
 import { prisma } from "@/server/db";
 import { getLocale, getT } from "@/i18n/server";
 import { PageHeader } from "@/components/portal/shell";
+import { FilterCards } from "@/components/admin/filter-cards";
 import { fmtDate } from "@/lib/dates";
 
 export const metadata = { title: "Merchants" };
@@ -17,19 +20,19 @@ export default async function AdminMerchants({ searchParams }: { searchParams: P
     ...(sp.plan ? { plan: sp.plan as "BASIC" } : {}),
     ...(sp.q ? { OR: [{ name: { contains: sp.q, mode: "insensitive" } }, { email: { contains: sp.q, mode: "insensitive" } }, { slug: { contains: sp.q.toLowerCase() } }] } : {}),
   };
+  const counts = await prisma.merchant.groupBy({ by: ["status"], _count: { _all: true } });
+  const count = (st?: string) => counts.filter((c) => !st || c.status === st).reduce((a, c) => a + c._count._all, 0);
   const merchants = await prisma.merchant.findMany({ where, orderBy: [{ status: "asc" }, { createdAt: "desc" }], take: 300, include: { _count: { select: { events: true, products: true, bookings: true } } } });
   return (
     <>
-      <PageHeader title={t("Merchants")} subtitle={t("{n} shown", { n: merchants.length })} />
+      <PageHeader title={t("Businesses")} subtitle={t("{n} shown", { n: merchants.length })} />
+      <FilterCards
+        items={[
+          { href: "/admin/merchants", label: t("All"), value: count(), tone: "violet", on: !sp.status },
+          ...STATUSES.map((s, i) => ({ href: `/admin/merchants?status=${s}`, label: t(MERCHANT_STATUS[s].label), value: count(s), tone: (["peach", "mint", "sky", "rose", "slate"] as const)[i], on: sp.status === s })),
+        ]}
+      />
       <form className="mb-4 flex flex-wrap gap-2">
-        <Link href="/admin/merchants" className={`chip ${!sp.status ? "chip-on" : ""}`}>
-          {t("All")}
-        </Link>
-        {STATUSES.map((s) => (
-          <Link key={s} href={`/admin/merchants?status=${s}`} className={`chip ${sp.status === s ? "chip-on" : ""}`}>
-            {s}
-          </Link>
-        ))}
         <input name="q" defaultValue={sp.q} placeholder={t("Search name or email")} className="input !h-9 !w-56 !rounded-full !py-0 text-sm" />
       </form>
       <div className="overflow-x-auto rounded-3xl border border-ink/[.06] bg-white">
@@ -52,10 +55,10 @@ export default async function AdminMerchants({ searchParams }: { searchParams: P
                   </Link>
                   <span className="block text-xs text-ink-muted">{m.email}</span>
                 </td>
-                <td className="p-3 text-xs">{m.type}</td>
-                <td className="p-3">{m.plan}</td>
+                <td className="p-3"><StatusPill map={MERCHANT_TYPE} status={m.type} t={t} /></td>
+                <td className="p-3"><StatusPill map={PLAN} status={m.plan} t={t} /></td>
                 <td className="p-3">
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${m.status === "PENDING" ? "bg-peach-soft text-peach-deep" : m.status === "APPROVED" ? "bg-mint-soft text-mint-deep" : "bg-ink/[.06]"}`}>{m.status}</span>
+                  <StatusPill map={MERCHANT_STATUS} status={m.status} t={t} />
                   {m.restrictedAt && <span className="ms-1 text-xs text-red-600">{t("restricted")}</span>}
                 </td>
                 <td className="p-3">{m._count.events + m._count.products}</td>

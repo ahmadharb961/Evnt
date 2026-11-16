@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { INVOICE_STATUS, ORDER_STATUS, PAYMENT_METHOD, REFUND_STATUS, labelOf } from "@/lib/status";
 import { requireAdmin } from "@/server/auth";
 import { prisma } from "@/server/db";
 import { platformFinancials } from "@/server/reports";
@@ -62,7 +63,7 @@ export default async function FinancePage({ searchParams }: { searchParams: Prom
                   <span>
                     <b>{money(r.amountCents)}</b> · {r.reason}
                     <span className="block text-xs text-ink-muted">
-                      {r.payment ? `${r.payment.method} ${r.payment.providerRef ?? r.payment.id}` : t("No online payment")} · {fmtDateTime(r.createdAt, locale)} · {r.status}
+                      {r.payment ? `${t(labelOf(PAYMENT_METHOD, r.payment.method))} · ${r.payment.providerRef ?? r.payment.id.slice(-6)}` : t("No online payment")} · {fmtDateTime(r.createdAt, locale)} · <StatusPill map={REFUND_STATUS} status={r.status} t={t} />
                     </span>
                   </span>
                   <span className="flex gap-2">
@@ -87,7 +88,7 @@ export default async function FinancePage({ searchParams }: { searchParams: Prom
                 <span>
                   <b>{i.number}</b> · {i.merchant.name} · {money(i.totalCents)}
                   <span className={`block text-xs ${i.status === "OVERDUE" ? "text-red-600" : "text-ink-muted"}`}>
-                    {i.status} · {t("due {date}", { date: fmtDate(i.dueAt, locale, { day: "numeric", month: "short" }) })}
+                    <StatusPill map={INVOICE_STATUS} status={i.status} t={t} /> · {t("due {date}", { date: fmtDate(i.dueAt, locale, { day: "numeric", month: "short" }) })}
                   </span>
                 </span>
                 <span className="flex gap-2">
@@ -141,7 +142,7 @@ export default async function FinancePage({ searchParams }: { searchParams: Prom
                   <td className="py-2 font-mono text-xs">{o.number}</td>
                   <td className="py-2">{o.merchant.name}</td>
                   <td className="py-2">{money(o.totalCents)}</td>
-                  <td className="py-2">{o.status}</td>
+                  <td className="py-2"><StatusPill map={ORDER_STATUS} status={o.status} t={t} /></td>
                   <td className={`py-2 ${o.codCollectedAt ? "text-mint-deep" : "text-peach-deep"}`}>{o.codCollectedAt ? money(o.codCollectedCents ?? 0) : t("Not yet")}</td>
                 </tr>
               ))}

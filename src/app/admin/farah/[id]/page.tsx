@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { CERT_KIND, CERT_STATUS, labelOf } from "@/lib/status";
 import { requireAdmin, hasRole } from "@/server/auth";
 import { prisma } from "@/server/db";
 import { getLocale, getT } from "@/i18n/server";
@@ -25,7 +26,7 @@ export default async function FarahDetail({ params }: { params: Promise<{ id: st
   const results = (c.checklist ?? []) as { key: string; passed: boolean; note?: string }[];
   return (
     <div className="max-w-3xl space-y-6">
-      <PageHeader title={`${c.merchant.name} · ${c.kind}`} subtitle={`${c.status} · ${formatMoney(c.feeCents, locale)}`} />
+      <PageHeader title={`${c.merchant.name} · ${t(labelOf(CERT_KIND, c.kind))}`} subtitle={`${t(labelOf(CERT_STATUS, c.status))} · ${formatMoney(c.feeCents, locale)}`} />
       <Panel title={t("Venue")}>
         <ul className="text-sm">
           {c.merchant.locations.map((l) => (

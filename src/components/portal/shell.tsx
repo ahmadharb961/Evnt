@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { createContext, useContext, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { LanguageSwitcher } from "@/components/language-switcher";
@@ -18,6 +18,8 @@ const Icons = {
   LayoutDashboard, Store, CalendarDays, Armchair, Ticket, ScanLine, UtensilsCrossed, ShoppingBag, Package, Cake, Megaphone, BarChart3,
   CreditCard, Receipt, Star, Users, Settings, BadgeCheck, Zap, Home, Wallet, Scale, Crown, Languages, Calculator, FileText, Bell, Mail, Circle, Radar, ShieldCheck, ListOrdered, UserPlus, Shield, Sparkles,
 };
+
+const NavCtx = createContext<NavItem[]>([]);
 
 export type NavItem = { href: string; label: string; icon: keyof typeof Icons; badge?: number; group?: string; tone?: Tone };
 
@@ -50,6 +52,7 @@ export function PortalShell({ title, subtitle, nav, children, topRight, banner }
     </nav>
   );
   return (
+    <NavCtx.Provider value={nav}>
     <div className="min-h-dvh bg-canvas">
       <aside className="fixed inset-y-0 start-0 hidden w-64 flex-col border-e border-ink/[.06] bg-white p-4 lg:flex">
         <Link href="/" className="mb-1 px-2 pt-1">
@@ -87,41 +90,61 @@ export function PortalShell({ title, subtitle, nav, children, topRight, banner }
           </div>
         </div>
       )}
-      <main className="px-4 py-6 lg:ms-64 lg:px-8 lg:py-8">
+      <main className="portal-main px-4 py-6 lg:ms-64 lg:px-8 lg:py-8">
         {banner}
         {children}
       </main>
     </div>
+    </NavCtx.Provider>
   );
 }
 
-export function PageHeader({ title, subtitle, actions }: { title: string; subtitle?: string; actions?: React.ReactNode }) {
+/** Big colourful page banner. Icon and colour come from the matching menu item. */
+export function PageHeader({ title, subtitle, actions, icon, tone }: { title: string; subtitle?: string; actions?: React.ReactNode; icon?: keyof typeof Icons; tone?: Tone }) {
+  const nav = useContext(NavCtx);
+  const path = usePathname();
+  const match = nav.filter((n) => path === n.href || path.startsWith(n.href + "/")).sort((x, y) => y.href.length - x.href.length)[0];
+  const tn = tone ?? match?.tone ?? "violet";
+  const c = TONES[tn];
+  const Icon = (Icons[icon ?? match?.icon ?? "Sparkles"] ?? Icons.Circle) as React.ElementType;
   return (
-    <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
-        {subtitle && <p className="mt-1 text-sm text-ink-muted">{subtitle}</p>}
+    <div className={`relative isolate mb-6 overflow-hidden rounded-[2rem] p-5 ring-1 ring-ink/[.04] sm:p-7 ${c.soft}`}>
+      <div aria-hidden className={`absolute -end-12 -top-16 -z-10 h-52 w-52 rounded-full opacity-70 blur-2xl ${c.tile}`} />
+      <div aria-hidden className="absolute -bottom-24 start-1/3 -z-10 h-48 w-48 rounded-full bg-white/70 blur-3xl" />
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex min-w-0 items-center gap-4">
+          <span className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white shadow-card ${c.text}`}>
+            <Icon className="h-7 w-7" />
+          </span>
+          <div className="min-w-0">
+            <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">{title}</h1>
+            {subtitle && <p className="mt-1 text-sm text-ink-soft">{subtitle}</p>}
+          </div>
+        </div>
+        {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
       </div>
-      {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
     </div>
   );
 }
 
+const AUTO: Tone[] = ["violet", "mint", "blush", "sky", "peach", "amber", "emerald", "powder", "rose"];
+const toneFor = (label: string) => AUTO[[...label].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) >>> 0, 7) % AUTO.length];
+
 export function Stat({ label, value, hint, tone, icon, trend }: { label: string; value: React.ReactNode; hint?: string; tone?: Tone; icon?: keyof typeof Icons; trend?: number | null }) {
-  const c = tone ? TONES[tone] : null;
+  const c = TONES[tone ?? toneFor(label)];
   const Icon = icon ? (Icons[icon] as React.ElementType) : null;
   return (
-    <div className={`relative overflow-hidden rounded-3xl border border-ink/[.06] p-5 ${c ? c.soft : "bg-white"}`}>
-      {c && <div aria-hidden className={`absolute -end-6 -top-6 h-20 w-20 rounded-full opacity-60 ${c.tile}`} />}
+    <div className={`relative overflow-hidden rounded-3xl p-5 ring-1 ring-ink/[.04] ${c.soft}`}>
+      <div aria-hidden className={`absolute -end-6 -top-6 h-20 w-20 rounded-full opacity-60 ${c.tile}`} />
       <div className="relative flex items-start justify-between gap-2">
         <p className="text-xs font-semibold text-ink-soft">{label}</p>
         {Icon && (
-          <span className={`flex h-9 w-9 items-center justify-center rounded-2xl bg-white/80 shadow-sm ${c?.text ?? ""}`}>
+          <span className={`flex h-9 w-9 items-center justify-center rounded-2xl bg-white/80 shadow-sm ${c.text}`}>
             <Icon className="h-[18px] w-[18px]" />
           </span>
         )}
       </div>
-      <p className="relative mt-2 text-2xl font-bold tracking-tight">{value}</p>
+      <p className="relative mt-2 text-3xl font-extrabold tracking-tight" style={{ color: c.deep }}>{value}</p>
       <div className="relative mt-1 flex flex-wrap items-center gap-1.5 text-xs text-ink-muted">
         {trend != null && <span className={`rounded-full px-1.5 py-0.5 font-bold ${trend >= 0 ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"}`}>{trend >= 0 ? "▲" : "▼"} {Math.abs(trend)}%</span>}
         {hint && <span>{hint}</span>}
@@ -134,7 +157,7 @@ export function Panel({ title, subtitle, children, actions, className = "", icon
   const Icon = icon ? (Icons[icon] as React.ElementType) : null;
   const c = tone ? TONES[tone] : null;
   return (
-    <section className={`rounded-3xl border border-ink/[.06] bg-white p-5 sm:p-6 ${className}`}>
+    <section className={`rounded-[1.75rem] bg-white p-5 shadow-card ring-1 ring-ink/[.04] sm:p-6 ${className}`}>
       {(title || actions) && (
         <div className="mb-4 flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
@@ -144,7 +167,7 @@ export function Panel({ title, subtitle, children, actions, className = "", icon
               </span>
             )}
             <div className="min-w-0">
-              {title && <h2 className="font-semibold">{title}</h2>}
+              {title && <h2 className="text-lg font-bold tracking-tight">{title}</h2>}
               {subtitle && <p className="text-xs text-ink-muted">{subtitle}</p>}
             </div>
           </div>

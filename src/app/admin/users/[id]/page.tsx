@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BOOKING_STATUS, PAYMENT_METHOD, SUBSCRIPTION_STATUS, labelOf } from "@/lib/status";
 import { notFound } from "next/navigation";
 import type { Role } from "@prisma/client";
 import { requireAdmin } from "@/server/auth";
@@ -54,7 +55,7 @@ export default async function UserAdmin({ params }: { params: Promise<{ id: stri
             <div>
               {t("Joined")}: {fmtDate(u.createdAt, locale, { day: "numeric", month: "short", year: "numeric" })} · {t("Last login")}: {u.lastLoginAt ? fmtDateTime(u.lastLoginAt, locale) : "—"}
             </div>
-            <div>EVNT+: {u.membership ? `${u.membership.status} ${u.membership.currentPeriodEnd ? fmtDate(u.membership.currentPeriodEnd, locale, { day: "numeric", month: "short", year: "numeric" }) : ""}` : "—"}</div>
+            <div>EVNT+: {u.membership ? `${t(labelOf(SUBSCRIPTION_STATUS, u.membership.status))} ${u.membership.currentPeriodEnd ? fmtDate(u.membership.currentPeriodEnd, locale, { day: "numeric", month: "short", year: "numeric" }) : ""}` : "—"}</div>
             <div>{t("{n} points", { n: points })}</div>
             <div>
               {t("Marketing")}: email {u.marketingEmail ? "✓" : "✗"} · WhatsApp {u.marketingWhatsapp ? "✓" : "✗"}
@@ -93,7 +94,7 @@ export default async function UserAdmin({ params }: { params: Promise<{ id: stri
                 {b.code} · {loc(b.event.title, locale)}
               </span>
               <span>
-                {formatMoney(b.totalCents, locale)} · {b.status}
+                {formatMoney(b.totalCents, locale)} · {t(labelOf(BOOKING_STATUS, b.status))}
               </span>
             </li>
           ))}
@@ -105,7 +106,7 @@ export default async function UserAdmin({ params }: { params: Promise<{ id: stri
             <li key={o.id} className="flex justify-between py-2">
               <span>{o.number}</span>
               <span>
-                {formatMoney(o.totalCents, locale)} · {o.paymentMethod}
+                {formatMoney(o.totalCents, locale)} · {t(labelOf(PAYMENT_METHOD, o.paymentMethod))}
               </span>
             </li>
           ))}

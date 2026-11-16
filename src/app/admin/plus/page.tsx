@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { SUBSCRIPTION_STATUS } from "@/lib/status";
+import { StatusPill } from "@/components/status-pill";
 import { requireAdmin } from "@/server/auth";
 import { prisma } from "@/server/db";
 import { getLocale, getT } from "@/i18n/server";
@@ -27,6 +29,12 @@ export default async function PlusAdmin() {
         <Stat label={t("Membership revenue (30 days)")} value={formatMoney(revenue._sum.amountCents ?? 0, locale)} />
       </div>
       <Panel>
+        {list.length === 0 && (
+          <div className="py-10 text-center">
+            <p className="text-4xl">👑</p>
+            <p className="mt-2 text-sm font-semibold text-ink-muted">{t("Nothing here yet.")}</p>
+          </div>
+        )}
         <ul className="divide-y divide-ink/[.06] text-sm">
           {list.map((m) => (
             <li key={m.id} className="flex justify-between py-2">
@@ -34,7 +42,7 @@ export default async function PlusAdmin() {
                 {m.user.name} <span className="text-xs text-ink-muted">{m.user.email}</span>
               </Link>
               <span className="text-ink-muted">
-                {m.status} · {m.interval} · {m.priceCents ? formatMoney(m.priceCents, locale) : t("granted")} · {m.currentPeriodEnd ? fmtDate(m.currentPeriodEnd, locale, { day: "numeric", month: "short", year: "numeric" }) : "—"}
+                <StatusPill map={SUBSCRIPTION_STATUS} status={m.status} t={t} /> · {m.interval === "YEARLY" ? t("Yearly") : t("Monthly")} · {m.priceCents ? formatMoney(m.priceCents, locale) : t("granted")} · {m.currentPeriodEnd ? fmtDate(m.currentPeriodEnd, locale, { day: "numeric", month: "short", year: "numeric" }) : "—"}
               </span>
             </li>
           ))}

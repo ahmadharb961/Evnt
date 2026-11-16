@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { CERT_KIND, CERT_STATUS, labelOf } from "@/lib/status";
+import { StatusPill } from "@/components/status-pill";
 import { requireAdmin } from "@/server/auth";
 import { prisma } from "@/server/db";
 import { getLocale, getT } from "@/i18n/server";
@@ -23,10 +25,10 @@ export default async function FarahAdmin() {
             <li key={c.id}>
               <Link href={`/admin/farah/${c.id}`} className="flex flex-wrap justify-between gap-2 py-2.5 hover:underline">
                 <span>
-                  {c.merchant.name} · {c.kind}
+                  {c.merchant.name} · {t(labelOf(CERT_KIND, c.kind))}
                 </span>
                 <span className="text-ink-muted">
-                  {c.status} · {formatMoney(c.feeCents, locale)}
+                  <StatusPill map={CERT_STATUS} status={c.status} t={t} /> · {formatMoney(c.feeCents, locale)}
                   {c.score != null ? ` · ${c.score}%` : ""}
                   {c.validUntil ? ` · ${t("until {date}", { date: fmtDate(c.validUntil, locale, { month: "short", year: "numeric" }) })}` : ""}
                 </span>

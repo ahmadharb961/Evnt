@@ -49,7 +49,7 @@ function Save({ dirty }: { dirty: boolean }) {
 }
 
 /** One setting as a card with a big number and − / + buttons. */
-export function NumberTile({ name, label, help, unit, money, defaultValue, accent }: { name: string; label: string; help: string; unit?: string; money?: boolean; defaultValue: number; accent: string }) {
+export function NumberTile({ name, label, help, unit, money, defaultValue, accent, compact = false }: { name: string; label: string; help: string; unit?: string; money?: boolean; defaultValue: number; accent: string; compact?: boolean }) {
   const ref = useRef<HTMLInputElement>(null);
   const step = money ? (defaultValue >= 50 ? 5 : defaultValue >= 10 ? 1 : 0.5) : defaultValue >= 100 ? 10 : 1;
   const bump = (d: number) => {
@@ -59,23 +59,42 @@ export function NumberTile({ name, label, help, unit, money, defaultValue, accen
     el.value = String(v);
     el.form?.dispatchEvent(new Event("change", { bubbles: true }));
   };
+  const minus = (
+    <button type="button" onClick={() => bump(-1)} aria-label="−" className={`flex shrink-0 items-center justify-center rounded-2xl bg-canvas text-ink-soft transition hover:bg-ink hover:text-white ${compact ? "h-9 flex-1" : "h-11 w-11"}`}>
+      <Minus className="h-4 w-4" />
+    </button>
+  );
+  const plus = (
+    <button type="button" onClick={() => bump(1)} aria-label="+" className={`flex shrink-0 items-center justify-center rounded-2xl bg-canvas text-ink-soft transition hover:bg-ink hover:text-white ${compact ? "h-9 flex-1" : "h-11 w-11"}`}>
+      <Plus className="h-4 w-4" />
+    </button>
+  );
+  const number = (
+    <label className="flex min-w-0 flex-1 items-baseline justify-center gap-1" dir="ltr">
+      {money && <span className={`font-bold ${compact ? "text-xl" : "text-2xl"}`} style={{ color: accent }}>$</span>}
+      <input ref={ref} name={name} defaultValue={defaultValue} inputMode="decimal" aria-label={label} className={`w-full min-w-0 bg-transparent text-center font-extrabold tracking-tight outline-none ${compact ? "text-4xl" : "text-5xl"}`} style={{ color: accent, maxWidth: `${Math.max(2, String(defaultValue).length + 1)}ch` }} />
+    </label>
+  );
   return (
-    <div className="flex flex-col rounded-[1.75rem] bg-white p-5 shadow-card ring-1 ring-ink/[.04]">
+    <div className={`flex flex-col bg-white shadow-card ring-1 ring-ink/[.04] ${compact ? "rounded-[1.5rem] p-4" : "rounded-[1.75rem] p-5"}`}>
       <p className="text-sm font-bold">{label}</p>
-      <div className="mt-3 flex items-center gap-2">
-        <button type="button" onClick={() => bump(-1)} aria-label="−" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-canvas text-ink-soft transition hover:bg-ink hover:text-white">
-          <Minus className="h-4 w-4" />
-        </button>
-        <label className="flex min-w-0 flex-1 items-baseline justify-center gap-1" dir="ltr">
-          {money && <span className="text-2xl font-bold" style={{ color: accent }}>$</span>}
-          <input ref={ref} name={name} defaultValue={defaultValue} inputMode="decimal" aria-label={label} className="w-full min-w-0 bg-transparent text-center text-5xl font-extrabold tracking-tight outline-none" style={{ color: accent, maxWidth: `${Math.max(2, String(defaultValue).length + 1)}ch` }} />
-        </label>
-        <button type="button" onClick={() => bump(1)} aria-label="+" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-canvas text-ink-soft transition hover:bg-ink hover:text-white">
-          <Plus className="h-4 w-4" />
-        </button>
-      </div>
+      {compact ? (
+        <>
+          <div className="mt-2 flex">{number}</div>
+          <div className="mt-2 flex gap-2">
+            {minus}
+            {plus}
+          </div>
+        </>
+      ) : (
+        <div className="mt-3 flex items-center gap-2">
+          {minus}
+          {number}
+          {plus}
+        </div>
+      )}
       {unit && <p className="mt-1 text-center text-xs font-bold uppercase tracking-[0.14em] text-ink-muted">{unit}</p>}
-      <p className="mt-3 border-t border-ink/[.06] pt-3 text-xs leading-relaxed text-ink-muted">{help}</p>
+      {help && <p className="mt-3 border-t border-ink/[.06] pt-3 text-xs leading-relaxed text-ink-muted">{help}</p>}
     </div>
   );
 }

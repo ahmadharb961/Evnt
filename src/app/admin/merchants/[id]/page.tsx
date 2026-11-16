@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { INVOICE_STATUS, MERCHANT_STATUS, MERCHANT_TYPE, PLAN, SUBSCRIPTION_STATUS, labelOf } from "@/lib/status";
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/server/auth";
 import { prisma } from "@/server/db";
@@ -36,7 +37,7 @@ export default async function AdminMerchant({ params }: { params: Promise<{ id: 
     <div className="max-w-5xl space-y-6">
       <PageHeader
         title={m.name}
-        subtitle={`${m.type} · ${m.status} · ${m.plan}`}
+        subtitle={`${t(labelOf(MERCHANT_TYPE, m.type))} · ${t(labelOf(MERCHANT_STATUS, m.status))} · ${t(labelOf(PLAN, m.plan))}`}
         actions={
           <>
             {m.status === "APPROVED" && (
@@ -68,7 +69,7 @@ export default async function AdminMerchant({ params }: { params: Promise<{ id: 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Stat label={bal >= 0 ? t("EVNT owes merchant") : t("Merchant owes EVNT")} value={money(Math.abs(bal))} />
         <Stat label={t("Commissions earned (all time)")} value={money(commissions._sum.amountCents ?? 0)} />
-        <Stat label={t("Subscription")} value={<span className="text-base">{sub ? `${sub.plan} · ${sub.status}` : "—"}</span>} hint={sub ? t("until {date}", { date: fmtDate(sub.currentPeriodEnd, locale, { day: "numeric", month: "short", year: "numeric" }) }) : undefined} />
+        <Stat label={t("Subscription")} value={<span className="text-base">{sub ? `${t(labelOf(PLAN, sub.plan))} · ${t(labelOf(SUBSCRIPTION_STATUS, sub.status))}` : "—"}</span>} hint={sub ? t("until {date}", { date: fmtDate(sub.currentPeriodEnd, locale, { day: "numeric", month: "short", year: "numeric" }) }) : undefined} />
         <Stat label={t("Farah Approved")} value={<span className="text-base">{m.farahUntil && m.farahUntil > new Date() ? t("until {date}", { date: fmtDate(m.farahUntil, locale, { month: "short", year: "numeric" }) }) : "—"}</span>} />
       </div>
       <div className="grid gap-6 lg:grid-cols-2">
@@ -136,7 +137,7 @@ export default async function AdminMerchant({ params }: { params: Promise<{ id: 
               <li key={i.id} className="flex justify-between py-1.5">
                 <span>{i.number}</span>
                 <span>
-                  {money(i.totalCents)} · {i.status}
+                  {money(i.totalCents)} · {t(labelOf(INVOICE_STATUS, i.status))}
                 </span>
               </li>
             ))}

@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { CAMPAIGN_STATUS } from "@/lib/status";
+import { StatusPill } from "@/components/status-pill";
 import { requireAdmin } from "@/server/auth";
 import { prisma } from "@/server/db";
 import { mediaSrc } from "@/server/media";
@@ -80,7 +82,7 @@ export default async function AdsAdmin() {
               <span>
                 {loc(c.placement.name, locale)} · {c.merchant.name}
               </span>
-              <span className="text-ink-muted">{c.status}</span>
+              <StatusPill map={CAMPAIGN_STATUS} status={c.status} t={t} />
             </li>
           ))}
         </ul>

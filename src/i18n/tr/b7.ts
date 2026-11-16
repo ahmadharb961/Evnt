@@ -221,4 +221,8 @@ export const B7: [string, string, string][] = [
   ["Workshops", "ورش عمل", "Ateliers"],
   ["{p}% of checkouts", "{p}% من عمليات الدفع", "{p}% des paiements"],
   ["bookings", "حجوزات", "réservations"],
+  ["Hidden", "مخفي", "Masqué"],
+  ["Handpicked", "مختارة بعناية", "Triés sur le volet"],
+  ["Tap to hide from the homepage", "اضغط للإخفاء من الصفحة الرئيسية", "Touchez pour masquer de l'accueil"],
+  ["Tap to show on the homepage", "اضغط للإظهار على الصفحة الرئيسية", "Touchez pour afficher sur l'accueil"],
 ];

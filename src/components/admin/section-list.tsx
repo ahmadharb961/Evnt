@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { GripVertical, Eye, EyeOff, Trash2, Pencil, ChevronUp, ChevronDown, Loader2 } from "lucide-react";
 import { reorderSectionsAction, toggleSectionAction, deleteSectionAction } from "@/actions/admin";
 import { useT } from "@/i18n/client";
+
+const SOURCE: Record<string, string> = { HANDPICKED: "Handpicked", EVENTS: "Activities & events", RESTAURANTS: "Restaurants", PRODUCTS: "Products", FARAH: "Farah Approved", SPONSORED: "Paid featured placements" };
 
 type Row = { id: string; title: string; source: string; visible: boolean; scheduled: string | null; sponsored: boolean };
 
@@ -14,6 +16,8 @@ export function SectionList({ rows: initial }: { rows: Row[] }) {
   const t = useT();
   const router = useRouter();
   const [rows, setRows] = useState(initial);
+  // Take in fresh data from the server after every save.
+  useEffect(() => setRows(initial), [initial]);
   const [drag, setDrag] = useState<number | null>(null);
   const [pending, start] = useTransition();
   const save = (next: Row[]) => {
@@ -56,15 +60,30 @@ export function SectionList({ rows: initial }: { rows: Row[] }) {
               </button>
             </div>
             <div className="min-w-0 flex-1">
-              <p className={`truncate font-medium ${r.visible ? "" : "text-ink-muted line-through"}`}>{r.title}</p>
+              <p className={`truncate font-semibold ${r.visible ? "" : "text-ink-muted"}`}>{r.title}</p>
               <p className="text-xs text-ink-muted">
-                {r.source}
+                {t(SOURCE[r.source] ?? r.source)}
                 {r.sponsored ? ` · ${t("Sponsored")}` : ""}
                 {r.scheduled ? ` · ${r.scheduled}` : ""}
               </p>
             </div>
-            <button type="button" onClick={() => start(async () => (await toggleSectionAction(r.id), router.refresh()))} className="btn-ghost btn-sm" aria-label={r.visible ? t("Hide") : t("Show")}>
+            <button
+              type="button"
+              onClick={() => {
+                // Show the new state straight away, then save.
+                setRows((all) => all.map((x) => (x.id === r.id ? { ...x, visible: !x.visible } : x)));
+                start(async () => {
+                  const res = (await toggleSectionAction(r.id)) as { error?: string } | undefined;
+                  if (res?.error) setRows((all) => all.map((x) => (x.id === r.id ? { ...x, visible: r.visible } : x)));
+                  router.refresh();
+                });
+              }}
+              className={`inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-full px-3 text-xs font-bold transition ${r.visible ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200" : "bg-slate-200 text-slate-600 hover:bg-slate-300"}`}
+              aria-pressed={r.visible}
+              title={r.visible ? t("Tap to hide from the homepage") : t("Tap to show on the homepage")}
+            >
               {r.visible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+              <span className="hidden sm:inline">{r.visible ? t("Visible") : t("Hidden")}</span>
             </button>
             <Link href={`/admin/cms/sections/${r.id}`} className="btn-ghost btn-sm" aria-label={t("Edit")}>
               <Pencil className="h-4 w-4" />

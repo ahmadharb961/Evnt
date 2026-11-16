@@ -7,13 +7,14 @@ import { pointsBalance } from "@/server/membership";
 import { getLocale, getT } from "@/i18n/server";
 import { loc } from "@/i18n/core";
 import { PageHeader, Panel } from "@/components/portal/shell";
+import { TONES } from "@/lib/tones";
+import { ROLE_INFO } from "@/lib/roles";
 import { ActionButton } from "@/components/portal/action-button";
 import { setRoleAction, setUserDisabledAction, grantPlusAction } from "@/actions/admin";
 import { fmtDate, fmtDateTime } from "@/lib/dates";
 import { formatMoney } from "@/lib/money";
 
 export const metadata = { title: "User" };
-const ROLES: Role[] = ["SUPER_ADMIN", "ADMIN", "FINANCE", "CONTENT", "EVALUATOR"];
 
 export default async function UserAdmin({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -70,14 +71,18 @@ export default async function UserAdmin({ params }: { params: Promise<{ id: stri
           </dl>
         </Panel>
         <Panel title={t("Admin roles")}>
-          <div className="flex flex-wrap gap-2">
-            {ROLES.map((r) => (
-              <ActionButton key={r} action={setRoleAction.bind(null, u.id, r, !has(r))} className={`chip ${has(r) ? "chip-on" : ""}`} confirm={has(r) ? t("Remove {role}?", { role: r }) : t("Grant {role}?", { role: r })}>
-                {r}
+          <div className="grid gap-2">
+            {ROLE_INFO.map(({ role: r, label, desc, tone }) => (
+              <ActionButton key={r} action={setRoleAction.bind(null, u.id, r, !has(r))} className={`flex w-full items-start gap-3 rounded-2xl p-3 text-start ring-1 transition ${has(r) ? `${TONES[tone].soft} ring-2 ring-ink` : "ring-ink/[.08] hover:bg-canvas"}`} confirm={has(r) ? t("Remove {role}?", { role: t(label) }) : t("Grant {role}?", { role: t(label) })}>
+                <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md text-[11px] font-bold ${has(r) ? "bg-ink text-white" : "bg-ink/10"}`}>{has(r) ? "✓" : ""}</span>
+                <span>
+                  <span className={`block text-sm font-bold ${TONES[tone].text}`}>{t(label)}</span>
+                  <span className="block text-xs text-ink-soft">{t(desc)}</span>
+                </span>
               </ActionButton>
             ))}
           </div>
-          <p className="mt-3 text-xs text-ink-muted">{t("Only super admins can change roles. ADMIN: operations · FINANCE: money · CONTENT: CMS & moderation · EVALUATOR: Farah assessments.")}</p>
+          <p className="mt-3 text-xs text-ink-muted">{t("Only super admins can change roles. Tap a role to give or remove it.")}</p>
         </Panel>
       </div>
       <Panel title={t("Bookings")}>

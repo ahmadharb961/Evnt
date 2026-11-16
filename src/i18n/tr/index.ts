@@ -4,5 +4,6 @@ import { B3 } from "./b3";
 import { B4 } from "./b4";
 import { B5 } from "./b5";
 import { B6 } from "./b6";
+import { B7 } from "./b7";
 
-export const ALL: [string, string, string][] = [...B1, ...B2, ...B3, ...B4, ...B5, ...B6];
+export const ALL: [string, string, string][] = [...B1, ...B2, ...B3, ...B4, ...B5, ...B6, ...B7];

@@ -18,6 +18,8 @@ import { getSetting } from "@/server/settings";
 import { commissionFor, withinExternalWindow } from "@/lib/commission";
 import { parseMoney } from "@/lib/money";
 import { slugify } from "@/lib/codes";
+import { normalizePhone } from "@/lib/phone";
+import { hashPassword, validatePassword } from "@/server/passwords";
 import { localizedFromForm } from "@/i18n/core";
 import { getLocale } from "@/i18n/server";
 import { searchPickable } from "@/server/picker";
@@ -87,7 +89,7 @@ export async function manageAsMerchantAction(merchantId: string) {
 export async function stopManagingAction() {
   await requireAdmin();
   (await cookies()).delete(ADMIN_AS_COOKIE);
-  redirect("/admin/merchants");
+  redirect("/admin/listings");
 }
 
 export async function invoiceCommissionsAction(merchantId: string) {
@@ -546,4 +548,93 @@ export async function saveRankingAction(_: FormResult, form: FormData): Promise<
     revalidatePath("/");
     revalidateTag("home");
   }, "/admin/ranking");
+}
+
+// ───────────── Create users & admin team ─────────────
+
+const ALL_ROLES: Role[] = ["SUPER_ADMIN", "ADMIN", "FINANCE", "CONTENT", "EVALUATOR"];
+
+/** Creates an account (customer or admin team member). Only super admins can give admin roles. */
+export async function createUserAction(_: FormResult, form: FormData): Promise<FormResult> {
+  const u = await requireAdmin("ADMIN");
+  const name = String(form.get("name") ?? "").trim();
+  const email = String(form.get("email") ?? "").trim().toLowerCase();
+  const password = String(form.get("password") ?? "");
+  const phoneRaw = String(form.get("phone") ?? "").trim();
+  const roles = form.getAll("roles").map(String).filter((r): r is Role => ALL_ROLES.includes(r as Role));
+  if (name.length < 2) return { error: "Enter the person's name" };
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: "Enter a valid email" };
+  const pwErr = validatePassword(password);
+  if (pwErr) return { error: pwErr };
+  if (roles.length && !hasRole(u, "SUPER_ADMIN")) return { error: "Only a super admin can create admin team members" };
+  let phone: string | null = null;
+  if (phoneRaw) {
+    const p = normalizePhone(phoneRaw);
+    if (!p.ok) return { error: p.error };
+    phone = p.e164;
+  }
+  if (await prisma.user.findUnique({ where: { email } })) return { error: "An account with this email already exists" };
+  const created = await prisma.user.create({
+    data: { name, email, phone, passwordHash: await hashPassword(password), emailVerifiedAt: new Date(), roles: { create: roles.map((role) => ({ role })) } },
+  });
+  await audit(u.id, roles.length ? "team.created" : "user.created", "user", created.id, { roles });
+  revalidatePath("/admin/users");
+  revalidatePath("/admin/team");
+  return { message: roles.length ? `${name} can now sign in to the admin with ${email}` : `Account created for ${name}` };
+}
+
+/** Gives admin roles to an existing account, found by email. Super admins only. */
+export async function addTeamMemberAction(_: FormResult, form: FormData): Promise<FormResult> {
+  const u = await requireAdmin();
+  if (!hasRole(u, "SUPER_ADMIN")) return { error: "Only a super admin can change admin roles" };
+  const email = String(form.get("email") ?? "").trim().toLowerCase();
+  const roles = form.getAll("roles").map(String).filter((r): r is Role => ALL_ROLES.includes(r as Role));
+  if (!roles.length) return { error: "Choose at least one role" };
+  const target = await prisma.user.findUnique({ where: { email } });
+  if (!target) return { error: "No account with this email. Use “New team member” to create one." };
+  for (const role of roles) await prisma.userRole.upsert({ where: { userId_role: { userId: target.id, role } }, create: { userId: target.id, role }, update: {} });
+  await audit(u.id, "role.granted", "user", target.id, { roles });
+  revalidatePath("/admin/team");
+  return { message: `${target.name} added to the admin team` };
+}
+
+/** Removes every admin role from a team member (they keep their normal account). */
+export async function removeFromTeamAction(userId: string) {
+  const u = await requireAdmin();
+  if (!hasRole(u, "SUPER_ADMIN")) return { error: "Only a super admin can change admin roles" };
+  if (userId === u.id) return { error: "You can't remove yourself" };
+  await prisma.userRole.deleteMany({ where: { userId } });
+  await prisma.session.deleteMany({ where: { userId } });
+  await audit(u.id, "team.removed", "user", userId);
+  revalidatePath("/admin/team");
+  return {};
+}
+
+// ───────────── Edit / create listings as admin ─────────────
+
+/** Opens the business's own editor for a listing (admin acts as that business, recorded in the log). */
+export async function editListingAsAdminAction(kind: "event" | "product" | "restaurant", id: string) {
+  const u = await requireAdmin("ADMIN");
+  const row =
+    kind === "event"
+      ? await prisma.event.findUnique({ where: { id }, select: { merchantId: true } })
+      : kind === "product"
+        ? await prisma.product.findUnique({ where: { id }, select: { merchantId: true } })
+        : await prisma.restaurant.findUnique({ where: { id }, select: { merchantId: true } });
+  if (!row) return { error: "Listing not found" };
+  (await cookies()).set(ADMIN_AS_COOKIE, row.merchantId, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 4 * 3600 });
+  await audit(u.id, "admin.edit_listing", kind, id);
+  redirect(kind === "event" ? `/merchant/events/${id}` : kind === "product" ? `/merchant/products/${id}` : "/merchant/restaurant");
+}
+
+/** Starts a new listing for a chosen business. */
+export async function createListingAsAdminAction(_: FormResult, form: FormData): Promise<FormResult> {
+  const u = await requireAdmin("ADMIN");
+  const merchantId = String(form.get("merchantId") ?? "");
+  const kind = String(form.get("kind") ?? "event");
+  const m = merchantId ? await prisma.merchant.findUnique({ where: { id: merchantId }, select: { id: true } }) : null;
+  if (!m) return { error: "Choose a business" };
+  (await cookies()).set(ADMIN_AS_COOKIE, m.id, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 4 * 3600 });
+  await audit(u.id, "admin.create_listing", kind, undefined, { merchantId });
+  redirect(kind === "product" ? "/merchant/products/new" : kind === "restaurant" ? "/merchant/restaurant" : "/merchant/events/new");
 }

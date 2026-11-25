@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { Star, MapPin, Calendar } from "lucide-react";
+import { Star, MapPin, Calendar, ShoppingBag, ArrowRight } from "lucide-react";
 import { FavoriteButton } from "@/components/favorite-button";
 import { formatMoney } from "@/lib/money";
 import { fmtDate, fmtTime } from "@/lib/dates";
-import type { EventCardData, ProductCardData, RestaurantCardData } from "@/lib/types";
+import type { EventCardData, ProductCardData, RestaurantCardData, StoreCardData } from "@/lib/types";
 import type { Locale, T } from "@/i18n/core";
 
 export function ageLabel(t: T, min: number, max: number) {
@@ -145,6 +145,57 @@ export function ProductCard({ p, t, locale, saved, wide = false }: { p: ProductC
         <div className="mt-auto flex items-baseline gap-2 pt-2">
           <span className="text-sm font-bold">{formatMoney(p.salePriceCents ?? p.priceCents, locale)}</span>
           {p.salePriceCents != null && <span className="text-xs text-ink-muted line-through">{formatMoney(p.priceCents, locale)}</span>}
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+/** A shop on EVNT: tap to see all its products. */
+export function StoreCard({ s, t, wide = false }: { s: StoreCardData; t: T; wide?: boolean }) {
+  return (
+    <Link href={`/m/${s.slug}`} className={`group flex flex-col overflow-hidden rounded-3xl border border-ink/[.07] bg-white shadow-card transition duration-300 hover:shadow-lift ${wide ? "" : "w-[78vw] max-w-[300px] shrink-0 snap-start sm:w-[280px]"}`}>
+      <div className="relative aspect-[16/9] overflow-hidden bg-blush-soft">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={s.cover} alt="" loading="lazy" className={`h-full w-full transition duration-500 group-hover:scale-[1.03] ${s.coverIsProduct ? "bg-white object-contain p-3" : "object-cover"}`} />
+        {s.onSale > 0 && <span className="absolute end-3 top-3 rounded-full bg-blush px-2.5 py-1 text-[10px] font-bold uppercase text-blush-deep">{t("Sale")}</span>}
+      </div>
+      <div className="relative flex flex-1 flex-col px-4 pb-4">
+        <div className="-mt-7 flex items-end gap-3">
+          <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-4 border-white bg-white shadow-card">
+            {s.logo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={s.logo} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <ShoppingBag className="h-6 w-6 text-blush-deep" />
+            )}
+          </span>
+        </div>
+        <h3 className="mt-2 text-[17px] font-bold leading-snug">{s.name}</h3>
+        <p className="mt-0.5 flex flex-wrap items-center gap-x-3 text-xs text-ink-muted">
+          {s.areaName && (
+            <span className="inline-flex items-center gap-1">
+              <MapPin className="h-3.5 w-3.5" />
+              {s.areaName}
+            </span>
+          )}
+          <Rating value={s.rating} count={s.ratingCount} t={t} />
+        </p>
+        {s.previews.length > 0 && (
+          <div className="mt-3 grid grid-cols-4 gap-1.5">
+            {s.previews.map((p, i) => (
+              <span key={i} className="aspect-square overflow-hidden rounded-xl bg-canvas ring-1 ring-ink/[.04]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={p} alt="" loading="lazy" className="h-full w-full object-contain p-0.5" />
+              </span>
+            ))}
+          </div>
+        )}
+        <div className="mt-auto flex items-center justify-between pt-3">
+          <span className="rounded-full bg-blush-soft px-2.5 py-1 text-[11px] font-semibold text-blush-deep">{t("{n} products", { n: s.productCount })}</span>
+          <span className="inline-flex items-center gap-1 text-sm font-bold">
+            {t("Visit shop")} <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+          </span>
         </div>
       </div>
     </Link>

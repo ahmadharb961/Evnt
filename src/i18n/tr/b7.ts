@@ -233,4 +233,11 @@ export const B7: [string, string, string][] = [
   ["Start planning", "ابدأ التخطيط", "Commencer"],
   ["Tell us what you need and get quotes from venues, entertainers and more.", "أخبرنا بما تحتاجه واحصل على عروض أسعار من الأماكن والمنشّطين وغيرهم.", "Dites-nous ce qu'il vous faut et recevez des devis de lieux, animateurs et plus."],
   ["{n} quote requests", "{n} طلبات عرض سعر", "{n} demandes de devis"],
+  ["All products", "كل المنتجات", "Tous les produits"],
+  ["No shops yet.", "لا متاجر بعد.", "Aucune boutique pour l'instant."],
+  ["Shops", "المتاجر", "Boutiques"],
+  ["Visit shop", "زيارة المتجر", "Voir la boutique"],
+  ["{n} products", "{n} منتجات", "{n} produits"],
+  ["{n} products · delivered to your door", "{n} منتجات · توصيل حتى بابك", "{n} produits · livrés chez vous"],
+  ["{n} shops · tap a shop to see everything it sells", "{n} متاجر · اضغط على المتجر لرؤية كل ما يبيعه", "{n} boutiques · touchez une boutique pour voir tout ce qu'elle vend"],
 ];

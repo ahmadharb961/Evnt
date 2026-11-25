@@ -30,7 +30,7 @@ export default async function MerchantProfile({ params, searchParams }: { params
   if (sp.ad && /^[a-z0-9]{20,40}$/.test(sp.ad)) await prisma.adCampaign.updateMany({ where: { id: sp.ad, merchantId: m.id }, data: { clicks: { increment: 1 } } });
   const [events, products, restaurants, reviews, saved] = await Promise.all([
     searchEvents({ merchantId: m.id, limit: 20, includeSoldOut: true }, locale),
-    searchProducts({ merchantId: m.id, limit: 20 }, locale),
+    searchProducts({ merchantId: m.id, limit: 120 }, locale),
     prisma.restaurant.findMany({ where: { merchantId: m.id, status: "PUBLISHED" }, select: { id: true } }),
     listReviews({ merchantId: m.id }, 6),
     favoriteIds(user?.id),
@@ -38,15 +38,15 @@ export default async function MerchantProfile({ params, searchParams }: { params
   const rs = restaurants.length ? await searchRestaurants({ ids: restaurants.map((r) => r.id) }, locale) : { items: [] };
   return (
     <div>
-      <div className="relative h-48 bg-powder-soft sm:h-72">
+      <div className="relative h-40 bg-gradient-to-br from-blush-soft via-peach-soft to-powder-soft sm:h-64">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         {m.coverId && <img src={mediaSrc(m.coverId)} alt="" className="h-full w-full object-cover" />}
       </div>
       <div className="container-x">
-        <div className="-mt-12 flex flex-wrap items-end gap-4">
+        <div className="relative z-10 -mt-12 flex flex-wrap items-end gap-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={mediaSrc(m.logoId ?? m.coverId)} alt="" className="h-24 w-24 rounded-3xl border-4 border-white bg-white object-cover shadow-card" />
-          <div className="pb-1">
+          <img src={m.logoId || m.coverId ? mediaSrc(m.logoId ?? m.coverId) : "/icons/icon-192.png"} alt="" className="h-24 w-24 rounded-3xl border-4 border-white bg-white object-cover shadow-card" />
+          <div className="pb-1 pt-14">
             <h1 className="text-3xl font-bold tracking-tight">{m.name}</h1>
             <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-ink-muted">
               {m.ratingCount > 0 && (
@@ -91,9 +91,11 @@ export default async function MerchantProfile({ params, searchParams }: { params
           )}
         </div>
       </div>
+      {products.items.length > 0 && (
+        <SectionRow title={t("Products")} subtitle={t("{n} products · delivered to your door", { n: products.total })} items={products.items} layout="GRID" t={t} locale={locale} saved={saved} />
+      )}
       <SectionRow title={t("Activities & events")} items={events.items} layout="GRID" t={t} locale={locale} saved={saved} />
       <SectionRow title={t("Restaurant")} items={rs.items} t={t} locale={locale} saved={saved} />
-      <SectionRow title={t("Shop")} items={products.items} layout="GRID" t={t} locale={locale} saved={saved} />
       {reviews.total > 0 && (
         <section className="container-x mt-12">
           <h2 className="h-section mb-4">{t("What parents say")}</h2>

@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { ScrollRow } from "@/components/scroll-row";
 import { ArrowRight } from "lucide-react";
-import { EventCard, ProductCard, RestaurantCard } from "@/components/cards";
-import type { CardData } from "@/lib/types";
+import { EventCard, ProductCard, RestaurantCard, StoreCard } from "@/components/cards";
+import type { CardData, StoreCardData } from "@/lib/types";
 import type { Locale, T } from "@/i18n/core";
 
 export function CardGrid({ items, t, locale, saved }: { items: CardData[]; t: T; locale: Locale; saved: Set<string> }) {
@@ -27,6 +27,7 @@ export function SectionRow({
   href,
   ctaText,
   items,
+  stores,
   layout = "CAROUSEL",
   banner,
   t,
@@ -38,13 +39,15 @@ export function SectionRow({
   href?: string | null;
   ctaText?: string;
   items: CardData[];
+  /** Shops instead of single products (tap a shop to see its products). */
+  stores?: StoreCardData[];
   layout?: "CAROUSEL" | "GRID";
   banner?: string | null;
   t: T;
   locale: Locale;
   saved: Set<string>;
 }) {
-  if (!items.length) return null;
+  if (!items.length && !stores?.length) return null;
   const onlyProducts = items.every((i) => i.kind === "product");
   return (
     <section className="container-x mt-12 sm:mt-14">
@@ -64,7 +67,21 @@ export function SectionRow({
           </Link>
         )}
       </div>
-      {layout === "GRID" ? (
+      {stores?.length ? (
+        layout === "GRID" ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {stores.map((s) => (
+              <StoreCard key={s.id} s={s} t={t} wide />
+            ))}
+          </div>
+        ) : (
+          <ScrollRow>
+            {stores.map((s) => (
+              <StoreCard key={s.id} s={s} t={t} />
+            ))}
+          </ScrollRow>
+        )
+      ) : layout === "GRID" ? (
         onlyProducts ? (
           <div className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 lg:grid-cols-5">
             {items.map((i) => (

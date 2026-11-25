@@ -6,7 +6,7 @@ import { ensureDemoDates } from "./demo-dates";
 import { loc, type Locale } from "@/i18n/core";
 import { areaName, AREAS, distanceKm } from "@/lib/areas";
 import { windowFor } from "@/lib/dates";
-import type { Availability, EventCardData, ProductCardData, RestaurantCardData } from "@/lib/types";
+import type { Availability, EventCardData, ProductCardData, RestaurantCardData, StoreCardData } from "@/lib/types";
 
 // ───────────────────────── Events ─────────────────────────
 
@@ -475,4 +475,48 @@ export async function reindexProduct(id: string) {
     ...Object.values((p.category.parent?.name as object) ?? {}),
   ];
   await prisma.product.update({ where: { id }, data: { searchText: parts.join(" ").toLowerCase().slice(0, 4000) } });
+}
+
+const productImg = (s?: string) => (s ? (s.startsWith("/") || s.startsWith("http") ? s : mediaSrc(s)) : mediaSrc());
+
+/**
+ * Shops with products on EVNT, for the shop page and the homepage. Admin ordering (rank) comes first,
+ * then the shops with the most products.
+ */
+export async function listStores(locale: Locale, opts: { limit?: number; categorySlug?: string } = {}): Promise<StoreCardData[]> {
+  const catIds = await categoryIdsFor(opts.categorySlug);
+  const productWhere: Prisma.ProductWhereInput = { status: "PUBLISHED", ...(catIds ? { categoryId: { in: catIds } } : {}) };
+  const ms = await prisma.merchant.findMany({
+    where: { status: "APPROVED", products: { some: productWhere } },
+    select: {
+      id: true,
+      slug: true,
+      name: true,
+      logoId: true,
+      coverId: true,
+      rank: true,
+      ratingAvg: true,
+      ratingCount: true,
+      locations: { select: { area: true }, take: 1 },
+      products: { where: productWhere, select: { images: true, salePriceCents: true }, orderBy: [{ rank: { sort: "asc", nulls: "last" } }, { createdAt: "desc" }] },
+    },
+  });
+  return ms
+    .sort((a, b) => (a.rank ?? 1e9) - (b.rank ?? 1e9) || b.products.length - a.products.length || a.name.localeCompare(b.name))
+    .slice(0, opts.limit ?? 60)
+    .map((m) => ({
+      kind: "store" as const,
+      id: m.id,
+      slug: m.slug,
+      name: m.name,
+      logo: m.logoId ? mediaSrc(m.logoId) : null,
+      cover: m.coverId ? mediaSrc(m.coverId) : productImg(m.products[0]?.images[0]),
+      coverIsProduct: !m.coverId,
+      areaName: m.locations[0] ? areaName(m.locations[0].area, locale) : null,
+      productCount: m.products.length,
+      onSale: m.products.filter((p) => p.salePriceCents != null).length,
+      previews: m.products.slice(0, 4).map((p) => productImg(p.images[0])),
+      rating: m.ratingAvg,
+      ratingCount: m.ratingCount,
+    }));
 }

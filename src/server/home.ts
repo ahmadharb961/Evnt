@@ -2,9 +2,9 @@ import "server-only";
 import { unstable_cache } from "next/cache";
 import type { HomeSection } from "@prisma/client";
 import { prisma } from "./db";
-import { searchEvents, searchProducts, searchRestaurants, type EventFilters } from "./listings";
+import { listStores, searchEvents, searchProducts, searchRestaurants, type EventFilters } from "./listings";
 import { loc, type Locale } from "@/i18n/core";
-import type { CardData } from "@/lib/types";
+import type { CardData, StoreCardData } from "@/lib/types";
 
 export type ResolvedSection = {
   id: string;
@@ -16,6 +16,8 @@ export type ResolvedSection = {
   ctaHref: string | null;
   sponsored: boolean;
   items: CardData[];
+  /** Shop sections show shops (tap to see their products). */
+  stores?: StoreCardData[];
   /** Paid campaigns shown in this section: one impression is counted per page view. */
   campaignIds: string[];
 };
@@ -58,6 +60,7 @@ export async function resolveSection(s: HomeSection, locale: Locale): Promise<Re
   const manual = s.mode === "MANUAL" && s.itemIds?.length ? s.itemIds : undefined;
   let items: CardData[] = [];
   let campaignIds: string[] = [];
+  let stores: StoreCardData[] | undefined;
   if (s.source === "EVENTS") {
     items = (
       await searchEvents(
@@ -79,6 +82,8 @@ export async function resolveSection(s: HomeSection, locale: Locale): Promise<Re
     ).items;
   } else if (s.source === "RESTAURANTS") {
     items = (await searchRestaurants({ ids: manual, area: f.area, limit: s.limit }, locale)).items;
+  } else if (s.source === "PRODUCTS" && !manual) {
+    stores = await listStores(locale, { limit: s.limit, categorySlug: f.categorySlug });
   } else if (s.source === "PRODUCTS") {
     items = (await searchProducts({ ids: manual, categorySlug: f.categorySlug, maxPriceCents: f.maxPriceCents, ageMin: f.ageMin, ageMax: f.ageMax, limit: s.limit }, locale)).items;
   } else if (s.source === "HANDPICKED") {
@@ -115,6 +120,7 @@ export async function resolveSection(s: HomeSection, locale: Locale): Promise<Re
     ctaHref: s.ctaHref,
     sponsored: s.sponsored,
     items,
+    stores,
     campaignIds,
   };
 }

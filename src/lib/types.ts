@@ -61,3 +61,20 @@ export type ProductCardData = {
 };
 
 export type CardData = EventCardData | RestaurantCardData | ProductCardData;
+
+export type StoreCardData = {
+  kind: "store";
+  id: string;
+  slug: string;
+  name: string;
+  logo: string | null;
+  cover: string;
+  /** The cover is a product photo (show it whole rather than cropped). */
+  coverIsProduct: boolean;
+  areaName: string | null;
+  productCount: number;
+  onSale: number;
+  previews: string[];
+  rating: number;
+  ratingCount: number;
+};

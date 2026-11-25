@@ -4,6 +4,8 @@ import { prisma } from "@/server/db";
 import { getLocale, getT } from "@/i18n/server";
 import { loc } from "@/i18n/core";
 import { ShopGrid, parseShopParams } from "@/components/shop-grid";
+import { StoreCard } from "@/components/cards";
+import { listStores } from "@/server/listings";
 import { CategorySponsor } from "@/components/category-sponsor";
 import { alternates } from "@/server/urls";
 import type { SP } from "@/lib/filters";
@@ -19,7 +21,11 @@ export async function generateMetadata() {
 export default async function ShopPage({ searchParams }: { searchParams: Promise<SP> }) {
   const sp = await searchParams;
   const [locale, t] = await Promise.all([getLocale(), getT()]);
-  const root = await prisma.category.findUnique({ where: { slug: "shop" }, include: { children: { where: { active: true }, orderBy: { sort: "asc" } } } });
+  const showProducts = sp.view === "products" || !!sp.q;
+  const [root, stores] = await Promise.all([
+    prisma.category.findUnique({ where: { slug: "shop" }, include: { children: { where: { active: true }, orderBy: { sort: "asc" } } } }),
+    showProducts ? Promise.resolve([]) : listStores(locale),
+  ]);
   return (
     <div className="container-x py-6 sm:py-10">
       <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{t("Shop for kids")}</h1>
@@ -38,9 +44,29 @@ export default async function ShopPage({ searchParams }: { searchParams: Promise
         })}
       </div>
       {root && <CategorySponsor categoryId={root.id} t={t} />}
-      <div className="mt-8">
-        <ShopGrid filters={parseShopParams(sp)} sp={sp} basePath="/shop" />
+      <div className="mt-8 flex gap-2">
+        <Link href="/shop" className={`chip ${!showProducts ? "chip-on" : ""}`} scroll={false}>
+          {t("Shops")}
+        </Link>
+        <Link href="/shop?view=products" className={`chip ${showProducts ? "chip-on" : ""}`} scroll={false}>
+          {t("All products")}
+        </Link>
       </div>
+      {showProducts ? (
+        <div className="mt-6">
+          <ShopGrid filters={parseShopParams(sp)} sp={sp} basePath="/shop" />
+        </div>
+      ) : (
+        <>
+          <p className="mt-4 text-sm text-ink-muted">{t("{n} shops · tap a shop to see everything it sells", { n: stores.length })}</p>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {stores.map((st) => (
+              <StoreCard key={st.id} s={st} t={t} wide />
+            ))}
+          </div>
+          {!stores.length && <p className="mt-6 rounded-3xl bg-canvas p-8 text-center text-sm text-ink-muted">{t("No shops yet.")}</p>}
+        </>
+      )}
     </div>
   );
 }

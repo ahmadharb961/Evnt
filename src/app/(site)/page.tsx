@@ -57,7 +57,7 @@ export default async function HomePage() {
         s.layout === "SPOTLIGHT" ? (
           <Spotlight key={s.id} title={s.title} subtitle={s.subtitle} href={s.ctaHref} ctaText={s.ctaText} items={s.items} t={t} locale={locale} saved={saved} />
         ) : (
-        <SectionRow key={s.id} title={s.title} subtitle={s.subtitle} href={s.ctaHref} ctaText={s.ctaText} items={s.items} layout={s.layout} banner={s.bannerUrl} t={t} locale={locale} saved={saved} />
+        <SectionRow key={s.id} title={s.title} subtitle={s.subtitle} href={s.ctaHref} ctaText={s.ctaText} items={s.items} stores={s.stores} layout={s.layout} banner={s.bannerUrl} t={t} locale={locale} saved={saved} />
         ),
       )}
 

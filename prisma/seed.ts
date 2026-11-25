@@ -289,6 +289,9 @@ async function main() {
   if (process.env.SEED_DEMO === "true") {
     const { seedDemo } = await import("./demo");
     await seedDemo(prisma);
+    const { refreshDemoSessions } = await import("../src/server/demo-dates");
+    const added = await refreshDemoSessions(prisma);
+    if (added) console.log(`[seed] demo dates refreshed (+${added} upcoming dates)`);
   }
   console.log("[seed] done");
 }

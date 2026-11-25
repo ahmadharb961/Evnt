@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getCurrentUser, requireMerchant, UserError } from "@/server/auth";
-import { buyLead, createInquiry, requestQuotes, sendQuote } from "@/server/birthdays";
+import { createInquiry, requestQuotes, sendQuote } from "@/server/birthdays";
 import { prisma } from "@/server/db";
 import { rateLimit } from "@/server/rate-limit";
 import { normalizeMobile } from "@/lib/phone";
@@ -88,15 +88,3 @@ export async function sendQuoteAction(quoteId: string, _: FormResult, form: Form
   return { message: decline ? t("Declined") : t("Quote sent") };
 }
 
-export async function buyLeadAction(inquiryId: string) {
-  const t = await getT();
-  const ctx = await requireMerchant("MANAGER");
-  try {
-    await buyLead(ctx.merchant.id, inquiryId, ctx.user.id);
-  } catch (e) {
-    if (e instanceof UserError) return { error: t(e.message) };
-    throw e;
-  }
-  revalidatePath("/merchant/leads");
-  return {};
-}

@@ -20,7 +20,6 @@ export type EventFilters = {
   maxPriceCents?: number;
   setting?: "INDOOR" | "OUTDOOR";
   minRating?: number;
-  farah?: boolean;
   accessible?: boolean;
   includeSoldOut?: boolean;
   sort?: "recommended" | "soonest" | "popular" | "newest" | "price" | "rating" | "distance";
@@ -92,7 +91,7 @@ function pinCompare(a: number, b: number) {
 }
 
 const eventInclude = {
-  merchant: { select: { name: true, farahUntil: true, rank: true } },
+  merchant: { select: { name: true, rank: true } },
   location: { select: { area: true, lat: true, lng: true } },
   category: { select: { name: true } },
   sessions: {
@@ -156,7 +155,6 @@ async function toEventCards(rows: EventRow[], locale: Locale, window: { from: Da
       nextStartsAt: nextOpen ? nextOpen.startsAt.toISOString() : null,
       sessionsCount: upcoming.length,
       availability: availabilityOf(remaining, caps),
-      farah: !!e.merchant.farahUntil && e.merchant.farahUntil > now,
       isNew: !!e.publishedAt && now.getTime() - e.publishedAt.getTime() < 14 * 86400_000,
       lat: e.location?.lat ?? null,
       lng: e.location?.lng ?? null,
@@ -190,7 +188,6 @@ export async function searchEvents(f: EventFilters, locale: Locale): Promise<{ i
     ...(f.maxPriceCents != null && !f.free ? { OR: [{ isFree: true }, { fromPriceCents: { lte: f.maxPriceCents } }] } : {}),
     ...(f.setting ? { setting: { in: [f.setting, "BOTH"] } } : {}),
     ...(f.minRating ? { ratingAvg: { gte: f.minRating } } : {}),
-    ...(f.farah ? { merchant: { status: "APPROVED", farahUntil: { gt: now } } } : {}),
     ...(f.accessible ? { accessible: true } : {}),
     ...(f.ids ? { id: { in: f.ids } } : {}),
     ...(f.merchantId ? { merchantId: f.merchantId } : {}),
@@ -263,7 +260,6 @@ export type RestaurantFilters = {
   facilities?: Facility[];
   priceLevel?: number;
   minRating?: number;
-  farah?: boolean;
   reservable?: boolean;
   sort?: "recommended" | "rating" | "distance" | "newest";
   near?: { lat: number; lng: number };
@@ -283,7 +279,7 @@ export async function searchRestaurants(f: RestaurantFilters, locale: Locale): P
   const now = new Date();
   const where: Prisma.RestaurantWhereInput = {
     status: "PUBLISHED",
-    merchant: { status: "APPROVED", ...(f.farah ? { farahUntil: { gt: now } } : {}) },
+    merchant: { status: "APPROVED" },
     ...(area ? { location: { area } } : {}),
     ...(f.cuisine ? { cuisines: { has: f.cuisine } } : {}),
     ...(f.priceLevel ? { priceLevel: { lte: f.priceLevel } } : {}),
@@ -296,7 +292,7 @@ export async function searchRestaurants(f: RestaurantFilters, locale: Locale): P
   };
   const rows = await prisma.restaurant.findMany({
     where,
-    include: { merchant: { select: { farahUntil: true, rank: true } }, location: { select: { area: true, lat: true, lng: true } } },
+    include: { merchant: { select: { rank: true } }, location: { select: { area: true, lat: true, lng: true } } },
     take: 300,
   });
   let items = rows.map(
@@ -312,7 +308,6 @@ export async function searchRestaurants(f: RestaurantFilters, locale: Locale): P
       rating: r.ratingAvg,
       ratingCount: r.ratingCount,
       facilities: RESTAURANT_FACILITIES.filter((k) => r[k]),
-      farah: !!r.merchant.farahUntil && r.merchant.farahUntil > now,
       acceptsReservations: r.acceptsReservations,
       lat: r.location?.lat ?? null,
       lng: r.location?.lng ?? null,

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Prisma } from "@prisma/client";
-import { ArrowRight, CalendarPlus, UserPlus, ShieldPlus, LayoutTemplate, Settings, Store, Megaphone, Wallet, ShieldCheck } from "lucide-react";
+import { ArrowRight, CalendarPlus, UserPlus, ShieldPlus, LayoutTemplate, Settings, Store, Megaphone, Wallet } from "lucide-react";
 import { requireAdmin, hasRole } from "@/server/auth";
 import { prisma } from "@/server/db";
 import { platformFinancials } from "@/server/reports";
@@ -20,7 +20,7 @@ export default async function AdminHome({ searchParams }: { searchParams: Promis
   const since = new Date(Date.now() - days * 86400_000);
   const prev = new Date(since.getTime() - days * 86400_000);
   const unit = days > 90 ? "month" : days > 30 ? "week" : "day";
-  const [f, fPrev, users, newUsers, newUsersPrev, merchants, members, pendingMerchants, pendingAds, refunds, farah, bookingsByDay, ordersByDay, usersByDay, topMerchants, liveListings] = await Promise.all([
+  const [f, fPrev, users, newUsers, newUsersPrev, merchants, members, pendingMerchants, pendingAds, refunds, bookingsByDay, ordersByDay, usersByDay, topMerchants, liveListings] = await Promise.all([
     platformFinancials(since),
     platformFinancials(prev, since),
     prisma.user.count({ where: { disabled: false } }),
@@ -31,7 +31,6 @@ export default async function AdminHome({ searchParams }: { searchParams: Promis
     prisma.merchant.count({ where: { status: "PENDING" } }),
     prisma.adCampaign.count({ where: { status: "PENDING_APPROVAL" } }),
     prisma.refund.count({ where: { status: { in: ["REQUESTED", "APPROVED"] } } }),
-    prisma.certification.count({ where: { status: { in: ["PAID", "ASSESSED"] } } }),
     prisma.$queryRaw<Row[]>(Prisma.sql`SELECT date_trunc(${unit}, "confirmedAt") AS d, SUM("subtotalCents") AS v FROM "Booking" WHERE status IN ('CONFIRMED','COMPLETED') AND "confirmedAt" >= ${since} GROUP BY 1`),
     prisma.$queryRaw<Row[]>(Prisma.sql`SELECT date_trunc(${unit}, COALESCE("paidAt","codCollectedAt")) AS d, SUM("subtotalCents") AS v FROM "Order" WHERE status NOT IN ('CANCELED','REFUNDED') AND COALESCE("paidAt","codCollectedAt") >= ${since} GROUP BY 1`),
     prisma.$queryRaw<Row[]>(Prisma.sql`SELECT date_trunc(${unit}, "createdAt") AS d, COUNT(*) AS v FROM "User" WHERE "createdAt" >= ${since} GROUP BY 1`),
@@ -63,7 +62,6 @@ export default async function AdminHome({ searchParams }: { searchParams: Promis
     { n: pendingMerchants, label: t("businesses to verify"), href: "/admin/merchants?status=PENDING", icon: Store, cls: "bg-sky-100 text-sky-900" },
     { n: pendingAds, label: t("campaigns to review"), href: "/admin/ads", icon: Megaphone, cls: "bg-peach-soft text-peach-deep" },
     { n: refunds, label: t("refunds to process"), href: "/admin/finance", icon: Wallet, cls: "bg-rose-100 text-rose-900" },
-    { n: farah, label: t("Farah Approved applications to action"), href: "/admin/farah", icon: ShieldCheck, cls: "bg-mint-soft text-mint-deep" },
   ].filter((x) => x.n > 0);
   const quick = [
     { href: "/admin/create", label: t("New activity"), icon: CalendarPlus, cls: "bg-peach text-peach-deep" },
@@ -80,8 +78,6 @@ export default async function AdminHome({ searchParams }: { searchParams: Promis
     { k: "bookingFees", label: t("Booking fees"), color: "#f4a46b" },
     { k: "memberships", label: "EVNT+", color: "#9b7be0" },
     { k: "advertising", label: t("Advertising"), color: "#d77fb3" },
-    { k: "leads", label: t("Birthday Radar leads"), color: "#ee6f86" },
-    { k: "certifications", label: t("Farah Approved"), color: "#34b37e" },
     { k: "reports", label: t("Market reports"), color: "#f2b632" },
   ] as const;
 

@@ -20,7 +20,6 @@ export function parseEventParams(sp: SP) {
     maxPriceCents: Number.isFinite(maxPrice) && maxPrice > 0 ? Math.round(maxPrice * 100) : undefined,
     setting: setting === "INDOOR" || setting === "OUTDOOR" ? (setting as "INDOOR" | "OUTDOOR") : undefined,
     minRating: Number.isFinite(rating) ? rating : undefined,
-    farah: one(sp.farah) === "1" || undefined,
     accessible: one(sp.accessible) === "1" || undefined,
     includeSoldOut: one(sp.soldout) === "1" || undefined,
     sort: (["soonest", "popular", "newest", "price", "rating", "distance"].includes(sort) ? sort : undefined) as

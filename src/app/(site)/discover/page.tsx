@@ -65,7 +65,7 @@ async function AllResults({ sp }: { sp: SP }) {
   const q = f.q;
   const [ev, rs, pr, saved] = await Promise.all([
     searchEvents({ ...f, limit: 8 }, locale),
-    searchRestaurants({ q, area: f.area, farah: f.farah, limit: 4 }, locale),
+    searchRestaurants({ q, area: f.area, limit: 4 }, locale),
     searchProducts({ q, ageMin: f.ageMin, ageMax: f.ageMax, maxPriceCents: f.maxPriceCents, limit: 5 }, locale),
     favoriteIds(user?.id),
   ]);
@@ -115,7 +115,7 @@ async function AllResults({ sp }: { sp: SP }) {
 async function RestaurantGrid({ sp }: { sp: SP }) {
   const [locale, t, user] = await Promise.all([getLocale(), getT(), getCurrentUser()]);
   const f = parseEventParams(sp);
-  const [{ items }, saved] = await Promise.all([searchRestaurants({ q: f.q, area: f.area, farah: f.farah, minRating: f.minRating, near: f.near, limit: 60 }, locale), favoriteIds(user?.id)]);
+  const [{ items }, saved] = await Promise.all([searchRestaurants({ q: f.q, area: f.area, minRating: f.minRating, near: f.near, limit: 60 }, locale), favoriteIds(user?.id)]);
   if (!items.length) return <EmptyState title={t("No restaurants found")} cta={{ href: "/restaurants", label: t("Browse all restaurants") }} />;
   return <CardGrid items={items} t={t} locale={locale} saved={saved} />;
 }

@@ -19,7 +19,6 @@ export async function SiteFooter() {
       title: "EVNT",
       links: [
         ["/plus", "EVNT+"],
-        ["/farah-approved", t("Farah Approved")],
         ["/contact", t("Contact & support")],
       ],
     },

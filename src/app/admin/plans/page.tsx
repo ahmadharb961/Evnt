@@ -17,12 +17,11 @@ const CAT_LABEL: Record<(typeof CATS)[number], string> = { WORKSHOPS: "Workshops
 export default async function PlansAdmin() {
   await requireAdmin("FINANCE", "ADMIN");
   const [locale, t] = await Promise.all([getLocale(), getT()]);
-  const [plans, rates, placements] = await Promise.all([prisma.subscriptionPlan.findMany({ orderBy: { monthlyCents: "asc" } }), prisma.commissionRate.findMany(), prisma.adPlacement.findMany({ orderBy: { sort: "asc" } })]);
+  const [plans, rates, placements] = await Promise.all([prisma.subscriptionPlan.findMany({ orderBy: { monthlyCents: "asc" } }), prisma.commissionRate.findMany(), prisma.adPlacement.findMany({ where: { code: { not: "FARAH_REEL" } }, orderBy: { sort: "asc" } })]);
   const rate = (c: string, p: string) => (rates.find((r) => r.category === c && r.plan === p)?.rateBps ?? 0) / 100;
   const flags = [
     ["bookingManagement", t("Booking management")],
     ["advancedAnalytics", t("Advanced analytics")],
-    ["birthdayRadar", t("Birthday Radar")],
     ["demandIntelligence", t("Demand intelligence")],
     ["priorityPlacement", t("Priority placement eligibility")],
     ["sponsoredRoundups", t("Sponsored roundup eligibility")],

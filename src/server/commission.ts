@@ -1,7 +1,7 @@
 import "server-only";
 import type { Attribution, CommissionCategory, PlanCode } from "@prisma/client";
 import type { Tx } from "./db";
-import { applyLeadCredit, commissionFor, restaurantFee } from "@/lib/commission";
+import { commissionFor, restaurantFee } from "@/lib/commission";
 import { getSetting } from "./settings";
 
 // The commission engine. Every commission is one row per source transaction (unique), so it can
@@ -18,16 +18,6 @@ export async function eventCommissionCategory(tx: Tx, categoryId: string): Promi
   return c?.commission ?? c?.parent?.commission ?? "FAMILY_EXPERIENCES";
 }
 
-/** Birthday Radar: unused lead fee this merchant paid for this parent's inquiry, credited once. */
-async function leadCreditFor(tx: Tx, merchantId: string, userId: string) {
-  const leads = await tx.birthdayLead.findMany({ where: { merchantId, inquiry: { userId } } });
-  for (const l of leads) {
-    const remaining = l.priceCents - l.creditedCents;
-    if (remaining > 0) return { lead: l, remaining };
-  }
-  return null;
-}
-
 /**
  * Records the commission of a booking that is now confirmed.
  * - EVNT (paid through EVNT): EVNT collected the money → ledger SALE (+subtotal) and COMMISSION (−fee).
@@ -42,15 +32,7 @@ export async function recordBookingCommission(
   const base = await rateBps(tx, category, b.plan);
   const share = await getSetting("attribution.externalSharePct");
   const { rateBps: eff, amountCents } = commissionFor(b.subtotalCents, base, b.attribution, share);
-  let credit = 0;
-  if (amountCents > 0) {
-    const lc = await leadCreditFor(tx, b.merchantId, b.userId);
-    if (lc) {
-      credit = applyLeadCredit(amountCents, lc.remaining).creditCents;
-      await tx.birthdayLead.update({ where: { id: lc.lead.id }, data: { creditedCents: { increment: credit }, convertedAt: lc.lead.convertedAt ?? new Date() } });
-    }
-  }
-  const net = amountCents - credit;
+  const net = amountCents;
   const existing = await tx.commission.findUnique({ where: { source_sourceId: { source: "BOOKING", sourceId: b.id } } });
   if (existing) return existing;
   const c = await tx.commission.create({
@@ -64,7 +46,6 @@ export async function recordBookingCommission(
       rateBps: eff,
       baseCents: b.subtotalCents,
       amountCents: net,
-      leadCreditCents: credit,
       status: "EARNED",
       earnedAt: new Date(),
     },

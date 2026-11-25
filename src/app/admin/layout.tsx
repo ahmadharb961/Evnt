@@ -8,17 +8,15 @@ export const dynamic = "force-dynamic";
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const user = await requireAdmin();
   const t = await getT();
-  const [pendingMerchants, pendingAds, farah, reports, refunds] = await Promise.all([
+  const [pendingMerchants, pendingAds, reports, refunds] = await Promise.all([
     prisma.merchant.count({ where: { status: "PENDING" } }),
     prisma.adCampaign.count({ where: { status: "PENDING_APPROVAL" } }),
-    prisma.certification.count({ where: { status: { in: ["PAID", "ASSESSED"] } } }),
     prisma.reviewReport.count({ where: { status: "OPEN" } }),
     prisma.refund.count({ where: { status: { in: ["REQUESTED", "APPROVED"] } } }),
   ]);
   const ops = hasRole(user, "ADMIN");
   const fin = hasRole(user, "FINANCE");
   const content = hasRole(user, "CONTENT");
-  const evaluator = hasRole(user, "EVALUATOR");
   const superAdmin = hasRole(user, "SUPER_ADMIN");
   const G = { start: t("Start"), market: t("Marketplace"), people: t("People"), activity: t("Bookings & orders"), money: t("Money"), content: t("Content"), system: t("System") };
   const nav: NavItem[] = [
@@ -43,7 +41,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     ...(content || ops ? [{ href: "/admin/cms", label: t("Homepage & content"), icon: "Home" as const, group: G.content, tone: "peach" as const }] : []),
     ...(content || ops ? [{ href: "/admin/reviews", label: t("Reviews & moderation"), icon: "Star" as const, badge: reports, group: G.content, tone: "amber" as const }] : []),
     ...(content || ops ? [{ href: "/admin/marketing", label: t("Marketing"), icon: "Mail" as const, group: G.content, tone: "blush" as const }] : []),
-    ...(ops || evaluator ? [{ href: "/admin/farah", label: t("Farah Approved"), icon: "ShieldCheck" as const, badge: farah, group: G.content, tone: "mint" as const }] : []),
     ...(content || ops ? [{ href: "/admin/localization", label: t("Languages"), icon: "Languages" as const, group: G.content, tone: "sky" as const }] : []),
     ...(superAdmin ? [{ href: "/admin/settings", label: t("Platform settings"), icon: "Settings" as const, group: G.system, tone: "slate" as const }] : []),
     ...(ops ? [{ href: "/admin/audit", label: t("Activity log"), icon: "FileText" as const, group: G.system, tone: "slate" as const }] : []),

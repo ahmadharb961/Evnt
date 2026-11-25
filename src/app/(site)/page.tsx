@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BadgeCheck, Crown } from "lucide-react";
+import { Cake, Crown } from "lucide-react";
 import { Hero } from "@/components/home/hero";
 import { CategoryTiles } from "@/components/home/category-tiles";
 import { SectionRow } from "@/components/home/section-row";
@@ -68,11 +68,11 @@ export default async function HomePage() {
           <p className="mt-2 max-w-sm text-sm text-ink-soft">{t("No booking fees, double points, 48-hour early access and members-only playdates.")}</p>
           <span className="btn-primary mt-5">{t("Discover EVNT+")}</span>
         </Link>
-        <Link href="/farah-approved" className="group relative overflow-hidden rounded-4xl bg-gradient-to-br from-mint to-peach-soft p-7 sm:p-9">
-          <BadgeCheck className="h-7 w-7" />
-          <h3 className="mt-4 text-2xl font-bold">{t("Farah Approved")}</h3>
-          <p className="mt-2 max-w-sm text-sm text-ink-soft">{t("Venues independently assessed for safety, cleanliness and family comfort.")}</p>
-          <span className="btn-primary mt-5">{t("See certified places")}</span>
+        <Link href="/birthdays" className="group relative overflow-hidden rounded-4xl bg-gradient-to-br from-mint to-peach-soft p-7 sm:p-9">
+          <Cake className="h-7 w-7" />
+          <h3 className="mt-4 text-2xl font-bold">{t("Plan a birthday party")}</h3>
+          <p className="mt-2 max-w-sm text-sm text-ink-soft">{t("Tell us what you need and get quotes from venues, entertainers and more.")}</p>
+          <span className="btn-primary mt-5">{t("Start planning")}</span>
         </Link>
       </section>
     </>

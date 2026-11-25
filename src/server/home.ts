@@ -81,9 +81,6 @@ export async function resolveSection(s: HomeSection, locale: Locale): Promise<Re
     items = (await searchRestaurants({ ids: manual, area: f.area, limit: s.limit }, locale)).items;
   } else if (s.source === "PRODUCTS") {
     items = (await searchProducts({ ids: manual, categorySlug: f.categorySlug, maxPriceCents: f.maxPriceCents, ageMin: f.ageMin, ageMax: f.ageMax, limit: s.limit }, locale)).items;
-  } else if (s.source === "FARAH") {
-    const [ev, rs] = await Promise.all([searchEvents({ farah: true, limit: s.limit }, locale), searchRestaurants({ farah: true, limit: s.limit }, locale)]);
-    items = [...rs.items, ...ev.items].slice(0, s.limit);
   } else if (s.source === "HANDPICKED") {
     // Editorial picks: any mix of activities, restaurants and products in the admin's order
     // (ids are unique across tables). Without picks, falls back to the recommended activities,

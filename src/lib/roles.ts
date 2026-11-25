@@ -7,5 +7,4 @@ export const ROLE_INFO: { role: Role; label: string; desc: string; tone: Tone }[
   { role: "ADMIN", label: "Operations", desc: "Businesses, users, listings, bookings, orders and advertising.", tone: "sky" },
   { role: "FINANCE", label: "Finance", desc: "Payments, invoices, commissions, refunds and payouts.", tone: "emerald" },
   { role: "CONTENT", label: "Content", desc: "Homepage, listings, reviews, marketing and translations.", tone: "peach" },
-  { role: "EVALUATOR", label: "Farah evaluator", desc: "Farah Approved inspections only.", tone: "mint" },
 ];

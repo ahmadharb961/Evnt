@@ -54,7 +54,6 @@ export default async function SectionEdit({ params }: { params: Promise<{ id: st
                   <option value="EVENTS">{t("Activities & events")}</option>
                   <option value="RESTAURANTS">{t("Restaurants")}</option>
                   <option value="PRODUCTS">{t("Products")}</option>
-                  <option value="FARAH">{t("Farah Approved")}</option>
                   <option value="SPONSORED">{t("Paid featured placements")}</option>
                 </select>
               </label>

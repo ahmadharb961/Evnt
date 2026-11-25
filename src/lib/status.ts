@@ -128,17 +128,6 @@ export const CAMPAIGN_STATUS: Map = {
   CANCELED: { label: "Cancelled", tone: "gray" },
 };
 
-export const CERT_STATUS: Map = {
-  AWAITING_PAYMENT: { label: "Awaiting payment", tone: "peach" },
-  PAID: { label: "Paid, to schedule", tone: "powder" },
-  SCHEDULED: { label: "Visit scheduled", tone: "powder" },
-  ASSESSED: { label: "Assessed, needs decision", tone: "blush" },
-  APPROVED: { label: "Approved", tone: "mint" },
-  REJECTED: { label: "Not approved", tone: "red" },
-  EXPIRED: { label: "Expired", tone: "gray" },
-  CANCELED: { label: "Cancelled", tone: "gray" },
-};
-
 export const COMMISSION_STATUS: Map = {
   PENDING: { label: "Pending", tone: "peach" },
   EARNED: { label: "Earned", tone: "mint" },
@@ -175,8 +164,3 @@ export const CATEGORY: Map = {
   RETAIL: { label: "Shop sales", tone: "blush" },
 };
 
-export const CERT_KIND: Map = {
-  INITIAL: { label: "First assessment", tone: "powder" },
-  RENEWAL: { label: "Renewal", tone: "mint" },
-  REEVALUATION: { label: "Re-inspection", tone: "peach" },
-};

@@ -144,7 +144,6 @@ const PLANS: {
     features: [
       { en: "Everything in Pro", ar: "كل ما في برو", fr: "Tout le forfait Pro" },
       { en: "10 flash promotions a month", ar: "10 عروض سريعة شهرياً", fr: "10 promotions flash par mois" },
-      { en: "Birthday Radar access", ar: "الوصول إلى رادار أعياد الميلاد", fr: "Accès au Radar anniversaires" },
       { en: "Demand intelligence", ar: "بيانات الطلب", fr: "Intelligence de la demande" },
       { en: "Priority placement eligibility (labelled)", ar: "أهلية الظهور المميز (مع إشارة)", fr: "Éligibilité au placement prioritaire (signalé)" },
       { en: "Sponsored roundup eligibility", ar: "أهلية الظهور في القوائم المموّلة", fr: "Éligibilité aux sélections sponsorisées" },
@@ -169,7 +168,6 @@ const PLACEMENTS: { code: string; name: L; priceCents: number; unit: string; exc
   { code: "WHATSAPP_CAMPAIGN", name: { en: "WhatsApp promotional campaign", ar: "حملة ترويجية عبر واتساب", fr: "Campagne promotionnelle WhatsApp" }, priceCents: 10000, unit: "CAMPAIGN", exclusive: false, slots: 2, description: { en: "Sent only to parents who opted in to WhatsApp offers.", ar: "تُرسل فقط للأهل الذين وافقوا على تلقي العروض عبر واتساب.", fr: "Envoyée uniquement aux parents ayant accepté les offres WhatsApp." } },
   { code: "NEWSLETTER", name: { en: "Sponsored newsletter placement", ar: "ظهور مموّل في النشرة البريدية", fr: "Placement sponsorisé dans la newsletter" }, priceCents: 12500, unit: "ITEM", exclusive: false, slots: 2, description: { en: "A labelled spot in the weekly family newsletter.", ar: "مساحة مميزة في النشرة الأسبوعية للعائلات.", fr: "Un emplacement signalé dans la newsletter hebdomadaire." } },
   { code: "WEEKEND_ROUNDUP", name: { en: "Sponsored weekend roundup", ar: "ظهور مموّل في قائمة نهاية الأسبوع", fr: "Sélection week-end sponsorisée" }, priceCents: 15000, unit: "ITEM", exclusive: false, slots: 3, requiresPlan: "FEATURED", description: { en: "Included as a sponsored pick in the weekend roundup.", ar: "ضمن اختيارات نهاية الأسبوع كمحتوى مموّل.", fr: "Inclus comme choix sponsorisé dans la sélection du week-end." } },
-  { code: "FARAH_REEL", name: { en: "Sponsored Farah Approved reel", ar: "فيديو مموّل Farah Approved", fr: "Reel sponsorisé Farah Approved" }, priceCents: 40000, unit: "ITEM", exclusive: false, slots: 2, description: { en: "A labelled video feature ($400–$700 depending on scope). Never affects certification.", ar: "فيديو مموّل (400–700$ حسب الحجم). لا يؤثر أبداً على الشهادة.", fr: "Vidéo sponsorisée (400–700 $ selon l'ampleur). N'influence jamais la certification." } },
   { code: "SPONSORED_EXPERIENCE", name: { en: "Sponsored family experience", ar: "تجربة عائلية مموّلة", fr: "Expérience famille sponsorisée" }, priceCents: 75000, unit: "ITEM", exclusive: false, slots: 1, description: { en: "A co-hosted EVNT family experience, from $750.", ar: "تجربة عائلية بالشراكة مع EVNT، ابتداءً من 750$.", fr: "Une expérience famille co-organisée avec EVNT, dès 750 $." } },
   { code: "DEMAND_LAB", name: { en: "Demand Lab activation", ar: "تفعيل مختبر الطلب", fr: "Activation Demand Lab" }, priceCents: 1500, unit: "PERCENT_SALES", exclusive: false, slots: 5, requiresPlan: "FEATURED", description: { en: "We design and run a demand campaign; 15% of the sales it generates.", ar: "نصمّم وننفّذ حملة طلب؛ 15% من المبيعات الناتجة.", fr: "Nous concevons une campagne ; 15 % des ventes générées." } },
   { code: "MARKET_REPORT", name: { en: "Custom market intelligence report", ar: "تقرير مخصّص عن السوق", fr: "Rapport d'études de marché sur mesure" }, priceCents: 29900, unit: "ITEM", exclusive: false, slots: 10, description: { en: "A tailored report on family demand in your category and area.", ar: "تقرير مخصّص عن طلب العائلات في فئتك ومنطقتك.", fr: "Un rapport sur la demande des familles dans votre catégorie et zone." } },
@@ -183,7 +181,6 @@ const SECTIONS: { title: L; subtitle?: L; source: string; filters?: object; layo
   { title: { en: "Perfect for Toddlers", ar: "مثالية للأطفال الصغار", fr: "Parfait pour les tout-petits" }, source: "EVENTS", filters: { ageMax: 3 }, ctaHref: "/discover?age=0-2" },
   { title: { en: "Under $20", ar: "بأقل من 20$", fr: "Moins de 20 $" }, source: "EVENTS", filters: { maxPriceCents: 2000 }, ctaHref: "/discover?maxPrice=20" },
   { title: { en: "Kids-Friendly Restaurants", ar: "مطاعم صديقة للأطفال", fr: "Restaurants adaptés aux enfants" }, source: "RESTAURANTS", ctaHref: "/restaurants" },
-  { title: { en: "Farah Approved", ar: "Farah Approved", fr: "Farah Approved" }, subtitle: { en: "Independently assessed family-friendly venues", ar: "أماكن صديقة للعائلات بتقييم مستقل", fr: "Lieux familiaux évalués de façon indépendante" }, source: "FARAH", ctaHref: "/farah-approved" },
   { title: { en: "New on EVNT", ar: "جديد على EVNT", fr: "Nouveau sur EVNT" }, source: "EVENTS", filters: { sort: "newest" } },
   { title: { en: "Shop Our Favorites", ar: "تسوّقوا مختاراتنا", fr: "Nos coups de cœur boutique" }, source: "PRODUCTS", ctaHref: "/shop" },
 ];
@@ -209,7 +206,7 @@ async function main() {
 
   // Plans & commission matrix
   for (const p of PLANS) {
-    const [bm, aa, br, di, pp, sr] = p.flags;
+    const [bm, aa, , di, pp, sr] = p.flags;
     await prisma.subscriptionPlan.upsert({
       where: { code: p.code },
       create: {
@@ -221,7 +218,7 @@ async function main() {
         restaurantGuestFeeCents: p.guestFee,
         bookingManagement: bm,
         advancedAnalytics: aa,
-        birthdayRadar: br,
+        birthdayRadar: false,
         demandIntelligence: di,
         priorityPlacement: pp,
         sponsoredRoundups: sr,
@@ -249,6 +246,16 @@ async function main() {
       create: { code: p.code, name: p.name, description: p.description, priceCents: p.priceCents, unit: p.unit, exclusive: p.exclusive, slots: p.slots, requiresPlan: p.requiresPlan, sort: ps++ },
       update: {},
     });
+  }
+
+  // Farah Approved and Birthday Radar were discontinued: tidy up databases created before.
+  await prisma.adPlacement.updateMany({ where: { code: "FARAH_REEL" }, data: { active: false } });
+  await prisma.homeSection.deleteMany({ where: { source: "FARAH" } });
+  await prisma.userRole.deleteMany({ where: { role: "EVALUATOR" } });
+  for (const pl of await prisma.subscriptionPlan.findMany()) {
+    const feats = Array.isArray(pl.features) ? (pl.features as { en?: string }[]) : [];
+    const kept = feats.filter((x) => !/radar/i.test(x?.en ?? ""));
+    if (kept.length !== feats.length || pl.birthdayRadar) await prisma.subscriptionPlan.update({ where: { code: pl.code }, data: { features: kept, birthdayRadar: false } });
   }
 
   // Homepage sections (only on first deploy)

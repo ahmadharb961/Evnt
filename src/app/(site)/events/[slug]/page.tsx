@@ -15,7 +15,7 @@ import { getLocale, getT } from "@/i18n/server";
 import { BookingPanel } from "@/components/booking/booking-panel";
 import { FavoriteButton } from "@/components/favorite-button";
 import { ShareButton } from "@/components/share-button";
-import { ageLabel, EventCard, FarahBadge } from "@/components/cards";
+import { ageLabel, EventCard } from "@/components/cards";
 import { ReviewsSection } from "@/components/reviews";
 import { ResultsMap } from "@/components/results-map";
 import { Breadcrumbs } from "@/components/category-header";
@@ -95,7 +95,6 @@ export default async function EventPage({ params, searchParams }: { params: Prom
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                {e.merchant.farah && <FarahBadge t={t} />}
                 {e.flashPercent > 0 && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-blush px-2.5 py-1 text-xs font-bold text-blush-deep">
                     <Zap className="h-3.5 w-3.5" />

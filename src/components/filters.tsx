@@ -41,7 +41,7 @@ export function EventFilterBar({ showType = false, showView = true }: { showType
     { value: "week", label: t("Next 7 days") },
   ];
   const ages: Opt[] = AGE_BANDS.map((b) => ({ value: b.key, label: t("{a}–{b} yrs", { a: b.min, b: b.max }) }));
-  const activeCount = ["area", "setting", "rating", "farah", "accessible", "maxPrice", "near", "soldout"].filter((k) => get(k)).length;
+  const activeCount = ["area", "setting", "rating", "accessible", "maxPrice", "near", "soldout"].filter((k) => get(k)).length;
 
   const Chip = ({ k, o }: { k: string; o: Opt }) => {
     const on = get(k) === o.value;
@@ -185,7 +185,6 @@ export function EventFilterBar({ showType = false, showView = true }: { showType
               </div>
               <div className="space-y-3">
                 {[
-                  { k: "farah", label: t("Farah Approved only") },
                   { k: "accessible", label: t("Wheelchair accessible") },
                   { k: "soldout", label: t("Show sold-out listings") },
                 ].map((o) => (
@@ -213,7 +212,7 @@ export function EventFilterBar({ showType = false, showView = true }: { showType
                 type="button"
                 className="btn-outline flex-1"
                 onClick={() => {
-                  set({ area: null, setting: null, rating: null, farah: null, accessible: null, maxPrice: null, near: null, km: null, soldout: null, sort: null, when: null, age: null, price: null });
+                  set({ area: null, setting: null, rating: null, accessible: null, maxPrice: null, near: null, km: null, soldout: null, sort: null, when: null, age: null, price: null });
                   setOpen(false);
                 }}
               >

@@ -70,7 +70,6 @@ export default async function AdminMerchant({ params }: { params: Promise<{ id: 
         <Stat label={bal >= 0 ? t("EVNT owes merchant") : t("Merchant owes EVNT")} value={money(Math.abs(bal))} />
         <Stat label={t("Commissions earned (all time)")} value={money(commissions._sum.amountCents ?? 0)} />
         <Stat label={t("Subscription")} value={<span className="text-base">{sub ? `${t(labelOf(PLAN, sub.plan))} · ${t(labelOf(SUBSCRIPTION_STATUS, sub.status))}` : "—"}</span>} hint={sub ? t("until {date}", { date: fmtDate(sub.currentPeriodEnd, locale, { day: "numeric", month: "short", year: "numeric" }) }) : undefined} />
-        <Stat label={t("Farah Approved")} value={<span className="text-base">{m.farahUntil && m.farahUntil > new Date() ? t("until {date}", { date: fmtDate(m.farahUntil, locale, { month: "short", year: "numeric" }) }) : "—"}</span>} />
       </div>
       <div className="grid gap-6 lg:grid-cols-2">
         <Panel title={t("Details")}>

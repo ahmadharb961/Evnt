@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { commissionFor, applyLeadCredit, restaurantFee, withinExternalWindow } from "@/lib/commission";
+import { commissionFor, restaurantFee, withinExternalWindow } from "@/lib/commission";
 import { simulate, DEFAULT_SCENARIO } from "@/lib/revenue";
 import { formatMoney, parseMoney } from "@/lib/money";
 import { windowFor, beirutYmd } from "@/lib/dates";
@@ -15,10 +15,6 @@ describe("commission", () => {
     expect(restaurantFee(5, 150)).toBe(750);
     expect(restaurantFee(5, 100)).toBe(500);
   });
-  it("credits a lead fee once, never below zero", () => {
-    expect(applyLeadCredit(1200, 2000)).toEqual({ creditCents: 1200, netCommissionCents: 0 });
-    expect(applyLeadCredit(3000, 2000)).toEqual({ creditCents: 2000, netCommissionCents: 1000 });
-  });
   it("72-hour window", () => {
     const c = new Date("2026-01-01T10:00:00Z");
     expect(withinExternalWindow(c, new Date("2026-01-04T09:59:00Z"))).toBe(true);
@@ -33,8 +29,7 @@ describe("revenue simulator defaults", () => {
     expect(r.subscriptions).toBe(436000);
     expect(r.memberships).toBe(199800);
     expect(r.commissions).toBe(240000);
-    expect(r.assessments).toBe(125000);
-    expect(r.gross).toBe(1000800);
+    expect(r.gross).toBe(875800);
   });
 });
 

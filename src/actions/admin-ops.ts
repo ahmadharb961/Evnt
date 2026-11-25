@@ -19,10 +19,3 @@ export async function adminOrderStatusAction(orderNumber: string, status: OrderS
   return {};
 }
 
-export async function qualifyInquiryAction(id: string, qualified: boolean) {
-  const u = await requireAdmin("ADMIN");
-  await prisma.birthdayInquiry.update({ where: { id }, data: { qualified } });
-  await prisma.auditLog.create({ data: { actorId: u.id, action: qualified ? "inquiry.qualified" : "inquiry.unqualified", entityType: "birthdayInquiry", entityId: id } });
-  revalidatePath("/admin/birthdays");
-  return {};
-}

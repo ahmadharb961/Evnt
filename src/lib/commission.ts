@@ -24,12 +24,6 @@ export function restaurantFee(guests: number, feePerGuestCents: number) {
   return Math.max(0, Math.floor(guests)) * feePerGuestCents;
 }
 
-/** A Birthday Radar lead fee is credited against the commission of the same converted booking. */
-export function applyLeadCredit(commissionCents: number, remainingLeadCents: number) {
-  const credit = Math.max(0, Math.min(commissionCents, remainingLeadCents));
-  return { creditCents: credit, netCommissionCents: commissionCents - credit };
-}
-
 /** Within the external-booking window after a contact click (default 72 hours)? */
 export function withinExternalWindow(clickAt: Date, bookedAt: Date, hours = 72) {
   const diff = bookedAt.getTime() - clickAt.getTime();

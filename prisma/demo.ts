@@ -6,14 +6,14 @@ import bcrypt from "bcryptjs";
 type L = { en: string; ar: string; fr: string };
 const cover = (i: number) => `/demo/cover-${(i % 18) + 1}.svg`;
 
-const MERCHANTS: { slug: string; name: string; type: MerchantType; plan: PlanCode; area: string; lat: number; lng: number; farah?: boolean }[] = [
-  { slug: "little-makers-studio", name: "Little Makers Studio", type: "ACTIVITY_PROVIDER", plan: "PRO", area: "achrafieh", lat: 33.888, lng: 35.521, farah: true },
+const MERCHANTS: { slug: string; name: string; type: MerchantType; plan: PlanCode; area: string; lat: number; lng: number}[] = [
+  { slug: "little-makers-studio", name: "Little Makers Studio", type: "ACTIVITY_PROVIDER", plan: "PRO", area: "achrafieh", lat: 33.888, lng: 35.521 },
   { slug: "cedar-kids-theater", name: "Cedar Kids Theater", type: "EVENT_ORGANIZER", plan: "FEATURED", area: "hamra", lat: 33.896, lng: 35.482 },
-  { slug: "green-valley-farm", name: "Green Valley Farm", type: "VENUE", plan: "BASIC", area: "broummana", lat: 33.881, lng: 35.626, farah: true },
+  { slug: "green-valley-farm", name: "Green Valley Farm", type: "VENUE", plan: "BASIC", area: "broummana", lat: 33.881, lng: 35.626 },
   { slug: "tiny-chefs-academy", name: "Tiny Chefs Academy", type: "ACTIVITY_PROVIDER", plan: "BASIC", area: "jounieh", lat: 33.98, lng: 35.618 },
   { slug: "sunny-camp-lebanon", name: "Sunny Camp Lebanon", type: "ACTIVITY_PROVIDER", plan: "PRO", area: "faraya", lat: 34.013, lng: 35.825 },
   { slug: "party-lane", name: "Party Lane", type: "BIRTHDAY_SERVICE", plan: "FEATURED", area: "dbayeh", lat: 33.937, lng: 35.589 },
-  { slug: "cafe-bloom", name: "Café Bloom", type: "RESTAURANT", plan: "PRO", area: "badaro", lat: 33.874, lng: 35.515, farah: true },
+  { slug: "cafe-bloom", name: "Café Bloom", type: "RESTAURANT", plan: "PRO", area: "badaro", lat: 33.874, lng: 35.515 },
   { slug: "the-garden-table", name: "The Garden Table", type: "RESTAURANT", plan: "BASIC", area: "jal-el-dib", lat: 33.909, lng: 35.579 },
   { slug: "seaside-family-grill", name: "Seaside Family Grill", type: "RESTAURANT", plan: "FEATURED", area: "batroun", lat: 34.255, lng: 35.658 },
   { slug: "toybox-beirut", name: "Toybox Beirut", type: "RETAILER", plan: "PRO", area: "verdun", lat: 33.887, lng: 35.485 },
@@ -294,7 +294,6 @@ export async function seedDemo(prisma: PrismaClient) {
         email: `${m.slug}@demo.evnt.local`,
         about: T(`${m.name} — a demo business on EVNT.`, `${m.name} — نشاط تجريبي على EVNT.`, `${m.name} — une entreprise de démonstration sur EVNT.`),
         verifiedAt: now,
-        farahUntil: m.farah ? new Date(now.getTime() + 300 * 86400_000) : null,
         staff: { create: { userId: user.id, role: "OWNER" } },
         locations: { create: { name: "Main", area: m.area, address: `Main street, ${m.area}`, lat: m.lat, lng: m.lng } },
         subscriptions: {

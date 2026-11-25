@@ -9,8 +9,6 @@ export type Scenario = {
   memberMonthlyCents: number;
   bookings: number;
   avgCommissionCents: number;
-  assessments: number;
-  assessmentCents: number;
   refundRatePct: number;
   paymentCostPct: number;
   operatingCostsCents: number;
@@ -25,8 +23,6 @@ export const DEFAULT_SCENARIO: Scenario = {
   memberMonthlyCents: 999,
   bookings: 600,
   avgCommissionCents: 400,
-  assessments: 5,
-  assessmentCents: 25000,
   refundRatePct: 0,
   paymentCostPct: 0,
   operatingCostsCents: 0,
@@ -36,10 +32,9 @@ export function simulate(s: Scenario) {
   const subscriptions = s.proMerchants * s.proMonthlyCents + s.featuredMerchants * s.featuredMonthlyCents;
   const memberships = s.members * s.memberMonthlyCents;
   const commissions = s.bookings * s.avgCommissionCents;
-  const assessments = s.assessments * s.assessmentCents;
-  const gross = subscriptions + memberships + commissions + assessments;
+  const gross = subscriptions + memberships + commissions;
   const refunds = Math.round((commissions * s.refundRatePct) / 100);
   const paymentCosts = Math.round(((gross - refunds) * s.paymentCostPct) / 100);
   const net = gross - refunds - paymentCosts - s.operatingCostsCents;
-  return { subscriptions, memberships, commissions, assessments, gross, refunds, paymentCosts, operatingCosts: s.operatingCostsCents, net };
+  return { subscriptions, memberships, commissions, gross, refunds, paymentCosts, operatingCosts: s.operatingCostsCents, net };
 }

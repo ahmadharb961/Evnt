@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, Sparkles, MapPin, CalendarDays } from "lucide-react";
-import { FarahBadge, SponsoredTag } from "@/components/cards";
+import { SponsoredTag } from "@/components/cards";
 import { FavoriteButton } from "@/components/favorite-button";
 import type { CardData } from "@/lib/types";
 import type { Locale, T } from "@/i18n/core";
@@ -28,7 +28,6 @@ function metaOf(i: CardData, t: T, locale: Locale): { title: string; kicker: str
 
 function SpotCard({ i, t, locale, saved, hero = false }: { i: CardData; t: T; locale: Locale; saved: Set<string>; hero?: boolean }) {
   const m = metaOf(i, t, locale);
-  const farah = i.kind !== "product" && i.farah;
   return (
     <div className={`group relative isolate overflow-hidden rounded-[1.75rem] bg-ink/10 shadow-card ring-1 ring-ink/[.04] ${hero ? "aspect-[4/5] sm:aspect-auto sm:h-full sm:min-h-[460px]" : "aspect-[4/5]"}`}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -37,7 +36,6 @@ function SpotCard({ i, t, locale, saved, hero = false }: { i: CardData; t: T; lo
       <div className="pointer-events-none absolute inset-x-3 top-3 z-10 flex items-start justify-between gap-2 [&>*:last-child]:pointer-events-auto">
         <div className="flex flex-wrap gap-1.5">
           {i.sponsored && <SponsoredTag t={t} />}
-          {farah && <FarahBadge t={t} small />}
         </div>
         <FavoriteButton type={i.kind} id={i.id} saved={saved.has(i.id)} />
       </div>

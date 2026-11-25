@@ -42,8 +42,6 @@ export function RevenueSimulator({ initial }: { initial: Partial<Scenario> }) {
           {field("memberMonthlyCents", t("EVNT+ monthly price"), true)}
           {field("bookings", t("Bookings"))}
           {field("avgCommissionCents", t("Average commission / booking"), true)}
-          {field("assessments", t("Farah assessments"))}
-          {field("assessmentCents", t("Assessment price"), true)}
           {field("refundRatePct", t("Refunds (% of commissions)"), false, "%")}
           {field("paymentCostPct", t("Payment processing"), false, "%")}
           {field("operatingCostsCents", t("Operating expenses"), true)}
@@ -58,7 +56,6 @@ export function RevenueSimulator({ initial }: { initial: Partial<Scenario> }) {
           [t("Subscription revenue"), r.subscriptions],
           [t("Membership revenue"), r.memberships],
           [t("Booking commissions"), r.commissions],
-          [t("Assessment revenue"), r.assessments],
         ].map(([l, v]) => (
           <div key={l as string} className="flex justify-between text-sm">
             <span className="text-white/80">{l}</span>

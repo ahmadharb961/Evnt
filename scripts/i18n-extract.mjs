@@ -26,7 +26,7 @@ const patterns = [
   /\[\s*"((?:[^"\\]|\\.)+)",\s*"((?:[^"\\]|\\.)+)"\s*\]/g, // ["Title", "Body"] message pairs
 ];
 // Files whose object values are interface labels (status maps, facility/service labels…)
-const labelFiles = ["lib/status.ts", "lib/birthday.ts", "components/cards.tsx", "lib/phone.ts", "server/passwords.ts", "server/farah.ts", "app/admin/settings/page.tsx", "app/merchant/billing/page.tsx", "app/merchant/ads/page.tsx", "lib/roles.ts"];
+const labelFiles = ["lib/status.ts", "lib/birthday.ts", "components/cards.tsx", "lib/phone.ts", "server/passwords.ts", "app/admin/settings/page.tsx", "app/merchant/billing/page.tsx", "app/merchant/ads/page.tsx", "lib/roles.ts"];
 
 for (const f of files) {
   const src = fs.readFileSync(f, "utf8");

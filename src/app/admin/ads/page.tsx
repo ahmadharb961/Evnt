@@ -25,7 +25,7 @@ export default async function AdsAdmin() {
   const d = (x: Date) => fmtDate(x, locale, { day: "numeric", month: "short" });
   return (
     <div className="max-w-5xl space-y-6">
-      <PageHeader title={t("Advertising")} subtitle={t("Nothing sponsored is shown until approved here. Sponsored placements never affect ratings, reviews or Farah Approved.")} />
+      <PageHeader title={t("Advertising")} subtitle={t("Nothing sponsored is shown until approved here. Sponsored placements never affect ratings or reviews.")} />
       <Panel title={t("Waiting for approval")}>
         {!pending.length ? (
           <p className="text-sm text-ink-muted">{t("Nothing to review.")}</p>

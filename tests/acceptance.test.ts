@@ -5,7 +5,6 @@ import { startBooking, confirmWithoutOnlinePayment, scanTicket, cancelBooking, m
 import { changePlan, markInvoicePaid } from "@/server/billing";
 import { merchantFeatures } from "@/server/features";
 import { createCampaign, reviewCampaign } from "@/server/ads";
-import { applyForCertification, scheduleAssessment, submitAssessment, decideCertification, CHECKLIST } from "@/server/farah";
 import { createReview } from "@/server/reviews";
 import { recordBookingCommission } from "@/server/commission";
 import { requestReservation, respondReservation, completeReservation } from "@/server/restaurants";
@@ -81,11 +80,11 @@ describe("acceptance", () => {
     const r = await changePlan(m.id, "FEATURED", "MONTHLY", { useTrial: false });
     expect("invoiceId" in r).toBe(true);
     let fresh = await prisma.merchant.findUniqueOrThrow({ where: { id: m.id } });
-    expect((await merchantFeatures(fresh)).birthdayRadar).toBe(false);
+    expect((await merchantFeatures(fresh)).demandIntelligence).toBe(false);
     await markInvoicePaid((r as { invoiceId: string }).invoiceId, { recordedById: admin, reference: "TEST" });
     fresh = await prisma.merchant.findUniqueOrThrow({ where: { id: m.id } });
     expect(fresh.plan).toBe("FEATURED");
-    expect((await merchantFeatures(fresh)).birthdayRadar).toBe(true);
+    expect((await merchantFeatures(fresh)).demandIntelligence).toBe(true);
   });
 
   it("#11 a paid ad needs payment, then admin approval, and exclusive slots can't overlap", async () => {
@@ -103,21 +102,6 @@ describe("acceptance", () => {
     expect((await prisma.adCampaign.findUniqueOrThrow({ where: { id: c.id } })).status).toBe("PENDING_APPROVAL");
     await reviewCampaign(c.id, true, "", admin);
     expect((await prisma.adCampaign.findUniqueOrThrow({ where: { id: c.id } })).status).toBe("APPROVED");
-  });
-
-  it("#12 Farah Approved requires a real assessment — payment alone never grants it", async () => {
-    const { m } = await freshMerchant();
-    const cert = await applyForCertification(m.id, admin);
-    await markInvoicePaid(cert.invoiceId ?? (await prisma.certification.findUniqueOrThrow({ where: { id: cert.id } })).invoiceId!, { recordedById: admin, reference: "TEST" });
-    expect((await prisma.merchant.findUniqueOrThrow({ where: { id: m.id } })).farahUntil).toBeNull();
-    await expect(decideCertification(cert.id, true, "", admin)).rejects.toThrow(); // not assessed
-    await scheduleAssessment(cert.id, admin, new Date(Date.now() + 86400_000), admin);
-    await submitAssessment(cert.id, admin, true, CHECKLIST.map((c) => ({ key: c.key, passed: true })), "Great");
-    await decideCertification(cert.id, true, "ok", admin);
-    expect((await prisma.merchant.findUniqueOrThrow({ where: { id: m.id } })).farahUntil).toBeNull(); // license not paid yet
-    const license = await prisma.invoiceLine.findFirstOrThrow({ where: { refType: "farah-license", refId: cert.id } });
-    await markInvoicePaid(license.invoiceId, { recordedById: admin, reference: "TEST" });
-    expect((await prisma.merchant.findUniqueOrThrow({ where: { id: m.id } })).farahUntil).not.toBeNull();
   });
 
   it("#16 reviews are verified only with a completed booking", async () => {

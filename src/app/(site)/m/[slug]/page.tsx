@@ -9,7 +9,6 @@ import { mediaSrc } from "@/server/media";
 import { trackView } from "@/server/analytics";
 import { getLocale, getT } from "@/i18n/server";
 import { loc } from "@/i18n/core";
-import { FarahBadge } from "@/components/cards";
 import { SectionRow } from "@/components/home/section-row";
 import { Stars } from "@/components/reviews";
 import { areaName } from "@/lib/areas";
@@ -37,7 +36,6 @@ export default async function MerchantProfile({ params, searchParams }: { params
     favoriteIds(user?.id),
   ]);
   const rs = restaurants.length ? await searchRestaurants({ ids: restaurants.map((r) => r.id) }, locale) : { items: [] };
-  const farah = !!m.farahUntil && m.farahUntil > new Date();
   return (
     <div>
       <div className="relative h-48 bg-powder-soft sm:h-72">
@@ -51,7 +49,6 @@ export default async function MerchantProfile({ params, searchParams }: { params
           <div className="pb-1">
             <h1 className="text-3xl font-bold tracking-tight">{m.name}</h1>
             <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-ink-muted">
-              {farah && <FarahBadge t={t} small />}
               {m.ratingCount > 0 && (
                 <span className="inline-flex items-center gap-1">
                   <Stars value={m.ratingAvg} size="h-3.5 w-3.5" /> {m.ratingAvg.toFixed(1)} ({m.ratingCount})

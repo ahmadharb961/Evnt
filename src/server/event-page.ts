@@ -66,7 +66,7 @@ export async function loadEventPage(slug: string, locale: Locale, userId?: strin
     gallery,
     videoUrl: e.videoUrl,
     category: { name: loc(e.category.name, locale), slug: e.category.slug, parent: e.category.parent ? { name: loc(e.category.parent.name, locale), slug: e.category.parent.slug } : null },
-    merchant: { id: e.merchant.id, name: e.merchant.name, slug: e.merchant.slug, whatsapp: e.merchant.whatsapp, logo: e.merchant.logoId ? mediaSrc(e.merchant.logoId) : null, farah: !!e.merchant.farahUntil && e.merchant.farahUntil > now },
+    merchant: { id: e.merchant.id, name: e.merchant.name, slug: e.merchant.slug, whatsapp: e.merchant.whatsapp, logo: e.merchant.logoId ? mediaSrc(e.merchant.logoId) : null },
     location: e.location ? { name: e.location.name, address: e.location.address, area: areaName(e.location.area, locale), areaSlug: e.location.area, lat: e.location.lat, lng: e.location.lng } : null,
     ageMin: e.ageMin,
     ageMax: e.ageMax,

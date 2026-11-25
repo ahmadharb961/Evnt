@@ -5,7 +5,7 @@ import { UserError } from "./auth";
 import { getSetting } from "./settings";
 import { notifyMerchant } from "./notify";
 
-// Merchant billing: invoices for subscriptions, commissions, ads, leads, certifications and reports.
+// Merchant billing: invoices for subscriptions, commissions, ads and reports.
 // An invoice is paid by Whish (verified) or recorded by an admin as a verified offline settlement.
 
 export async function nextInvoiceNumber(tx: Tx) {
@@ -122,7 +122,7 @@ async function activateSubscription(tx: Tx, subId: string) {
   await tx.auditLog.create({ data: { action: "subscription.activated", entityType: "merchant", entityId: sub.merchantId, data: { plan: sub.plan, interval: sub.interval } } });
 }
 
-/** Marks an invoice paid and applies what it pays for (subscription, ad campaign, certification…). */
+/** Marks an invoice paid and applies what it pays for (subscription, ad campaign…). */
 export async function markInvoicePaid(invoiceId: string, opts: { paymentId?: string; recordedById?: string; reference?: string } = {}) {
   const inv = await prisma.invoice.findUnique({ where: { id: invoiceId }, include: { lines: true } });
   if (!inv) throw new UserError("Invoice not found");
@@ -139,11 +139,6 @@ export async function markInvoicePaid(invoiceId: string, opts: { paymentId?: str
     for (const l of inv.lines) {
       if (l.refType === "subscription" && l.refId) await activateSubscription(tx, l.refId);
       if (l.refType === "campaign" && l.refId) await tx.adCampaign.updateMany({ where: { id: l.refId, status: "PENDING_PAYMENT" }, data: { status: "PENDING_APPROVAL" } });
-      if (l.refType === "certification" && l.refId) await tx.certification.updateMany({ where: { id: l.refId, status: "AWAITING_PAYMENT" }, data: { status: "PAID" } });
-      if (l.refType === "farah-license" && l.refId) {
-        const c = await tx.certification.findUnique({ where: { id: l.refId } });
-        if (c?.status === "APPROVED" && c.validUntil) await tx.merchant.update({ where: { id: c.merchantId }, data: { farahUntil: c.validUntil } });
-      }
       if (l.refType === "commissions") {
         await tx.commission.updateMany({ where: { invoiceId: inv.id }, data: { status: "SETTLED" } });
         await tx.settlement.updateMany({ where: { reference: inv.number, status: "DRAFT" }, data: { status: "PAID", paidAt: new Date() } });

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Star, MapPin, Calendar, BadgeCheck } from "lucide-react";
+import { Star, MapPin, Calendar } from "lucide-react";
 import { FavoriteButton } from "@/components/favorite-button";
 import { formatMoney } from "@/lib/money";
 import { fmtDate, fmtTime } from "@/lib/dates";
@@ -28,15 +28,6 @@ export function SponsoredTag({ t }: { t: T }) {
   return <span className="rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-ink-soft">{t("Sponsored")}</span>;
 }
 
-export function FarahBadge({ t, small = false }: { t: T; small?: boolean }) {
-  return (
-    <span className={`inline-flex items-center gap-1 rounded-full bg-mint font-semibold text-mint-deep ${small ? "px-2 py-0.5 text-[10px]" : "px-2.5 py-1 text-xs"}`}>
-      <BadgeCheck className={small ? "h-3 w-3" : "h-3.5 w-3.5"} />
-      {t("Farah Approved")}
-    </span>
-  );
-}
-
 export function EventCard({ e, t, locale, saved, wide = false }: { e: EventCardData; t: T; locale: Locale; saved?: boolean; wide?: boolean }) {
   const href = `/events/${e.slug}${e.sponsored ? "?src=sponsored" : ""}`;
   return (
@@ -47,7 +38,6 @@ export function EventCard({ e, t, locale, saved, wide = false }: { e: EventCardD
         <div className="absolute inset-x-3 top-3 flex items-start justify-between gap-2">
           <div className="flex flex-wrap gap-1.5">
             {e.sponsored && <SponsoredTag t={t} />}
-            {e.farah && <FarahBadge t={t} small />}
             {e.isFree && <span className="rounded-full bg-peach px-2 py-0.5 text-[10px] font-bold uppercase text-peach-deep">{t("Free")}</span>}
             {e.availability === "limited" && <span className="rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-semibold text-ink">{t("Few spots left")}</span>}
             {e.availability === "soldout" && <span className="rounded-full bg-ink px-2 py-0.5 text-[10px] font-semibold text-white">{t("Sold out")}</span>}
@@ -106,7 +96,6 @@ export function RestaurantCard({ r, t, saved, wide = false }: { r: RestaurantCar
         <div className="absolute inset-x-3 top-3 flex items-start justify-between">
           <div className="flex gap-1.5">
             {r.sponsored && <SponsoredTag t={t} />}
-            {r.farah && <FarahBadge t={t} small />}
           </div>
           <FavoriteButton type="restaurant" id={r.id} saved={saved} />
         </div>

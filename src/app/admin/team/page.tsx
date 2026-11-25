@@ -22,7 +22,7 @@ export default async function TeamAdmin() {
   return (
     <div className="max-w-5xl space-y-6">
       <PageHeader title={t("Admin team")} subtitle={t("People who can sign in to this admin, and what each one can do.")} />
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {ROLE_INFO.map((r) => (
           <div key={r.role} className={`rounded-3xl p-4 ${TONES[r.tone].soft}`}>
             <p className={`text-2xl font-bold ${TONES[r.tone].text}`}>{team.filter((u) => u.roles.some((x) => x.role === r.role)).length}</p>
@@ -47,7 +47,8 @@ export default async function TeamAdmin() {
               </span>
               <span className="flex flex-wrap gap-1.5">
                 {u.roles.map((x) => {
-                  const info = ROLE_INFO.find((r) => r.role === x.role)!;
+                  const info = ROLE_INFO.find((r) => r.role === x.role);
+                  if (!info) return null;
                   return (
                     <span key={x.role} className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${TONES[info.tone].tile} ${TONES[info.tone].text}`}>
                       {t(info.label)}

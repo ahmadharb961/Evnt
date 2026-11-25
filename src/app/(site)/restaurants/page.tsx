@@ -23,7 +23,7 @@ export default async function RestaurantsPage({ searchParams }: { searchParams: 
   const [locale, t, user] = await Promise.all([getLocale(), getT(), getCurrentUser()]);
   const facilities = one(sp.f).split(",").filter((f): f is Facility => (RESTAURANT_FACILITIES as readonly string[]).includes(f));
   const [{ items, total }, saved, cat] = await Promise.all([
-    searchRestaurants({ q: one(sp.q) || undefined, area: one(sp.area) || undefined, facilities, farah: one(sp.farah) === "1" || undefined, reservable: one(sp.reserve) === "1" || undefined, near: parseNear(sp), limit: 60 }, locale),
+    searchRestaurants({ q: one(sp.q) || undefined, area: one(sp.area) || undefined, facilities, reservable: one(sp.reserve) === "1" || undefined, near: parseNear(sp), limit: 60 }, locale),
     favoriteIds(user?.id),
     prisma.category.findUnique({ where: { slug: "restaurants-cafes" } }),
   ]);
@@ -57,9 +57,6 @@ export default async function RestaurantsPage({ searchParams }: { searchParams: 
         ))}
         <Link href={"/restaurants" + withParams(sp, { reserve: one(sp.reserve) === "1" ? null : "1" })} className={`chip shrink-0 ${one(sp.reserve) === "1" ? "chip-on" : ""}`} scroll={false}>
           {t("Reserve online")}
-        </Link>
-        <Link href={"/restaurants" + withParams(sp, { farah: one(sp.farah) === "1" ? null : "1" })} className={`chip shrink-0 ${one(sp.farah) === "1" ? "chip-on" : ""}`} scroll={false}>
-          {t("Farah Approved")}
         </Link>
         <Link href={"/restaurants" + withParams(sp, { view: one(sp.view) === "map" ? null : "map" })} className="chip shrink-0">
           {one(sp.view) === "map" ? t("List view") : t("Map view")}

@@ -225,4 +225,12 @@ export const B7: [string, string, string][] = [
   ["Handpicked", "مختارة بعناية", "Triés sur le volet"],
   ["Tap to hide from the homepage", "اضغط للإخفاء من الصفحة الرئيسية", "Touchez pour masquer de l'accueil"],
   ["Tap to show on the homepage", "اضغط للإظهار على الصفحة الرئيسية", "Touchez pour afficher sur l'accueil"],
+  ["List your products and take orders with delivery or cash on delivery.", "اعرض منتجاتك واستقبل الطلبات مع التوصيل أو الدفع عند الاستلام.", "Publiez vos produits et recevez des commandes avec livraison ou paiement à la livraison."],
+  ["Nothing sponsored is shown until approved here. Sponsored placements never affect ratings or reviews.", "لا يظهر أي محتوى مموّل قبل الموافقة عليه هنا. المساحات المموّلة لا تؤثر أبداً على التقييمات أو المراجعات.", "Rien de sponsorisé n'apparaît avant approbation ici. Les placements sponsorisés n'influencent jamais les notes ni les avis."],
+  ["Parents planning parties and the businesses they asked for quotes.", "أهالٍ يخططون لحفلات والأنشطة التجارية التي طلبوا منها عروض أسعار.", "Les parents qui préparent une fête et les entreprises à qui ils ont demandé un devis."],
+  ["Plan a birthday party", "خطّط لحفلة عيد ميلاد", "Organisez un anniversaire"],
+  ["Sell products online", "بِع منتجاتك أونلاين", "Vendez vos produits en ligne"],
+  ["Start planning", "ابدأ التخطيط", "Commencer"],
+  ["Tell us what you need and get quotes from venues, entertainers and more.", "أخبرنا بما تحتاجه واحصل على عروض أسعار من الأماكن والمنشّطين وغيرهم.", "Dites-nous ce qu'il vous faut et recevez des devis de lieux, animateurs et plus."],
+  ["{n} quote requests", "{n} طلبات عرض سعر", "{n} demandes de devis"],
 ];

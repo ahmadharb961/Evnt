@@ -34,7 +34,6 @@ export default async function MerchantLayout({ children }: { children: React.Rea
     { href: "/merchant/ads", label: t("Advertising"), icon: "Megaphone" },
     { href: "/merchant/analytics", label: t("Analytics"), icon: "BarChart3" },
     { href: "/merchant/reviews", label: t("Reviews"), icon: "Star" },
-    { href: "/merchant/certification", label: t("Farah Approved"), icon: "ShieldCheck" },
     { href: "/merchant/subscription", label: t("Plan"), icon: "Crown" },
     { href: "/merchant/billing", label: t("Billing & payouts"), icon: "Receipt" },
     { href: "/merchant/notifications", label: t("Notifications"), icon: "Bell", badge: unread },

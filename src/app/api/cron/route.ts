@@ -5,7 +5,6 @@ import { syncPendingPayments } from "@/server/payments";
 import { cancelStaleUnpaidOrders } from "@/server/orders";
 import { runBilling } from "@/server/billing";
 import { runMemberships } from "@/server/plus";
-import { expireCertifications } from "@/server/farah";
 import { endCampaigns } from "@/server/ads";
 import { getSetting } from "@/server/settings";
 import { prisma } from "@/server/db";
@@ -57,7 +56,6 @@ export async function GET(req: NextRequest) {
   // Daily-ish jobs are cheap and idempotent; they run every time.
   await run("billing", () => runBilling());
   await run("memberships", () => runMemberships());
-  await run("certifications", () => expireCertifications());
   await run("campaigns", () => endCampaigns());
   return NextResponse.json({ ok: true, ...out });
 }

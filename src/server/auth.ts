@@ -84,12 +84,12 @@ export async function requireUser(next = "/account"): Promise<CurrentUser> {
 
 /**
  * Admin area access. SUPER_ADMIN can do everything; other roles get their own modules:
- * ADMIN (operations), FINANCE (money), CONTENT (CMS & moderation), EVALUATOR (Farah assessments).
+ * ADMIN (operations), FINANCE (money), CONTENT (CMS & moderation).
  */
 export async function requireAdmin(...roles: Role[]): Promise<CurrentUser> {
   const u = await getCurrentUser();
   if (!u) redirect("/login?next=/admin");
-  const allowed = roles.length ? roles : (["ADMIN", "FINANCE", "CONTENT", "EVALUATOR"] as Role[]);
+  const allowed = roles.length ? roles : (["ADMIN", "FINANCE", "CONTENT"] as Role[]);
   if (!hasRole(u, ...allowed)) {
     if (isStaffUser(u)) throw new PermissionError("Your admin role does not include this area");
     redirect("/");

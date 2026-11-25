@@ -1,16 +1,12 @@
 import "server-only";
 import { prisma } from "./db";
 import { UserError } from "./auth";
-import { getSetting } from "./settings";
-import { createInvoice } from "./billing";
-import { merchantFeatures } from "./features";
 import { notifyMerchant, notifyUser } from "./notify";
 
 export const SERVICES = ["venue", "entertainer", "decoration", "cake", "photographer", "package", "activity"] as const;
 export type Service = (typeof SERVICES)[number];
-export const MAX_LEAD_BUYERS = 3;
 
-/** A lead is "qualified" when it's specific enough for a business to act on. */
+/** A request is "qualified" when it's specific enough for a business to act on. */
 export function qualifies(i: { date: Date; guests: number; budgetCents: number; services: string[] }) {
   const days = (i.date.getTime() - Date.now()) / 86400_000;
   return days >= 3 && days <= 180 && i.guests >= 5 && i.budgetCents >= 10000 && i.services.length > 0;
@@ -45,7 +41,7 @@ export async function matchingMerchants(inquiryId: string) {
     take: 60,
   });
   return merchants
-    .map((m) => ({ m, score: (m.locations.some((l) => l.area === i.area) ? 5 : 0) + m.ratingAvg + (m.farahUntil && m.farahUntil > new Date() ? 2 : 0) + (m.events.some((e) => e.fromPriceCents <= i.budgetCents) ? 2 : 0) }))
+    .map((m) => ({ m, score: (m.locations.some((l) => l.area === i.area) ? 5 : 0) + m.ratingAvg + (m.events.some((e) => e.fromPriceCents <= i.budgetCents) ? 2 : 0) }))
     .sort((a, b) => b.score - a.score)
     .map((x) => x.m);
 }
@@ -76,40 +72,3 @@ export async function sendQuote(quoteId: string, merchantId: string, priceCents:
   });
 }
 
-/** Anonymised Birthday Radar feed (no names, no phone numbers, no exact date until purchased). */
-export async function radarFeed(merchantId: string) {
-  const list = await prisma.birthdayInquiry.findMany({
-    where: { qualified: true, status: "OPEN", date: { gt: new Date() } },
-    include: { leads: { select: { merchantId: true } } },
-    orderBy: { createdAt: "desc" },
-    take: 60,
-  });
-  return list
-    .filter((i) => i.leads.length < MAX_LEAD_BUYERS || i.leads.some((l) => l.merchantId === merchantId))
-    .map((i) => ({ id: i.id, childAge: i.childAge, month: i.date, area: i.area, guests: i.guests, budgetCents: i.budgetCents, services: i.services, purchased: i.leads.some((l) => l.merchantId === merchantId), createdAt: i.createdAt }));
-}
-
-/** Featured merchants buy a qualified lead. Unique per merchant+inquiry, so it can never be charged twice. */
-export async function buyLead(merchantId: string, inquiryId: string, actorId: string) {
-  const m = await prisma.merchant.findUniqueOrThrow({ where: { id: merchantId } });
-  const f = await merchantFeatures(m);
-  if (!f.birthdayRadar) throw new UserError("Birthday Radar is part of the Featured plan");
-  const i = await prisma.birthdayInquiry.findUnique({ where: { id: inquiryId }, include: { leads: true } });
-  if (!i || !i.qualified || i.status !== "OPEN") throw new UserError("This request is no longer available");
-  if (i.leads.some((l) => l.merchantId === merchantId)) return i.leads.find((l) => l.merchantId === merchantId)!;
-  if (i.leads.length >= MAX_LEAD_BUYERS) throw new UserError("This request already has enough businesses");
-  const price = Math.min(Math.max(await getSetting("leads.priceCents"), await getSetting("leads.minCents")), await getSetting("leads.maxCents"));
-  try {
-    return await prisma.$transaction(async (tx) => {
-      const lead = await tx.birthdayLead.create({ data: { inquiryId, merchantId, priceCents: price } });
-      const inv = await createInvoice(merchantId, [{ kind: "LEAD", description: `Birthday Radar lead (${i.guests} guests, age ${i.childAge})`, amountCents: price, refType: "lead", refId: lead.id }], tx);
-      await tx.birthdayLead.update({ where: { id: lead.id }, data: { invoiceId: inv.id } });
-      await tx.birthdayQuote.upsert({ where: { inquiryId_merchantId: { inquiryId, merchantId } }, create: { inquiryId, merchantId }, update: {} });
-      await tx.auditLog.create({ data: { actorId, action: "lead.purchased", entityType: "birthdayInquiry", entityId: inquiryId, data: { merchantId, price } } });
-      return lead;
-    });
-  } catch (e) {
-    if ((e as { code?: string }).code === "P2002") throw new UserError("You already have this lead");
-    throw e;
-  }
-}

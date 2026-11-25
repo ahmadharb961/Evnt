@@ -20,7 +20,6 @@ export type EventCardData = {
   nextStartsAt: string | null;
   sessionsCount: number;
   availability: Availability;
-  farah: boolean;
   sponsored?: boolean;
   isNew: boolean;
   lat: number | null;
@@ -40,7 +39,6 @@ export type RestaurantCardData = {
   rating: number;
   ratingCount: number;
   facilities: string[];
-  farah: boolean;
   acceptsReservations: boolean;
   sponsored?: boolean;
   lat: number | null;

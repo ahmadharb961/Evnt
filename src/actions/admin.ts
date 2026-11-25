@@ -414,7 +414,6 @@ export async function savePlanAction(code: PlanCode, _: FormResult, form: FormDa
         flashPromosPerMonth: Math.max(0, parseInt(String(form.get("flash") ?? "0"), 10) || 0),
         bookingManagement: form.get("bookingManagement") === "on",
         advancedAnalytics: form.get("advancedAnalytics") === "on",
-        birthdayRadar: form.get("birthdayRadar") === "on",
         demandIntelligence: form.get("demandIntelligence") === "on",
         priorityPlacement: form.get("priorityPlacement") === "on",
         sponsoredRoundups: form.get("sponsoredRoundups") === "on",
@@ -552,7 +551,7 @@ export async function saveRankingAction(_: FormResult, form: FormData): Promise<
 
 // ───────────── Create users & admin team ─────────────
 
-const ALL_ROLES: Role[] = ["SUPER_ADMIN", "ADMIN", "FINANCE", "CONTENT", "EVALUATOR"];
+const ALL_ROLES: Role[] = ["SUPER_ADMIN", "ADMIN", "FINANCE", "CONTENT"];
 
 /** Creates an account (customer or admin team member). Only super admins can give admin roles. */
 export async function createUserAction(_: FormResult, form: FormData): Promise<FormResult> {

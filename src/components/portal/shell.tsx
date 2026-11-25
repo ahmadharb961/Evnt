@@ -8,7 +8,7 @@ import { Logo } from "@/components/logo";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import {
   LayoutDashboard, Store, CalendarDays, Armchair, Ticket, ScanLine, UtensilsCrossed, ShoppingBag, Package, Cake, Megaphone, BarChart3,
-  CreditCard, Receipt, Star, Users, Settings, BadgeCheck, Zap, Home, Wallet, Scale, Crown, Languages, Calculator, FileText, Bell, Mail, Circle, Radar, ShieldCheck, ListOrdered, UserPlus, Shield, Sparkles,
+  CreditCard, Receipt, Star, Users, Settings, BadgeCheck, Zap, Home, Wallet, Scale, Crown, Languages, Calculator, FileText, Bell, Mail, Circle, ShieldCheck, ListOrdered, UserPlus, Shield, Sparkles,
 } from "lucide-react";
 
 import { TONES, type Tone } from "@/lib/tones";
@@ -16,7 +16,7 @@ export type { Tone };
 
 const Icons = {
   LayoutDashboard, Store, CalendarDays, Armchair, Ticket, ScanLine, UtensilsCrossed, ShoppingBag, Package, Cake, Megaphone, BarChart3,
-  CreditCard, Receipt, Star, Users, Settings, BadgeCheck, Zap, Home, Wallet, Scale, Crown, Languages, Calculator, FileText, Bell, Mail, Circle, Radar, ShieldCheck, ListOrdered, UserPlus, Shield, Sparkles,
+  CreditCard, Receipt, Star, Users, Settings, BadgeCheck, Zap, Home, Wallet, Scale, Crown, Languages, Calculator, FileText, Bell, Mail, Circle, ShieldCheck, ListOrdered, UserPlus, Shield, Sparkles,
 };
 
 const NavCtx = createContext<NavItem[]>([]);

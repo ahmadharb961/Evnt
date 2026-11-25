@@ -7,7 +7,7 @@ import { GripVertical, Eye, EyeOff, Trash2, Pencil, ChevronUp, ChevronDown, Load
 import { reorderSectionsAction, toggleSectionAction, deleteSectionAction } from "@/actions/admin";
 import { useT } from "@/i18n/client";
 
-const SOURCE: Record<string, string> = { HANDPICKED: "Handpicked", EVENTS: "Activities & events", RESTAURANTS: "Restaurants", PRODUCTS: "Products", FARAH: "Farah Approved", SPONSORED: "Paid featured placements" };
+const SOURCE: Record<string, string> = { HANDPICKED: "Handpicked", EVENTS: "Activities & events", RESTAURANTS: "Restaurants", PRODUCTS: "Products", SPONSORED: "Paid featured placements" };
 
 type Row = { id: string; title: string; source: string; visible: boolean; scheduled: string | null; sponsored: boolean };
 

@@ -15,7 +15,7 @@ import { loc } from "@/i18n/core";
 import { Gallery } from "@/components/gallery";
 import { FavoriteButton } from "@/components/favorite-button";
 import { ShareButton } from "@/components/share-button";
-import { FarahBadge, facilityLabel, RestaurantCard } from "@/components/cards";
+import { facilityLabel, RestaurantCard } from "@/components/cards";
 import { ReviewsSection } from "@/components/reviews";
 import { ResultsMap } from "@/components/results-map";
 import { ReservationForm } from "@/components/reservation-form";
@@ -58,7 +58,6 @@ export default async function RestaurantPage({ params }: { params: Promise<{ slu
     ["sat", t("Saturday")],
     ["sun", t("Sunday")],
   ] as const;
-  const farah = !!r.merchant.farahUntil && r.merchant.farahUntil > new Date();
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Restaurant",
@@ -79,7 +78,6 @@ export default async function RestaurantPage({ params }: { params: Promise<{ slu
         <div>
           <div className="flex items-start justify-between gap-4">
             <div>
-              {farah && <FarahBadge t={t} />}
               <h1 className="mt-2 text-3xl font-bold tracking-tight">{r.name}</h1>
               <p className="mt-1 text-sm text-ink-muted">
                 {r.cuisines.join(" · ")} · {"$".repeat(r.priceLevel)} · <span className={open ? "font-semibold text-mint-deep" : ""}>{open ? t("Open now") : t("Closed now")}</span>

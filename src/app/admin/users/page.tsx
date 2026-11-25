@@ -99,7 +99,8 @@ export default async function UsersAdmin({ searchParams }: { searchParams: Promi
                   <span className="flex flex-wrap gap-1">
                     {u.roles.length
                       ? u.roles.map((r) => {
-                          const info = ROLE_INFO.find((x) => x.role === r.role)!;
+                          const info = ROLE_INFO.find((x) => x.role === r.role);
+                          if (!info) return null;
                           return (
                             <span key={r.role} className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${TONES[info.tone].tile} ${TONES[info.tone].text}`}>
                               {t(info.label)}

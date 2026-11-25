@@ -9,12 +9,10 @@ import { prisma } from "./db";
  */
 export async function platformFinancials(since: Date, until = new Date()) {
   const range = { gte: since, lt: until };
-  const [subs, membership, commissions, leads, certs, ads, reports, refunds, codCollected, codUncollected, gmvBookings, gmvOrders, payments] = await Promise.all([
+  const [subs, membership, commissions, ads, reports, refunds, codCollected, codUncollected, gmvBookings, gmvOrders, payments] = await Promise.all([
     prisma.invoiceLine.aggregate({ where: { kind: "SUBSCRIPTION", invoice: { status: "PAID", paidAt: range } }, _sum: { amountCents: true } }),
     prisma.payment.aggregate({ where: { purpose: "MEMBERSHIP", status: "SUCCEEDED", confirmedAt: range }, _sum: { amountCents: true } }),
     prisma.commission.aggregate({ where: { status: { in: ["EARNED", "INVOICED", "SETTLED"] }, earnedAt: range }, _sum: { amountCents: true } }),
-    prisma.invoiceLine.aggregate({ where: { kind: "LEAD", invoice: { status: "PAID", paidAt: range } }, _sum: { amountCents: true } }),
-    prisma.invoiceLine.aggregate({ where: { kind: "CERTIFICATION", invoice: { status: "PAID", paidAt: range } }, _sum: { amountCents: true } }),
     prisma.invoiceLine.aggregate({ where: { kind: "ADVERTISING", invoice: { status: "PAID", paidAt: range } }, _sum: { amountCents: true } }),
     prisma.invoiceLine.aggregate({ where: { kind: "REPORT", invoice: { status: "PAID", paidAt: range } }, _sum: { amountCents: true } }),
     prisma.refund.aggregate({ where: { status: "PROCESSED", processedAt: range }, _sum: { amountCents: true } }),
@@ -31,8 +29,6 @@ export async function platformFinancials(since: Date, until = new Date()) {
     memberships: n(membership._sum.amountCents),
     commissions: n(commissions._sum.amountCents),
     bookingFees,
-    leads: n(leads._sum.amountCents),
-    certifications: n(certs._sum.amountCents),
     advertising: n(ads._sum.amountCents),
     reports: n(reports._sum.amountCents),
   };

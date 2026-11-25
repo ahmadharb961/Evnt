@@ -18,7 +18,6 @@ export async function merchantFeatures(m: Pick<Merchant, "type" | "plan" | "stat
     // Paid features (and switched off while invoices are seriously overdue)
     bookingManagement: !!plan?.bookingManagement && !restricted,
     advancedAnalytics: !!plan?.advancedAnalytics && !restricted,
-    birthdayRadar: !!plan?.birthdayRadar && !restricted,
     demandIntelligence: !!plan?.demandIntelligence && !restricted,
     flashPromos: restricted ? 0 : plan?.flashPromosPerMonth ?? 0,
     advertising: !restricted,

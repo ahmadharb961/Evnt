@@ -79,9 +79,9 @@ export const TERMS: LegalPage = {
           "Les marchands sont vérifiés avant leur mise en ligne et sont responsables de leurs activités, produits, prix, sécurité, autorisations et service client. Ils acceptent les prix d'abonnement, commissions et frais publiés sur la page tarifs au moment de la transaction, qu'EVNT peut modifier avec préavis. Les commissions s'appliquent aux réservations générées par EVNT ; 50 % du taux s'applique aux réservations générées par EVNT, vérifiées et conclues directement dans les 72 heures suivant un contact ; les clients amenés par le lien EVNT du marchand sont sans commission (des frais de paiement peuvent s'appliquer).",
         ),
         T(
-          "Sponsored placements are labelled as sponsored, require EVNT's approval and never influence organic rankings, reviews or Farah Approved assessments. Unpaid invoices may lead to service restrictions.",
-          "تُعلَّم المساحات المموّلة بوضوح، وتحتاج إلى موافقة EVNT، ولا تؤثر أبداً على الترتيب الطبيعي أو التقييمات أو تقييمات Farah Approved. قد تؤدي الفواتير غير المدفوعة إلى تقييد الخدمات.",
-          "Les placements sponsorisés sont signalés comme tels, nécessitent l'approbation d'EVNT et n'influencent jamais les classements naturels, les avis ni les évaluations Farah Approved. Des factures impayées peuvent entraîner des restrictions de service.",
+          "Sponsored placements are labelled as sponsored, require EVNT's approval and never influence organic rankings or reviews. Unpaid invoices may lead to service restrictions.",
+          "تُعلَّم المساحات المموّلة بوضوح، وتحتاج إلى موافقة EVNT، ولا تؤثر أبداً على الترتيب الطبيعي أو التقييمات. قد تؤدي الفواتير غير المدفوعة إلى تقييد الخدمات.",
+          "Les placements sponsorisés sont signalés comme tels, nécessitent l'approbation d'EVNT et n'influencent jamais les classements naturels ni les avis. Des factures impayées peuvent entraîner des restrictions de service.",
         ),
       ],
     },

@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { BadgeCheck, MessageCircle } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 import { prisma } from "@/server/db";
 import { requireUser } from "@/server/auth";
 import { matchingMerchants } from "@/server/birthdays";
@@ -77,7 +77,6 @@ export default async function BirthdayPlan({ params }: { params: Promise<{ id: s
                   <span className="min-w-0">
                     <span className="flex items-center gap-1 font-semibold">
                       {m.name}
-                      {m.farahUntil && m.farahUntil > new Date() && <BadgeCheck className="h-4 w-4 text-mint-deep" />}
                     </span>
                     <span className="block truncate text-xs text-ink-muted">
                       {m.locations.map((l) => areaName(l.area, locale)).join(", ")}

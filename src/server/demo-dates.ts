@@ -37,3 +37,15 @@ export async function refreshDemoSessions(db: PrismaClient, now = new Date()): P
   }
   return added;
 }
+
+let lastCheck = 0;
+/** Demo sites only: makes sure sample activities have upcoming dates, checked at most once an hour. */
+export async function ensureDemoDates(db: PrismaClient) {
+  if (process.env.SEED_DEMO !== "true" || Date.now() - lastCheck < 3600_000) return;
+  lastCheck = Date.now();
+  try {
+    await refreshDemoSessions(db);
+  } catch (e) {
+    console.error("[demo-dates]", e);
+  }
+}

@@ -2,6 +2,7 @@ import "server-only";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "./db";
 import { mediaSrc } from "./media";
+import { ensureDemoDates } from "./demo-dates";
 import { loc, type Locale } from "@/i18n/core";
 import { areaName, AREAS, distanceKm } from "@/lib/areas";
 import { windowFor } from "@/lib/dates";
@@ -164,6 +165,7 @@ async function toEventCards(rows: EventRow[], locale: Locale, window: { from: Da
 }
 
 export async function searchEvents(f: EventFilters, locale: Locale): Promise<{ items: EventCardData[]; total: number }> {
+  await ensureDemoDates(prisma);
   let q = (f.q ?? "").trim();
   let { ageMin, ageMax, area } = f;
   if (q) {

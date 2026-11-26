@@ -139,6 +139,12 @@ export async function markInvoicePaid(invoiceId: string, opts: { paymentId?: str
     for (const l of inv.lines) {
       if (l.refType === "subscription" && l.refId) await activateSubscription(tx, l.refId);
       if (l.refType === "campaign" && l.refId) await tx.adCampaign.updateMany({ where: { id: l.refId, status: "PENDING_PAYMENT" }, data: { status: "PENDING_APPROVAL" } });
+      if (l.refType === "shop-listing" && l.refId) {
+        const m = await tx.merchant.findUnique({ where: { id: l.refId }, select: { shopPaidUntil: true } });
+        const from = m?.shopPaidUntil && m.shopPaidUntil > new Date() ? new Date(m.shopPaidUntil) : new Date();
+        from.setMonth(from.getMonth() + 1);
+        await tx.merchant.update({ where: { id: l.refId }, data: { shopPaidUntil: from } });
+      }
       if (l.refType === "commissions") {
         await tx.commission.updateMany({ where: { invoiceId: inv.id }, data: { status: "SETTLED" } });
         await tx.settlement.updateMany({ where: { reference: inv.number, status: "DRAFT" }, data: { status: "PAID", paidAt: new Date() } });

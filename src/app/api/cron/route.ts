@@ -10,6 +10,7 @@ import { getSetting } from "@/server/settings";
 import { prisma } from "@/server/db";
 import { notifyUser } from "@/server/notify";
 import { refreshDemoSessions } from "@/server/demo-dates";
+import { runShopListings } from "@/server/shop-listing";
 
 // Scheduled jobs. Call every 5–15 minutes from Hostinger's cron with the CRON_SECRET:
 //   curl -s -H "Authorization: Bearer $CRON_SECRET" https://evnt.co/api/cron
@@ -58,6 +59,7 @@ export async function GET(req: NextRequest) {
   await run("billing", () => runBilling());
   await run("memberships", () => runMemberships());
   await run("campaigns", () => endCampaigns());
+  await run("shopListings", () => runShopListings());
   // Demo sites only: keep sample activities showing upcoming dates.
   if (process.env.SEED_DEMO === "true") await run("demoDates", () => refreshDemoSessions(prisma));
   return NextResponse.json({ ok: true, ...out });

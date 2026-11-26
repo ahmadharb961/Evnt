@@ -1,4 +1,6 @@
 import { notFound } from "next/navigation";
+import { getSetting } from "@/server/settings";
+import { isShopListed } from "@/server/shop-listing";
 import { ScrollRow } from "@/components/scroll-row";
 import Link from "next/link";
 import { Truck, Banknote } from "lucide-react";
@@ -34,7 +36,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const { slug } = await params;
   const [locale, t, user] = await Promise.all([getLocale(), getT(), getCurrentUser()]);
   const p = await prisma.product.findUnique({ where: { slug }, include: { merchant: true, category: { include: { parent: true } }, variants: { where: { active: true }, orderBy: { name: "asc" } } } });
-  if (!p || p.status !== "PUBLISHED" || p.merchant.status !== "APPROVED") notFound();
+  if (!p || p.status !== "PUBLISHED" || p.merchant.status !== "APPROVED" || !isShopListed(p.merchant, await getSetting("billing.graceDays"))) notFound();
   void trackView(p.merchantId, "product", p.id);
   const flashPct = (await productFlash([p.id])).get(p.id) ?? 0;
   const nowPrice = effectiveProductPrice(p.priceCents, p.salePriceCents, flashPct);

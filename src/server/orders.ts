@@ -1,4 +1,6 @@
 import "server-only";
+import { getSetting } from "./settings";
+import { isShopListed } from "./shop-listing";
 import type { OrderStatus } from "@prisma/client";
 import { prisma, type Tx } from "./db";
 import { UserError } from "./auth";
@@ -16,7 +18,7 @@ import { ORDER_FLOW } from "@/lib/status";
 
 export async function addToCart(variantId: string, quantity: number) {
   const v = await prisma.productVariant.findUnique({ where: { id: variantId }, include: { product: { include: { merchant: true } } } });
-  if (!v || !v.active || v.product.status !== "PUBLISHED" || v.product.merchant.status !== "APPROVED") throw new UserError("This product isn't available");
+  if (!v || !v.active || v.product.status !== "PUBLISHED" || v.product.merchant.status !== "APPROVED" || !isShopListed(v.product.merchant, await getSetting("billing.graceDays"))) throw new UserError("This product isn't available");
   const q = Math.max(1, Math.min(20, Math.floor(quantity)));
   const cart = (await findCart(true))!;
   const existing = await prisma.cartItem.findUnique({ where: { cartId_variantId: { cartId: cart.id, variantId } } });

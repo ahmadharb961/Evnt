@@ -292,6 +292,11 @@ async function main() {
     const { refreshDemoSessions } = await import("../src/server/demo-dates");
     const added = await refreshDemoSessions(prisma);
     if (added) console.log(`[seed] demo dates refreshed (+${added} upcoming dates)`);
+    // Demo shops stay listed (real shops pay their monthly listing).
+    await prisma.merchant.updateMany({
+      where: { slug: { in: (await import("../src/server/demo-dates")).DEMO_MERCHANT_SLUGS }, OR: [{ shopPaidUntil: null }, { shopPaidUntil: { lt: new Date(Date.now() + 30 * 86400_000) } }] },
+      data: { shopPaidUntil: new Date(Date.now() + 365 * 86400_000) },
+    });
   }
   console.log("[seed] done");
 }

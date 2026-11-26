@@ -427,6 +427,7 @@ export async function saveRatesAction(_: FormResult, form: FormData): Promise<Fo
   return guard(["FINANCE"], async (actor) => {
     const rates = await prisma.commissionRate.findMany();
     for (const r of rates) {
+      if (!form.has(`${r.category}_${r.plan}`)) continue; // e.g. shop sales: shops pay a listing fee instead
       const v = parseFloat(String(form.get(`${r.category}_${r.plan}`) ?? ""));
       if (!Number.isFinite(v) || v < 0 || v > 50) throw new UserError("Rates must be between 0% and 50%");
       const bps = Math.round(v * 100);

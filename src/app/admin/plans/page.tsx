@@ -10,9 +10,9 @@ import { TONES } from "@/lib/tones";
 import { PLAN } from "@/lib/status";
 
 export const metadata = { title: "Plans & pricing" };
-const CATS = ["WORKSHOPS", "CAMPS", "SHOWS", "BIRTHDAYS", "FAMILY_EXPERIENCES", "RETAIL"] as const;
+const CATS = ["WORKSHOPS", "CAMPS", "SHOWS", "BIRTHDAYS", "FAMILY_EXPERIENCES"] as const;
 const PLANS = ["BASIC", "PRO", "FEATURED"] as const;
-const CAT_LABEL: Record<(typeof CATS)[number], string> = { WORKSHOPS: "Workshops", CAMPS: "Camps", SHOWS: "Shows", BIRTHDAYS: "Birthdays", FAMILY_EXPERIENCES: "Family experiences", RETAIL: "Shop sales" };
+const CAT_LABEL: Record<(typeof CATS)[number], string> = { WORKSHOPS: "Workshops", CAMPS: "Camps", SHOWS: "Shows", BIRTHDAYS: "Birthdays", FAMILY_EXPERIENCES: "Family experiences" };
 
 export default async function PlansAdmin() {
   await requireAdmin("FINANCE", "ADMIN");

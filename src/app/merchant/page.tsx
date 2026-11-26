@@ -72,17 +72,29 @@ export default async function MerchantHome({ searchParams }: { searchParams: Pro
           )}
         </Panel>
         <div className="space-y-6">
-          <Panel title={t("Your plan")}>
-            <p className="text-lg font-bold">{m.plan === "BASIC" ? "Basic" : m.plan === "PRO" ? "Pro" : "Featured"}</p>
-            {sub && sub.plan !== "BASIC" && (
-              <p className="mt-1 text-sm text-ink-muted">
-                {sub.status === "TRIALING" ? t("Free trial until {date}", { date: fmtDateTime(sub.currentPeriodEnd, locale) }) : t("Renews {date}", { date: fmtDateTime(sub.currentPeriodEnd, locale) })}
+          {m.type === "RETAILER" ? (
+            <Panel title={t("Shop listing")}>
+              <p className="text-lg font-bold">
+                {m.shopPaidUntil && m.shopPaidUntil > new Date() ? t("Listed until {date}", { date: fmtDateTime(m.shopPaidUntil, locale) }) : t("Not listed")}
               </p>
-            )}
-            <Link href="/merchant/subscription" className="btn-soft btn-sm mt-4">
-              {t("Manage plan")}
-            </Link>
-          </Panel>
+              <p className="mt-1 text-xs text-ink-muted">{t("No commission on your sales.")}</p>
+              <Link href="/merchant/billing" className="btn-soft btn-sm mt-4">
+                {t("Billing & payouts")}
+              </Link>
+            </Panel>
+          ) : (
+            <Panel title={t("Your plan")}>
+              <p className="text-lg font-bold">{m.plan === "BASIC" ? "Basic" : m.plan === "PRO" ? "Pro" : "Featured"}</p>
+              {sub && sub.plan !== "BASIC" && (
+                <p className="mt-1 text-sm text-ink-muted">
+                  {sub.status === "TRIALING" ? t("Free trial until {date}", { date: fmtDateTime(sub.currentPeriodEnd, locale) }) : t("Renews {date}", { date: fmtDateTime(sub.currentPeriodEnd, locale) })}
+                </p>
+              )}
+              <Link href="/merchant/subscription" className="btn-soft btn-sm mt-4">
+                {t("Manage plan")}
+              </Link>
+            </Panel>
+          )}
           <Panel title={t("Your EVNT link")}>
             <p className="text-sm text-ink-muted">{t("Share it with your own customers: bookings that come through it are commission-free.")}</p>
             <CopyText text={`${appUrl()}/r/${m.attributionCode}`} />

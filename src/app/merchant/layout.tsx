@@ -5,6 +5,12 @@ import { prisma } from "@/server/db";
 import { getT } from "@/i18n/server";
 import { PortalShell, type NavItem } from "@/components/portal/shell";
 import { stopManagingAction } from "@/actions/admin";
+import { payShopListingAction } from "@/actions/shop-listing";
+import { isShopListed } from "@/server/shop-listing";
+import { getSetting } from "@/server/settings";
+import { formatMoney } from "@/lib/money";
+import { getLocale } from "@/i18n/server";
+import { fmtDate } from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +19,10 @@ export default async function MerchantLayout({ children }: { children: React.Rea
   const t = await getT();
   const m = ctx.merchant;
   const f = await merchantFeatures(m);
+  const sellsProducts = m.type === "RETAILER" || (f.shop && (await prisma.product.count({ where: { merchantId: m.id, status: "PUBLISHED" } })) > 0);
+  const [grace, listingPrice, locale] = await Promise.all([getSetting("billing.graceDays"), getSetting("shop.listingCents"), getLocale()]);
+  const listed = isShopListed(m, grace);
+  const endingSoon = listed && !!m.shopPaidUntil && m.shopPaidUntil.getTime() - Date.now() < 5 * 86400_000;
   const [pendingRes, newOrders, unread] = await Promise.all([
     f.restaurant ? prisma.restaurantReservation.count({ where: { restaurant: { merchantId: m.id }, status: "REQUESTED" } }) : 0,
     f.shop ? prisma.order.count({ where: { merchantId: m.id, status: "PENDING" } }) : 0,
@@ -34,7 +44,7 @@ export default async function MerchantLayout({ children }: { children: React.Rea
     { href: "/merchant/ads", label: t("Advertising"), icon: "Megaphone" },
     { href: "/merchant/analytics", label: t("Analytics"), icon: "BarChart3" },
     { href: "/merchant/reviews", label: t("Reviews"), icon: "Star" },
-    { href: "/merchant/subscription", label: t("Plan"), icon: "Crown" },
+    ...(m.type === "RETAILER" ? [] : [{ href: "/merchant/subscription", label: t("Plan"), icon: "Crown" as const }]),
     { href: "/merchant/billing", label: t("Billing & payouts"), icon: "Receipt" },
     { href: "/merchant/notifications", label: t("Notifications"), icon: "Bell", badge: unread },
     { href: "/merchant/team", label: t("Team"), icon: "Users" },
@@ -52,6 +62,16 @@ export default async function MerchantLayout({ children }: { children: React.Rea
       </div>
     ) : m.status === "SUSPENDED" ? (
       <div className="mb-6 rounded-3xl bg-red-50 p-4 text-sm text-red-700">{t("Your business is suspended and hidden from EVNT. Please contact support.")}</div>
+    ) : sellsProducts && m.status === "APPROVED" && (!listed || endingSoon) ? (
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-3xl bg-gradient-to-r from-blush-soft to-peach-soft p-4 text-sm">
+        <span>
+          <b className="block text-base">{listed ? t("Your shop listing ends on {date}", { date: fmtDate(m.shopPaidUntil!, locale, { day: "numeric", month: "long" }) }) : t("Your shop isn't visible to families yet")}</b>
+          {t("Listing your shop on EVNT costs {price} a month, with no commission on your sales.", { price: formatMoney(listingPrice, locale) })}
+        </span>
+        <form action={payShopListingAction}>
+          <button className="btn-primary">{listed ? t("Renew for {price}", { price: formatMoney(listingPrice, locale) }) : t("Go live for {price}", { price: formatMoney(listingPrice, locale) })}</button>
+        </form>
+      </div>
     ) : m.restrictedAt ? (
       <Link href="/merchant/billing" className="mb-6 block rounded-3xl bg-red-50 p-4 text-sm text-red-700">
         {t("Some features are paused because of an overdue invoice. Pay it to restore them →")}

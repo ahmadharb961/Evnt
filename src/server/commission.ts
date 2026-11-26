@@ -94,12 +94,12 @@ export async function recordReservationCommission(tx: Tx, r: { id: string; code:
   return c;
 }
 
-/** Retail commission on a shop order once its money is actually in (Whish paid, or COD collected). */
+/** Shop orders: shops pay a monthly listing fee instead, so EVNT takes no commission (0%). Recorded for the payout ledger. */
 export async function recordOrderCommission(tx: Tx, o: { id: string; number: string; merchantId: string; plan: PlanCode; baseCents: number; paymentMethod: string; totalCents: number }) {
   const existing = await tx.commission.findUnique({ where: { source_sourceId: { source: "ORDER", sourceId: o.id } } });
   if (existing) return existing;
-  const bps = await rateBps(tx, "RETAIL", o.plan);
-  const { amountCents } = commissionFor(o.baseCents, bps, "EVNT");
+  const bps = 0;
+  const amountCents = 0;
   const c = await tx.commission.create({
     data: { merchantId: o.merchantId, source: "ORDER", sourceId: o.id, category: "RETAIL", plan: o.plan, attribution: "EVNT", rateBps: bps, baseCents: o.baseCents, amountCents, status: "EARNED", earnedAt: new Date() },
   });

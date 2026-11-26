@@ -11,6 +11,7 @@ import { ActionButton } from "@/components/portal/action-button";
 import { ActionForm } from "@/components/portal/action-form";
 import { setMerchantStatusAction, overridePlanAction, manageAsMerchantAction, invoiceCommissionsAction, payoutAction, issueInvoiceAction, recordExternalBookingAction } from "@/actions/admin";
 import { mediaSrc } from "@/server/media";
+import { extendShopListingAction } from "@/actions/shop-listing";
 import { formatMoney } from "@/lib/money";
 import { fmtDate, fmtDateTime } from "@/lib/dates";
 import { areaName } from "@/lib/areas";
@@ -70,6 +71,15 @@ export default async function AdminMerchant({ params }: { params: Promise<{ id: 
         <Stat label={bal >= 0 ? t("EVNT owes merchant") : t("Merchant owes EVNT")} value={money(Math.abs(bal))} />
         <Stat label={t("Commissions earned (all time)")} value={money(commissions._sum.amountCents ?? 0)} />
         <Stat label={t("Subscription")} value={<span className="text-base">{sub ? `${t(labelOf(PLAN, sub.plan))} · ${t(labelOf(SUBSCRIPTION_STATUS, sub.status))}` : "—"}</span>} hint={sub ? t("until {date}", { date: fmtDate(sub.currentPeriodEnd, locale, { day: "numeric", month: "short", year: "numeric" }) }) : undefined} />
+        <div className="rounded-3xl bg-blush-soft p-5 ring-1 ring-ink/[.04]">
+          <p className="text-xs font-semibold text-ink-soft">{t("Shop listing")}</p>
+          <p className="mt-2 text-xl font-extrabold tracking-tight text-blush-deep">
+            {m.shopPaidUntil && m.shopPaidUntil > new Date() ? t("Listed until {date}", { date: fmtDate(m.shopPaidUntil, locale, { day: "numeric", month: "short", year: "numeric" }) }) : t("Not listed")}
+          </p>
+          <ActionButton action={extendShopListingAction.bind(null, m.id)} className="btn-outline btn-sm mt-3" prompt={t("Add how many months? (paid in cash or transfer, or free)")}>
+            {t("Add months")}
+          </ActionButton>
+        </div>
       </div>
       <div className="grid gap-6 lg:grid-cols-2">
         <Panel title={t("Details")}>

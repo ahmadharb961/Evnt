@@ -6,7 +6,9 @@ import { changePlan, markInvoicePaid } from "@/server/billing";
 import { merchantFeatures } from "@/server/features";
 import { createCampaign, reviewCampaign } from "@/server/ads";
 import { createReview } from "@/server/reviews";
-import { recordBookingCommission } from "@/server/commission";
+import { recordBookingCommission, recordOrderCommission } from "@/server/commission";
+import { searchProducts, listStores } from "@/server/listings";
+import { invoiceShopListing } from "@/server/shop-listing";
 import { requestReservation, respondReservation, completeReservation } from "@/server/restaurants";
 import { addDays, beirutYmd, beirutTime } from "@/lib/dates";
 
@@ -102,6 +104,26 @@ describe("acceptance", () => {
     expect((await prisma.adCampaign.findUniqueOrThrow({ where: { id: c.id } })).status).toBe("PENDING_APPROVAL");
     await reviewCampaign(c.id, true, "", admin);
     expect((await prisma.adCampaign.findUniqueOrThrow({ where: { id: c.id } })).status).toBe("APPROVED");
+  });
+
+  it("#20 shops pay a monthly listing: hidden until paid, then visible, with no commission on sales", async () => {
+    const { m } = await freshMerchant();
+    await prisma.merchant.update({ where: { id: m.id }, data: { type: "RETAILER" } });
+    const cat = await prisma.category.findFirstOrThrow({ where: { kind: "PRODUCT", parentId: { not: null } } });
+    const p = await prisma.product.create({ data: { merchantId: m.id, categoryId: cat.id, slug: `test-p-${stamp}`, title: { en: "Test toy" }, priceCents: 2500, status: "PUBLISHED", searchText: `test toy ${stamp}` } });
+    const visible = async () => (await searchProducts({ merchantId: m.id, limit: 5 }, "en")).items.some((x) => x.id === p.id);
+    expect(await visible()).toBe(false);
+    expect((await listStores("en")).some((x) => x.id === m.id)).toBe(false);
+    const inv = await invoiceShopListing(m.id);
+    expect(inv.totalCents).toBe(10000);
+    expect((await invoiceShopListing(m.id)).id).toBe(inv.id); // never invoiced twice
+    await markInvoicePaid(inv.id, { recordedById: admin, reference: "TEST" });
+    const paidUntil = (await prisma.merchant.findUniqueOrThrow({ where: { id: m.id } })).shopPaidUntil!;
+    expect(paidUntil.getTime()).toBeGreaterThan(Date.now() + 27 * 86400_000);
+    expect(await visible()).toBe(true);
+    expect((await listStores("en")).some((x) => x.id === m.id)).toBe(true);
+    const c = await prisma.$transaction((tx) => recordOrderCommission(tx, { id: `test-order-${stamp}`, number: "T-1", merchantId: m.id, plan: "PRO", baseCents: 5000, paymentMethod: "COD", totalCents: 5300 }));
+    expect(c.amountCents).toBe(0);
   });
 
   it("#16 reviews are verified only with a completed booking", async () => {

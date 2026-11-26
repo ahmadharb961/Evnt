@@ -21,7 +21,8 @@ export type Hero = {
 
 export const DEFAULTS = {
   "booking.holdMinutes": 10,
-  "booking.feeCents": 100, // EVNT convenience fee per paid booking (waived for EVNT+)
+  "booking.feeCents": 100,
+  "shop.listingCents": 10000, // shops pay this per month to be listed (no commission on their sales) // EVNT convenience fee per paid booking (waived for EVNT+)
   "attribution.externalSharePct": 50,
   "attribution.externalWindowHours": 72,
   "membership.monthlyCents": 999,

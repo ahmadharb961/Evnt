@@ -6,7 +6,7 @@ import type { Tone } from "@/lib/tones";
 import { SettingsForm, NumberTile, ToggleTile, TextTile } from "@/components/admin/settings-ui";
 import { TONES } from "@/lib/tones";
 import { saveSettingsAction } from "@/actions/admin";
-import { CheckCircle2, AlertCircle, Ticket, Scale, Crown, Cake, ShieldCheck, Sparkles, Receipt, CreditCard, SlidersHorizontal } from "lucide-react";
+import { CheckCircle2, AlertCircle, Ticket, Scale, Crown, Cake, ShieldCheck, Sparkles, Receipt, CreditCard, SlidersHorizontal, ShoppingBag } from "lucide-react";
 
 export const metadata = { title: "Platform settings" };
 
@@ -15,6 +15,7 @@ type Unit = "$" | "minutes" | "hours" | "days" | "months" | "%" | "points" | "×
 const META: Record<Exclude<SettingKey, "hero">, { label: string; help: string; unit: Unit }> = {
   "booking.holdMinutes": { label: "Seat hold time", help: "When a family starts booking, their spots are kept for them for this long while they pay. After that the spots go back on sale.", unit: "minutes" },
   "booking.feeCents": { label: "Booking fee", help: "Small service fee EVNT adds to each paid booking. EVNT+ members don't pay it. Set 0 to turn it off.", unit: "$" },
+  "shop.listingCents": { label: "Shop listing price", help: "What a shop pays per month to have its store and products on EVNT. No commission is taken on shop sales.", unit: "$" },
   "attribution.externalSharePct": { label: "Commission on outside bookings", help: "When a family finds a business on EVNT, contacts them (call / WhatsApp) and books directly, EVNT earns this share of its normal commission.", unit: "%" },
   "attribution.externalWindowHours": { label: "Outside booking window", help: "How long after a family contacts a business a direct booking still counts as coming from EVNT.", unit: "hours" },
   "membership.monthlyCents": { label: "EVNT+ monthly price", help: "What families pay per month for EVNT+.", unit: "$" },
@@ -34,10 +35,11 @@ const META: Record<Exclude<SettingKey, "hero">, { label: string; help: string; u
   "support.email": { label: "Support email", help: "Where help requests go.", unit: "text" },
 };
 
-const ICONS = [Ticket, Crown, Scale, Cake, ShieldCheck, Sparkles, Receipt, CreditCard];
+const ICONS = [Ticket, Crown, Scale, Cake, ShieldCheck, Sparkles, Receipt, CreditCard, ShoppingBag];
 const GROUPS: { title: string; desc: string; icon: (typeof ICONS)[number]; tone: Tone; keys: Exclude<SettingKey, "hero">[] }[] = [
   { title: "Bookings", desc: "How booking an activity works", icon: ICONS[0], tone: "mint", keys: ["booking.holdMinutes", "booking.feeCents"] },
   { title: "EVNT+ & loyalty", desc: "Family membership and reward points", icon: ICONS[1], tone: "violet", keys: ["membership.monthlyCents", "membership.yearlyCents", "membership.earlyAccessHours", "loyalty.pointsPerDollar", "loyalty.memberMultiplier"] },
+  { title: "Shops", desc: "Stores pay a monthly fee to be listed, with no commission on their sales", icon: ICONS[8], tone: "blush", keys: ["shop.listingCents"] },
   { title: "Bookings made outside EVNT", desc: "When families contact a business from EVNT and book with them directly", icon: ICONS[2], tone: "sky", keys: ["attribution.externalSharePct", "attribution.externalWindowHours"] },
   { title: "Free trial for businesses", desc: "Help new businesses get started", icon: ICONS[5], tone: "peach", keys: ["trial.enabled", "trial.days", "trial.maxMerchants"] },
   { title: "Invoices & late payments", desc: "What happens when businesses or orders aren't paid", icon: ICONS[6], tone: "amber", keys: ["billing.invoiceDueDays", "billing.graceDays", "billing.restrictAfterDaysOverdue", "orders.autoCancelUnpaidHours"] },

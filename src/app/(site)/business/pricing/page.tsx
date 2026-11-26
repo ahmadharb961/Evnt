@@ -18,7 +18,6 @@ const CAT_LABEL: Record<string, string> = {
   SHOWS: "Shows & Entertainment",
   BIRTHDAYS: "Birthday Bookings",
   FAMILY_EXPERIENCES: "Family Experiences",
-  RETAIL: "Retail Sales",
 };
 
 export default async function PricingPage() {
@@ -30,6 +29,7 @@ export default async function PricingPage() {
     getSetting("trial.enabled"),
     getSetting("trial.days"),
   ]);
+  const shopPrice = await getSetting("shop.listingCents");
   const rate = (c: string, p: string) => (rates.find((r) => r.category === c && r.plan === p)?.rateBps ?? 0) / 100;
   return (
     <div className="container-x py-10 sm:py-16">
@@ -58,6 +58,17 @@ export default async function PricingPage() {
             </Link>
           </div>
         ))}
+      </div>
+
+      <div className="mt-10 flex flex-col items-start gap-4 rounded-[2rem] bg-gradient-to-br from-blush-soft to-peach-soft p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-blush-deep">{t("For shops")}</p>
+          <h2 className="mt-1 text-2xl font-extrabold tracking-tight sm:text-3xl">{t("Your store on EVNT for {price} a month", { price: formatMoney(shopPrice, locale) })}</h2>
+          <p className="mt-2 max-w-xl text-sm text-ink-soft">{t("Your own store page with your logo and all your products. No commission on your sales: you keep 100%.")}</p>
+        </div>
+        <Link href="/business/join" className="btn-primary shrink-0">
+          {t("List your shop")}
+        </Link>
       </div>
 
       <h2 className="mt-16 text-2xl font-bold">{t("Booking commissions")}</h2>

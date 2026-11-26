@@ -3,6 +3,7 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "./db";
 import { mediaSrc } from "./media";
 import { ensureDemoDates } from "./demo-dates";
+import { listedShopFilter } from "./shop-listing";
 import { loc, type Locale } from "@/i18n/core";
 import { areaName, AREAS, distanceKm } from "@/lib/areas";
 import { windowFor } from "@/lib/dates";
@@ -355,7 +356,7 @@ export async function searchProducts(f: ProductFilters, locale: Locale): Promise
   const catIds = await categoryIdsFor(f.categorySlug);
   const where: Prisma.ProductWhereInput = {
     status: "PUBLISHED",
-    merchant: { status: "APPROVED" },
+    merchant: await listedShopFilter(),
     ...(catIds ? { categoryId: { in: catIds } } : {}),
     ...(f.ageMax != null ? { OR: [{ ageMin: null }, { ageMin: { lte: f.ageMax } }] } : {}),
     ...(f.ageMin != null ? { AND: [{ OR: [{ ageMax: null }, { ageMax: { gte: f.ageMin } }] }] } : {}),
@@ -487,7 +488,7 @@ export async function listStores(locale: Locale, opts: { limit?: number; categor
   const catIds = await categoryIdsFor(opts.categorySlug);
   const productWhere: Prisma.ProductWhereInput = { status: "PUBLISHED", ...(catIds ? { categoryId: { in: catIds } } : {}) };
   const ms = await prisma.merchant.findMany({
-    where: { status: "APPROVED", products: { some: productWhere } },
+    where: { ...(await listedShopFilter()), products: { some: productWhere } },
     select: {
       id: true,
       slug: true,

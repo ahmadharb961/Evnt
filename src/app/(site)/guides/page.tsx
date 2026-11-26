@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { imgProps } from "@/lib/img";
 import { BookOpen } from "lucide-react";
 import { prisma } from "@/server/db";
 import { mediaSrc } from "@/server/media";
@@ -29,7 +30,7 @@ export default async function GuidesPage() {
           {articles.map((a) => (
             <Link key={a.id} href={`/guides/${a.slug}`} className="group">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={mediaSrc(a.coverId, a.coverUrl)} alt="" className="aspect-[16/10] w-full rounded-3xl object-cover" loading="lazy" />
+              <img {...imgProps(mediaSrc(a.coverId, a.coverUrl), "(max-width: 640px) 100vw, 33vw")} alt="" className="aspect-[16/10] w-full rounded-3xl object-cover" loading="lazy" />
               <p className="mt-3 text-xs text-ink-muted">{a.publishedAt ? fmtDate(a.publishedAt, locale, { day: "numeric", month: "long", year: "numeric" }) : ""}</p>
               <h2 className="mt-1 text-lg font-bold group-hover:underline">{loc(a.title, locale)}</h2>
               <p className="mt-1 line-clamp-2 text-sm text-ink-muted">{loc(a.excerpt, locale)}</p>

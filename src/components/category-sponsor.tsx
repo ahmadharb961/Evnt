@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { imgUrl } from "@/lib/img";
 import { prisma } from "@/server/db";
 import { liveCampaigns } from "@/server/home";
 import { mediaSrc } from "@/server/media";
@@ -17,7 +18,7 @@ export async function CategorySponsor({ categoryId, t }: { categoryId: string; t
   return (
     <Link href={href} className="mt-6 flex items-center gap-4 overflow-hidden rounded-3xl border border-ink/[.06] bg-peach-soft p-3 pe-5">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={mediaSrc(c.creativeId)} alt="" className="h-16 w-24 shrink-0 rounded-2xl object-cover sm:h-20 sm:w-32" />
+      <img src={imgUrl(mediaSrc(c.creativeId), 256)} alt="" className="h-16 w-24 shrink-0 rounded-2xl object-cover sm:h-20 sm:w-32" />
       <div className="min-w-0 flex-1">
         <span className="text-[10px] font-semibold uppercase tracking-wide text-peach-deep">{t("Sponsored")} · {merchant?.name}</span>
         <p className="truncate font-semibold">{c.headline}</p>

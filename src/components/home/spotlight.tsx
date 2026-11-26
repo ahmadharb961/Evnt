@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { imgProps } from "@/lib/img";
 import { ArrowRight, Sparkles, MapPin, CalendarDays } from "lucide-react";
 import { SponsoredTag } from "@/components/cards";
 import { FavoriteButton } from "@/components/favorite-button";
@@ -31,7 +32,7 @@ function SpotCard({ i, t, locale, saved, hero = false }: { i: CardData; t: T; lo
   return (
     <div className={`group relative isolate overflow-hidden rounded-[1.75rem] bg-ink/10 shadow-card ring-1 ring-ink/[.04] ${hero ? "aspect-[4/5] sm:aspect-auto sm:h-full sm:min-h-[460px]" : "aspect-[4/5]"}`}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={i.image} alt="" loading="lazy" className="absolute inset-0 -z-10 h-full w-full object-cover transition duration-700 group-hover:scale-[1.04]" />
+      <img {...imgProps(i.image, hero ? "(max-width: 640px) 85vw, 50vw" : "(max-width: 640px) 85vw, 25vw", hero ? [640, 828, 1080] : [384, 640, 828], 66)} alt="" loading="lazy" className="absolute inset-0 -z-10 h-full w-full object-cover transition duration-700 group-hover:scale-[1.04]" />
       <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
       <div className="pointer-events-none absolute inset-x-3 top-3 z-10 flex items-start justify-between gap-2 [&>*:last-child]:pointer-events-auto">
         <div className="flex flex-wrap gap-1.5">

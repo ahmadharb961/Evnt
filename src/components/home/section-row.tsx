@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { imgProps } from "@/lib/img";
 import { ScrollRow } from "@/components/scroll-row";
 import { ArrowRight } from "lucide-react";
 import { EventCard, ProductCard, RestaurantCard, StoreCard } from "@/components/cards";
@@ -53,7 +54,7 @@ export function SectionRow({
     <section className="container-x mt-12 sm:mt-14">
       {banner && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={banner} alt="" loading="lazy" className="mb-5 aspect-[3/1] w-full rounded-3xl object-cover sm:aspect-[5/1]" />
+        <img {...imgProps(banner, "100vw", [640, 1080, 1920])} alt="" loading="lazy" className="mb-5 aspect-[3/1] w-full rounded-3xl object-cover sm:aspect-[5/1]" />
       )}
       <div className="mb-4 flex items-end justify-between gap-4">
         <div>

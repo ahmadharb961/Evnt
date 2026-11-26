@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { imgProps } from "@/lib/img";
 import Link from "next/link";
 import { Calendar, MapPin } from "lucide-react";
 import { prisma } from "@/server/db";
@@ -65,7 +66,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ code:
         <aside className="lg:sticky lg:top-24 lg:self-start">
           <div className="card overflow-hidden">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={mediaSrc(b.event.coverId, b.event.coverUrl)} alt="" className="aspect-[16/9] w-full object-cover" />
+            <img {...imgProps(mediaSrc(b.event.coverId, b.event.coverUrl), "(max-width: 1024px) 100vw, 400px")} alt="" className="aspect-[16/9] w-full object-cover" />
             <div className="space-y-3 p-5 text-sm">
               <p className="text-base font-bold">{loc(b.event.title, locale)}</p>
               <p className="flex items-center gap-2 text-ink-soft">

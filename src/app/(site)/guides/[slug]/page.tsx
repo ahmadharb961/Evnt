@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { imgProps } from "@/lib/img";
 import Link from "next/link";
 import { prisma } from "@/server/db";
 import { mediaSrc } from "@/server/media";
@@ -51,7 +52,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
       <h1 className="mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl">{loc(a.title, locale)}</h1>
       {a.publishedAt && <p className="mt-2 text-sm text-ink-muted">{fmtDate(a.publishedAt, locale, { day: "numeric", month: "long", year: "numeric" })}</p>}
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={mediaSrc(a.coverId, a.coverUrl)} alt="" className="mt-6 aspect-[16/9] w-full rounded-4xl object-cover" />
+      <img {...imgProps(mediaSrc(a.coverId, a.coverUrl), "(max-width: 1024px) 100vw, 900px", [640, 1080, 1200])} alt="" className="mt-6 aspect-[16/9] w-full rounded-4xl object-cover" />
       <div className="mt-8 text-[17px]">
         <Body text={loc(a.body, locale)} />
       </div>

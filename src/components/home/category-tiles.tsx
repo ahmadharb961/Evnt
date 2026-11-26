@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { imgUrl } from "@/lib/img";
 import { Palette, Tent, PartyPopper, Trees, Drama, UtensilsCrossed, ShoppingBag, Sparkles } from "lucide-react";
 
 const STYLE: Record<string, { icon: React.ElementType; bg: string; fg: string }> = {
@@ -29,7 +30,7 @@ export function CategoryTiles({ items }: { items: { slug: string; name: string; 
             <div className={`relative flex aspect-square items-center justify-center overflow-hidden rounded-3xl ${s.bg} transition group-hover:shadow-card`}>
               {c.image ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={c.image} alt="" loading="lazy" className="h-full w-full object-cover" />
+                <img src={imgUrl(c.image, 256)} alt="" loading="lazy" className="h-full w-full object-cover" />
               ) : (
                 <Icon className={`h-9 w-9 ${s.fg} transition group-hover:scale-110`} strokeWidth={1.6} />
               )}

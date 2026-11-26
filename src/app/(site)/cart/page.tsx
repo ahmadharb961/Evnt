@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { imgUrl } from "@/lib/img";
 import { ShoppingBag } from "lucide-react";
 import { cartView } from "@/server/orders";
 import { getLocale, getT } from "@/i18n/server";
@@ -27,7 +28,7 @@ export default async function CartPage() {
                 {g.items.map((i) => (
                   <li key={i.id} className="flex gap-4 py-3">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={i.image} alt="" className="h-20 w-20 shrink-0 rounded-2xl object-cover" />
+                    <img src={imgUrl(i.image, 256)} alt="" className="h-20 w-20 shrink-0 rounded-2xl object-cover" />
                     <div className="min-w-0 flex-1">
                       <Link href={`/shop/p/${i.slug}`} className="line-clamp-2 text-sm font-medium">
                         {i.title}

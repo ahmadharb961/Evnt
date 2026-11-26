@@ -1,4 +1,5 @@
 import { Star, BadgeCheck, MessageSquareReply } from "lucide-react";
+import { imgUrl } from "@/lib/img";
 import type { listReviews } from "@/server/reviews";
 import type { Locale, T } from "@/i18n/core";
 import { fmtDate } from "@/lib/dates";
@@ -70,7 +71,7 @@ export function ReviewsSection({
                   <div className="mt-3 flex gap-2">
                     {r.photos.map((p) => (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img key={p} src={`/media/${p}`} alt="" className="h-20 w-20 rounded-xl object-cover" loading="lazy" />
+                      <img key={p} src={imgUrl(`/media/${p}`, 256)} alt="" className="h-20 w-20 rounded-xl object-cover" loading="lazy" />
                     ))}
                   </div>
                 )}

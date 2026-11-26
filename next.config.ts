@@ -11,6 +11,9 @@ const nextConfig: NextConfig = {
   },
   images: {
     remotePatterns: [{ protocol: "https", hostname: "images.unsplash.com" }],
+    // Resized photos are cached for 30 days (uploads get new addresses, so changes still show).
+    minimumCacheTTL: 2592000,
+    formats: ["image/webp"],
   },
   async headers() {
     return [

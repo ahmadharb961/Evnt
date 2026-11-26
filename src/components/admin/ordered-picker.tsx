@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
+import { imgUrl } from "@/lib/img";
 import { GripVertical, ChevronUp, ChevronDown, X, Plus, Search, Loader2 } from "lucide-react";
 import { pickerSearchAction } from "@/actions/admin";
 import { useT } from "@/i18n/client";
@@ -61,7 +62,7 @@ export function OrderedPicker({ name, kinds, initial, max = 40, emptyText }: { n
               <GripVertical className="h-5 w-5 shrink-0 cursor-grab text-ink-muted" aria-hidden />
               <span className="w-6 shrink-0 text-center text-sm font-bold tabular-nums text-ink-muted">{i + 1}</span>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={it.image} alt="" className="h-10 w-10 shrink-0 rounded-xl object-cover" />
+              <img src={imgUrl(it.image, 128)} alt="" className="h-10 w-10 shrink-0 rounded-xl object-cover" />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{it.label}</p>
                 <p className="truncate text-xs text-ink-muted">
@@ -112,7 +113,7 @@ export function OrderedPicker({ name, kinds, initial, max = 40, emptyText }: { n
                   className="flex w-full items-center gap-3 p-2.5 text-start hover:bg-canvas disabled:opacity-40"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={r.image} alt="" className="h-9 w-9 shrink-0 rounded-xl object-cover" />
+                  <img src={imgUrl(r.image, 128)} alt="" className="h-9 w-9 shrink-0 rounded-xl object-cover" />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-medium">{r.label}</span>
                     <span className="block truncate text-xs text-ink-muted">

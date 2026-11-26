@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { imgProps, imgUrl } from "@/lib/img";
 import { X, ChevronLeft, ChevronRight, Images } from "lucide-react";
 import { useT } from "@/i18n/client";
 
@@ -20,7 +21,7 @@ export function Gallery({ images, video, title, variant = "wide" }: { images: st
         <ChevronLeft className="h-5 w-5 rtl:rotate-180" />
       </button>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={imgs[open]} alt="" className="max-h-[85vh] max-w-[92vw] rounded-2xl bg-white object-contain" onClick={(e) => e.stopPropagation()} />
+      <img src={imgUrl(imgs[open], 1920)} alt="" className="max-h-[85vh] max-w-[92vw] rounded-2xl bg-white object-contain" onClick={(e) => e.stopPropagation()} />
       <button className="absolute end-3 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white" onClick={(e) => (e.stopPropagation(), show(open + 1))} aria-label={t("Next")}>
         <ChevronRight className="h-5 w-5 rtl:rotate-180" />
       </button>
@@ -32,14 +33,14 @@ export function Gallery({ images, video, title, variant = "wide" }: { images: st
         {/* Shop products: a large square photo on white (the whole product visible), thumbnails below. */}
         <button type="button" onClick={() => show(active)} className="block aspect-square w-full overflow-hidden rounded-4xl border border-ink/[.06] bg-white">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={imgs[active]} alt={title} className="h-full w-full object-contain p-4 sm:p-6" fetchPriority="high" />
+          <img {...imgProps(imgs[active], "(max-width: 1024px) 100vw, 60vw", [640, 828, 1200])} alt={title} className="h-full w-full object-contain p-4 sm:p-6" fetchPriority="high" />
         </button>
         {imgs.length > 1 && (
           <div className="mt-3 flex gap-2 overflow-x-auto">
             {imgs.map((src, i) => (
               <button key={src + i} type="button" onClick={() => setActive(i)} aria-label={t("{n} photos", { n: i + 1 })} className={`h-20 w-20 shrink-0 overflow-hidden rounded-2xl border-2 bg-white ${i === active ? "border-ink" : "border-transparent"}`}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={src} alt="" loading="lazy" className="h-full w-full object-contain" />
+                <img src={imgUrl(src, 256)} alt="" loading="lazy" className="h-full w-full object-contain" />
               </button>
             ))}
           </div>
@@ -52,12 +53,12 @@ export function Gallery({ images, video, title, variant = "wide" }: { images: st
       <div className="grid aspect-[4/3] grid-cols-4 grid-rows-2 gap-2 overflow-hidden rounded-4xl sm:aspect-[16/7]">
         <button type="button" onClick={() => show(0)} className={`col-span-4 row-span-2 h-full w-full ${imgs.length > 1 ? "sm:col-span-2" : ""}`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={imgs[0]} alt={title} className="h-full w-full object-cover" fetchPriority="high" />
+          <img {...imgProps(imgs[0], "(max-width: 1024px) 100vw, 66vw", [640, 828, 1200, 1920])} alt={title} className="h-full w-full object-cover" fetchPriority="high" />
         </button>
         {imgs.slice(1, 5).map((src, i) => (
           <button key={src + i} type="button" onClick={() => show(i + 1)} className="relative hidden h-full w-full sm:block">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={src} alt="" loading="lazy" className="h-full w-full object-cover" />
+            <img {...imgProps(src, "(max-width: 1024px) 50vw, 33vw", [384, 640, 828])} alt="" loading="lazy" className="h-full w-full object-cover" />
           </button>
         ))}
       </div>

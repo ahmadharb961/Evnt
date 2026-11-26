@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { imgProps, imgUrl } from "@/lib/img";
 import { MapPin, MessageCircle, Phone, Globe, Instagram } from "lucide-react";
 import { prisma } from "@/server/db";
 import { getCurrentUser } from "@/server/auth";
@@ -40,12 +41,12 @@ export default async function MerchantProfile({ params, searchParams }: { params
     <div>
       <div className="relative h-40 bg-gradient-to-br from-blush-soft via-peach-soft to-powder-soft sm:h-64">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        {m.coverId && <img src={mediaSrc(m.coverId)} alt="" className="h-full w-full object-cover" />}
+        {m.coverId && <img {...imgProps(mediaSrc(m.coverId), "100vw", [640, 1080, 1920])} alt="" className="h-full w-full object-cover" />}
       </div>
       <div className="container-x">
         <div className="relative z-10 -mt-12 flex flex-wrap items-end gap-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={m.logoId || m.coverId ? mediaSrc(m.logoId ?? m.coverId) : "/icons/icon-192.png"} alt="" className="h-24 w-24 rounded-3xl border-4 border-white bg-white object-cover shadow-card" />
+          <img src={m.logoId || m.coverId ? imgUrl(mediaSrc(m.logoId ?? m.coverId), 256) : "/icons/icon-192.png"} alt="" className="h-24 w-24 rounded-3xl border-4 border-white bg-white object-cover shadow-card" />
           <div className="pb-1 pt-14">
             <h1 className="text-3xl font-bold tracking-tight">{m.name}</h1>
             <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-ink-muted">

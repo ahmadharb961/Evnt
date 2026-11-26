@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { imgUrl } from "@/lib/img";
 import { Ticket, ShoppingBag, Heart, Gift, Sparkles, LogOut, Store, Shield } from "lucide-react";
 import { prisma } from "@/server/db";
 import { requireUser } from "@/server/auth";
@@ -55,7 +56,7 @@ export default async function AccountHome({ searchParams }: { searchParams: Prom
       {next && (
         <Link href={`/account/bookings/${next.code}`} className="card flex items-center gap-4 p-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={mediaSrc(next.event.coverId, next.event.coverUrl)} alt="" className="h-16 w-20 rounded-2xl object-cover" />
+          <img src={imgUrl(mediaSrc(next.event.coverId, next.event.coverUrl), 256)} alt="" className="h-16 w-20 rounded-2xl object-cover" />
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-mint-deep">{t("Next up")}</p>
             <p className="font-semibold">{loc(next.event.title, locale)}</p>

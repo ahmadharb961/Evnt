@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { imgProps, imgUrl } from "@/lib/img";
 import { Star, MapPin, Calendar, ShoppingBag, ArrowRight } from "lucide-react";
 import { FavoriteButton } from "@/components/favorite-button";
 import { formatMoney } from "@/lib/money";
@@ -34,7 +35,7 @@ export function EventCard({ e, t, locale, saved, wide = false }: { e: EventCardD
     <Link href={href} className={`group flex flex-col overflow-hidden rounded-3xl border border-ink/[.07] bg-white shadow-card transition duration-300 hover:shadow-lift ${wide ? "" : "w-[78vw] max-w-[300px] shrink-0 snap-start sm:w-[280px]"}`}>
       <div className="relative aspect-[4/3] overflow-hidden bg-powder-soft">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={e.image} alt="" loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]" />
+        <img {...imgProps(e.image, "(max-width: 640px) 80vw, 300px", [384, 640, 828], 66)} alt="" loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]" />
         <div className="absolute inset-x-3 top-3 flex items-start justify-between gap-2">
           <div className="flex flex-wrap gap-1.5">
             {e.sponsored && <SponsoredTag t={t} />}
@@ -92,7 +93,7 @@ export function RestaurantCard({ r, t, saved, wide = false }: { r: RestaurantCar
     <Link href={`/restaurants/${r.slug}`} className={`group flex flex-col overflow-hidden rounded-3xl border border-ink/[.07] bg-white shadow-card transition duration-300 hover:shadow-lift ${wide ? "" : "w-[78vw] max-w-[300px] shrink-0 snap-start sm:w-[280px]"}`}>
       <div className="relative aspect-[4/3] overflow-hidden bg-mint-soft">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={r.image} alt="" loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]" />
+        <img {...imgProps(r.image, "(max-width: 640px) 80vw, 300px", [384, 640, 828], 66)} alt="" loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]" />
         <div className="absolute inset-x-3 top-3 flex items-start justify-between">
           <div className="flex gap-1.5">
             {r.sponsored && <SponsoredTag t={t} />}
@@ -129,7 +130,7 @@ export function ProductCard({ p, t, locale, saved, wide = false }: { p: ProductC
     <Link href={`/shop/p/${p.slug}`} className={`group flex flex-col overflow-hidden rounded-3xl border border-ink/[.07] bg-white shadow-card transition duration-300 hover:shadow-lift ${wide ? "" : "w-[44vw] max-w-[220px] shrink-0 snap-start sm:w-[220px]"}`}>
       <div className="relative aspect-square overflow-hidden bg-blush-soft">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={p.image} alt="" loading="lazy" className={`h-full w-full object-cover transition duration-500 group-hover:scale-[1.03] ${p.inStock ? "" : "opacity-60"}`} />
+        <img {...imgProps(p.image, "(max-width: 640px) 45vw, 220px", [256, 384, 640], 70)} alt="" loading="lazy" className={`h-full w-full object-cover transition duration-500 group-hover:scale-[1.03] ${p.inStock ? "" : "opacity-60"}`} />
         <div className="absolute inset-x-2.5 top-2.5 flex items-start justify-between">
           <div className="flex gap-1">
             {p.sponsored && <SponsoredTag t={t} />}
@@ -157,7 +158,7 @@ export function StoreCard({ s, t, wide = false }: { s: StoreCardData; t: T; wide
     <Link href={`/m/${s.slug}`} className={`group flex flex-col overflow-hidden rounded-3xl border border-ink/[.07] bg-white shadow-card transition duration-300 hover:shadow-lift ${wide ? "" : "w-[78vw] max-w-[300px] shrink-0 snap-start sm:w-[280px]"}`}>
       <div className="relative aspect-[16/9] overflow-hidden bg-blush-soft">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={s.cover} alt="" loading="lazy" className={`h-full w-full transition duration-500 group-hover:scale-[1.03] ${s.coverIsProduct ? "bg-white object-contain p-3" : "object-cover"}`} />
+        <img {...imgProps(s.cover, "(max-width: 640px) 90vw, 400px", [384, 640, 828], 66)} alt="" loading="lazy" className={`h-full w-full transition duration-500 group-hover:scale-[1.03] ${s.coverIsProduct ? "bg-white object-contain p-3" : "object-cover"}`} />
         {s.onSale > 0 && <span className="absolute end-3 top-3 rounded-full bg-blush px-2.5 py-1 text-[10px] font-bold uppercase text-blush-deep">{t("Sale")}</span>}
       </div>
       <div className="relative flex flex-1 flex-col px-4 pb-4">
@@ -165,7 +166,7 @@ export function StoreCard({ s, t, wide = false }: { s: StoreCardData; t: T; wide
           <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-4 border-white bg-white shadow-card">
             {s.logo ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={s.logo} alt="" className="h-full w-full object-cover" />
+              <img src={imgUrl(s.logo, 128)} alt="" className="h-full w-full object-cover" />
             ) : (
               <ShoppingBag className="h-6 w-6 text-blush-deep" />
             )}
@@ -186,7 +187,7 @@ export function StoreCard({ s, t, wide = false }: { s: StoreCardData; t: T; wide
             {s.previews.map((p, i) => (
               <span key={i} className="aspect-square overflow-hidden rounded-xl bg-canvas ring-1 ring-ink/[.04]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={p} alt="" loading="lazy" className="h-full w-full object-contain p-0.5" />
+                <img src={imgUrl(p, 128)} alt="" loading="lazy" className="h-full w-full object-contain p-0.5" />
               </span>
             ))}
           </div>

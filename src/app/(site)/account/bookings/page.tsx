@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { imgUrl } from "@/lib/img";
 import { Ticket } from "lucide-react";
 import { prisma } from "@/server/db";
 import { requireUser } from "@/server/auth";
@@ -27,7 +28,7 @@ export default async function BookingsPage() {
   const Row = ({ b }: { b: (typeof bookings)[number] }) => (
     <Link href={b.status === "PENDING_PAYMENT" ? `/checkout/${b.code}` : `/account/bookings/${b.code}`} className="card flex gap-4 p-3 transition hover:shadow-lift">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={mediaSrc(b.event.coverId, b.event.coverUrl)} alt="" className="h-20 w-24 shrink-0 rounded-2xl object-cover sm:w-32" />
+      <img src={imgUrl(mediaSrc(b.event.coverId, b.event.coverUrl), 256)} alt="" className="h-20 w-24 shrink-0 rounded-2xl object-cover sm:w-32" />
       <div className="min-w-0 flex-1 py-1">
         <p className="truncate font-semibold">{loc(b.event.title, locale)}</p>
         <p className="mt-0.5 text-sm text-ink-muted">{fmtDateTime(b.session.startsAt, locale)}</p>

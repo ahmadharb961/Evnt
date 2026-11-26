@@ -270,4 +270,6 @@ export const B7: [string, string, string][] = [
   ["Small service fee EVNT adds to each paid booking. Set 0 to turn it off.", "رسم خدمة صغير تضيفه EVNT على كل حجز مدفوع. ضع 0 لإيقافه.", "Petits frais de service ajoutés à chaque réservation payante. Mettez 0 pour les désactiver."],
   ["Table reservations", "حجوزات الطاولات", "Réservations de table"],
   ["{n} accounts · {s} admin team", "{n} حساب · {s} في فريق الإدارة", "{n} comptes · {s} admins"],
+  ["Shop now", "تسوّق الآن", "Voir la sélection"],
+  ["1 product", "منتج واحد", "1 produit"],
 ];

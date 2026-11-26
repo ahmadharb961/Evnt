@@ -521,3 +521,18 @@ export async function listStores(locale: Locale, opts: { limit?: number; categor
       ratingCount: m.ratingCount,
     }));
 }
+
+/** Shop categories with how many products they have (from listed shops) and a product photo to show. */
+export async function shopCategories(locale: Locale) {
+  const root = await prisma.category.findUnique({ where: { slug: "shop" }, include: { children: { where: { active: true }, orderBy: { sort: "asc" }, include: { children: { select: { id: true } } } } } });
+  if (!root) return { root: null, items: [] };
+  const merchant = await listedShopFilter();
+  const items = await Promise.all(
+    root.children.map(async (c) => {
+      const where: Prisma.ProductWhereInput = { status: "PUBLISHED", merchant, categoryId: { in: [c.id, ...c.children.map((x) => x.id)] } };
+      const [count, first] = await Promise.all([prisma.product.count({ where }), prisma.product.findFirst({ where, select: { images: true }, orderBy: [{ rank: { sort: "asc", nulls: "last" } }, { createdAt: "desc" }] })]);
+      return { slug: c.slug, name: loc(c.name, locale), count, image: c.imageId ? mediaSrc(c.imageId) : c.imageUrl || (first?.images[0] ? productImg(first.images[0]) : null) };
+    }),
+  );
+  return { root, items };
+}

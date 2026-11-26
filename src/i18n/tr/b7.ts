@@ -272,4 +272,7 @@ export const B7: [string, string, string][] = [
   ["{n} accounts · {s} admin team", "{n} حساب · {s} في فريق الإدارة", "{n} comptes · {s} admins"],
   ["Shop now", "تسوّق الآن", "Voir la sélection"],
   ["1 product", "منتج واحد", "1 produit"],
+  ["Create a seating map", "أنشئ خريطة مقاعد", "Créer un plan de salle"],
+  ["Opens in a new tab. Come back here and refresh once it's saved.", "تُفتح في نافذة جديدة. عد إلى هنا وحدّث الصفحة بعد الحفظ.", "S'ouvre dans un nouvel onglet. Revenez ici et actualisez une fois enregistré."],
+  ["Parents pick seats, tables or stations on your map. You need a seating map first.", "يختار الأهل المقاعد أو الطاولات أو المحطات على خريطتك. تحتاج أولاً إلى خريطة مقاعد.", "Les parents choisissent places, tables ou postes sur votre plan. Il vous faut d'abord un plan de salle."],
 ];

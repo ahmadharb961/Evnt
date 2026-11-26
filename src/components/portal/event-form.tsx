@@ -114,13 +114,27 @@ export async function EventForm({ merchantId, event }: { merchantId: string; eve
                   <span className="text-xs text-ink-muted">{t("Fastest checkout. Best for most activities.")}</span>
                 </span>
               </label>
-              <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-ink/10 p-4 has-[:checked]:border-ink has-[:checked]:ring-2 has-[:checked]:ring-ink">
-                <input type="radio" name="seatingMode" value="ASSIGNED" defaultChecked={e?.seatingMode === "ASSIGNED"} className="mt-1 accent-ink" disabled={!maps.length} />
-                <span>
-                  <span className="block text-sm font-semibold">{t("Seat or spot selection")}</span>
-                  <span className="text-xs text-ink-muted">{maps.length ? t("Parents pick seats, tables or stations on your map.") : t("Create a seating map first.")}</span>
-                </span>
-              </label>
+              {maps.length ? (
+                <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-ink/10 p-4 has-[:checked]:border-ink has-[:checked]:ring-2 has-[:checked]:ring-ink">
+                  <input type="radio" name="seatingMode" value="ASSIGNED" defaultChecked={e?.seatingMode === "ASSIGNED"} className="mt-1 accent-ink" />
+                  <span>
+                    <span className="block text-sm font-semibold">{t("Seat or spot selection")}</span>
+                    <span className="text-xs text-ink-muted">{t("Parents pick seats, tables or stations on your map.")}</span>
+                  </span>
+                </label>
+              ) : (
+                <div className="flex items-start gap-3 rounded-2xl border border-dashed border-ink/20 bg-canvas p-4">
+                  <span className="mt-1 h-3.5 w-3.5 shrink-0 rounded-full border border-ink/20" />
+                  <span>
+                    <span className="block text-sm font-semibold">{t("Seat or spot selection")}</span>
+                    <span className="block text-xs text-ink-muted">{t("Parents pick seats, tables or stations on your map. You need a seating map first.")}</span>
+                    <a href="/merchant/seating/new" target="_blank" rel="noopener" className="btn-primary btn-sm mt-3">
+                      {t("Create a seating map")}
+                    </a>
+                    <span className="mt-2 block text-[11px] text-ink-muted">{t("Opens in a new tab. Come back here and refresh once it's saved.")}</span>
+                  </span>
+                </div>
+              )}
             </div>
           </div>
           {maps.length > 0 && (

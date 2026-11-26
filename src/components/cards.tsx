@@ -193,7 +193,7 @@ export function StoreCard({ s, t, wide = false }: { s: StoreCardData; t: T; wide
           </div>
         )}
         <div className="mt-auto flex items-center justify-between pt-3">
-          <span className="rounded-full bg-blush-soft px-2.5 py-1 text-[11px] font-semibold text-blush-deep">{t("{n} products", { n: s.productCount })}</span>
+          <span className="rounded-full bg-blush-soft px-2.5 py-1 text-[11px] font-semibold text-blush-deep">{s.productCount === 1 ? t("1 product") : t("{n} products", { n: s.productCount })}</span>
           <span className="inline-flex items-center gap-1 text-sm font-bold">
             {t("Visit shop")} <ArrowRight className="h-4 w-4 rtl:rotate-180" />
           </span>

@@ -292,6 +292,22 @@ async function main() {
     const { refreshDemoSessions } = await import("../src/server/demo-dates");
     const added = await refreshDemoSessions(prisma);
     if (added) console.log(`[seed] demo dates refreshed (+${added} upcoming dates)`);
+    // Demo shops: their own banner and logo (stored like an upload, only when the shop has none yet).
+    const { createHash } = await import("node:crypto");
+    const { readFile } = await import("node:fs/promises");
+    const sharp = (await import("sharp")).default;
+    const asMedia = async (file: string, merchantId: string) => {
+      const data = await readFile(`${process.cwd()}/public/demo/shops/${file}`);
+      const meta = await sharp(data).metadata();
+      const m = await prisma.media.create({ data: { mime: "image/webp", size: data.length, width: meta.width, height: meta.height, sha256: createHash("sha256").update(data).digest("hex"), data, merchantId } });
+      return m.id;
+    };
+    for (const [slug, cover, logo] of [["toybox-beirut", "toybox-cover.webp", "toybox-logo.webp"], ["mini-mode", "minimode-cover.webp", "minimode-logo.webp"]] as const) {
+      const shop = await prisma.merchant.findUnique({ where: { slug }, select: { id: true, coverId: true, logoId: true } });
+      if (!shop) continue;
+      if (!shop.coverId) await prisma.merchant.update({ where: { id: shop.id }, data: { coverId: await asMedia(cover, shop.id) } });
+      if (!shop.logoId) await prisma.merchant.update({ where: { id: shop.id }, data: { logoId: await asMedia(logo, shop.id) } });
+    }
     // Demo shops stay listed (real shops pay their monthly listing).
     await prisma.merchant.updateMany({
       where: { slug: { in: (await import("../src/server/demo-dates")).DEMO_MERCHANT_SLUGS }, OR: [{ shopPaidUntil: null }, { shopPaidUntil: { lt: new Date(Date.now() + 30 * 86400_000) } }] },

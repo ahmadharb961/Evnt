@@ -87,7 +87,7 @@ export async function saveEventAction(_: FormResult, form: FormData): Promise<Fo
     setting,
     accessible: form.get("accessible") === "on",
     payAtVenue: form.get("payAtVenue") === "on",
-    memberEarlyAccess: form.get("memberEarlyAccess") === "on",
+    memberEarlyAccess: false,
     seatingMode: seatingMode as "GENERAL" | "ASSIGNED",
     seatingMapId,
     ...coverFields(String(form.get("coverId") ?? "")),

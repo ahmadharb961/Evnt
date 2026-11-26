@@ -27,9 +27,8 @@ describe("revenue simulator defaults", () => {
   it("matches the brief", () => {
     const r = simulate(DEFAULT_SCENARIO);
     expect(r.subscriptions).toBe(436000);
-    expect(r.memberships).toBe(199800);
     expect(r.commissions).toBe(240000);
-    expect(r.gross).toBe(875800);
+    expect(r.gross).toBe(676000);
   });
 });
 

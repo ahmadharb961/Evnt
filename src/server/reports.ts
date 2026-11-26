@@ -9,9 +9,8 @@ import { prisma } from "./db";
  */
 export async function platformFinancials(since: Date, until = new Date()) {
   const range = { gte: since, lt: until };
-  const [subs, membership, commissions, ads, reports, refunds, codCollected, codUncollected, gmvBookings, gmvOrders, payments] = await Promise.all([
+  const [subs, commissions, ads, reports, refunds, codCollected, codUncollected, gmvBookings, gmvOrders, payments] = await Promise.all([
     prisma.invoiceLine.aggregate({ where: { kind: "SUBSCRIPTION", invoice: { status: "PAID", paidAt: range } }, _sum: { amountCents: true } }),
-    prisma.payment.aggregate({ where: { purpose: "MEMBERSHIP", status: "SUCCEEDED", confirmedAt: range }, _sum: { amountCents: true } }),
     prisma.commission.aggregate({ where: { status: { in: ["EARNED", "INVOICED", "SETTLED"] }, earnedAt: range }, _sum: { amountCents: true } }),
     prisma.invoiceLine.aggregate({ where: { kind: "ADVERTISING", invoice: { status: "PAID", paidAt: range } }, _sum: { amountCents: true } }),
     prisma.invoiceLine.aggregate({ where: { kind: "REPORT", invoice: { status: "PAID", paidAt: range } }, _sum: { amountCents: true } }),
@@ -26,7 +25,6 @@ export async function platformFinancials(since: Date, until = new Date()) {
   const bookingFees = n(gmvBookings._sum.feeCents);
   const revenue = {
     subscriptions: n(subs._sum.amountCents),
-    memberships: n(membership._sum.amountCents),
     commissions: n(commissions._sum.amountCents),
     bookingFees,
     advertising: n(ads._sum.amountCents),

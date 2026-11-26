@@ -15,9 +15,8 @@ export const metadata = { title: "Users" };
 export default async function UsersAdmin({ searchParams }: { searchParams: Promise<{ q?: string; staff?: string }> }) {
   await requireAdmin("ADMIN");
   const [locale, t, sp] = await Promise.all([getLocale(), getT(), searchParams]);
-  const [total, members, staffCount] = await Promise.all([
+  const [total, staffCount] = await Promise.all([
     prisma.user.count(),
-    prisma.membership.count({ where: { status: "ACTIVE" } }),
     prisma.user.count({ where: { roles: { some: {} } } }),
   ]);
   const users = await prisma.user.findMany({
@@ -25,7 +24,7 @@ export default async function UsersAdmin({ searchParams }: { searchParams: Promi
       ...(sp.q ? { OR: [{ email: { contains: sp.q, mode: "insensitive" } }, { name: { contains: sp.q, mode: "insensitive" } }, { phone: { contains: sp.q.replace(/\D/g, "") || "~" } }] } : {}),
       ...(sp.staff ? { roles: { some: {} } } : {}),
     },
-    include: { roles: true, membership: true, _count: { select: { bookings: true, orderGroups: true } } },
+    include: { roles: true, _count: { select: { bookings: true, orderGroups: true } } },
     orderBy: { createdAt: "desc" },
     take: 200,
   });
@@ -33,7 +32,7 @@ export default async function UsersAdmin({ searchParams }: { searchParams: Promi
     <>
       <PageHeader
         title={t("Users")}
-        subtitle={t("{n} accounts · {m} EVNT+ members · {s} admin team", { n: total, m: members, s: staffCount })}
+        subtitle={t("{n} accounts · {s} admin team", { n: total, s: staffCount })}
         actions={
           <Link href="/admin/team" className="btn-outline btn-sm">
             {t("Admin team")}
@@ -74,7 +73,7 @@ export default async function UsersAdmin({ searchParams }: { searchParams: Promi
         <table className="w-full min-w-[720px] text-sm">
           <thead className="bg-canvas text-xs text-ink-muted">
             <tr>
-              {[t("User"), t("Roles"), "EVNT+", t("Bookings"), t("Orders"), t("Joined"), ""].map((h) => (
+              {[t("User"), t("Roles"), t("Bookings"), t("Orders"), t("Joined"), ""].map((h) => (
                 <th key={h} className="p-3 text-start font-medium">
                   {h}
                 </th>
@@ -110,7 +109,6 @@ export default async function UsersAdmin({ searchParams }: { searchParams: Promi
                       : <span className="text-xs text-ink-muted">{t("Customer")}</span>}
                   </span>
                 </td>
-                <td className="p-3 text-xs">{u.membership?.status === "ACTIVE" ? <span className="rounded-full bg-violet-100 px-2 py-0.5 font-bold text-violet-700">EVNT+</span> : ""}</td>
                 <td className="p-3">{u._count.bookings}</td>
                 <td className="p-3">{u._count.orderGroups}</td>
                 <td className="p-3">{fmtDate(u.createdAt, locale, { day: "numeric", month: "short", year: "2-digit" })}</td>

@@ -4,7 +4,6 @@ import { releaseExpiredHolds, completePastBookings } from "@/server/booking";
 import { syncPendingPayments } from "@/server/payments";
 import { cancelStaleUnpaidOrders } from "@/server/orders";
 import { runBilling } from "@/server/billing";
-import { runMemberships } from "@/server/plus";
 import { endCampaigns } from "@/server/ads";
 import { getSetting } from "@/server/settings";
 import { prisma } from "@/server/db";
@@ -57,7 +56,6 @@ export async function GET(req: NextRequest) {
   await run("reminders", remindUpcoming);
   // Daily-ish jobs are cheap and idempotent; they run every time.
   await run("billing", () => runBilling());
-  await run("memberships", () => runMemberships());
   await run("campaigns", () => endCampaigns());
   await run("shopListings", () => runShopListings());
   // Demo sites only: keep sample activities showing upcoming dates.

@@ -27,7 +27,7 @@ export default async function AdminHome({ searchParams }: { searchParams: Promis
     prisma.user.count({ where: { createdAt: { gte: since } } }),
     prisma.user.count({ where: { createdAt: { gte: prev, lt: since } } }),
     prisma.merchant.groupBy({ by: ["plan"], where: { status: "APPROVED" }, _count: { _all: true } }),
-    prisma.membership.count({ where: { status: "ACTIVE" } }),
+    prisma.merchant.count({ where: { status: "APPROVED", shopPaidUntil: { gt: new Date() } } }),
     prisma.merchant.count({ where: { status: "PENDING" } }),
     prisma.adCampaign.count({ where: { status: "PENDING_APPROVAL" } }),
     prisma.refund.count({ where: { status: { in: ["REQUESTED", "APPROVED"] } } }),
@@ -76,7 +76,6 @@ export default async function AdminHome({ searchParams }: { searchParams: Promis
     { k: "commissions", label: t("Commissions"), color: "#7d93c4" },
     { k: "subscriptions", label: t("Merchant subscriptions"), color: "#5fbf93" },
     { k: "bookingFees", label: t("Booking fees"), color: "#f4a46b" },
-    { k: "memberships", label: "EVNT+", color: "#9b7be0" },
     { k: "advertising", label: t("Advertising"), color: "#d77fb3" },
     { k: "reports", label: t("Market reports"), color: "#f2b632" },
   ] as const;
@@ -170,7 +169,7 @@ export default async function AdminHome({ searchParams }: { searchParams: Promis
               [liveListings[0], t("Live activities"), "bg-peach-soft text-peach-deep"],
               [liveListings[1], t("Live restaurants"), "bg-mint-soft text-mint-deep"],
               [liveListings[2], t("Live products"), "bg-blush-soft text-blush-deep"],
-              [members, t("EVNT+ members"), "bg-violet-50 text-violet-800"],
+              [members, t("Live shops"), "bg-violet-50 text-violet-800"],
             ].map(([n, l, cls]) => (
               <div key={String(l)} className={`rounded-2xl p-3 ${cls}`}>
                 <p className="text-2xl font-bold">{n}</p>

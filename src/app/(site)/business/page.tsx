@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarCheck, Armchair, BarChart3, Megaphone, Cake, ShoppingBag } from "lucide-react";
+import { CalendarCheck, Armchair, BarChart3, Megaphone, ShoppingBag } from "lucide-react";
 import { getT } from "@/i18n/server";
 import { alternates } from "@/server/urls";
 
@@ -13,7 +13,6 @@ export default async function BusinessPage() {
   const features = [
     { icon: CalendarCheck, title: t("Online bookings & tickets"), body: t("Sessions, ticket types, QR check-in and automatic confirmations.") },
     { icon: Armchair, title: t("Seat & spot selection"), body: t("Build a seating or table map once, sell assigned seats with zero double bookings.") },
-    { icon: Cake, title: t("Birthday requests"), body: t("Receive quote requests from parents planning parties.") },
     { icon: BarChart3, title: t("Clear reporting"), body: t("Revenue, bookings, views and what EVNT generated for you.") },
     { icon: Megaphone, title: t("Promotion tools"), body: t("Flash promotions, featured placements and category sponsorships.") },
     { icon: ShoppingBag, title: t("Sell products online"), body: t("List your products and take orders with delivery or cash on delivery.") },

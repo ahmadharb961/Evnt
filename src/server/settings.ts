@@ -22,14 +22,10 @@ export type Hero = {
 export const DEFAULTS = {
   "booking.holdMinutes": 10,
   "booking.feeCents": 100,
-  "shop.listingCents": 10000, // shops pay this per month to be listed (no commission on their sales) // EVNT convenience fee per paid booking (waived for EVNT+)
+  "shop.listingCents": 10000, // shops pay this per month to be listed (no commission on their sales)
   "attribution.externalSharePct": 50,
   "attribution.externalWindowHours": 72,
-  "membership.monthlyCents": 999,
-  "membership.yearlyCents": 8900,
-  "membership.earlyAccessHours": 48,
   "loyalty.pointsPerDollar": 1,
-  "loyalty.memberMultiplier": 2,
   "trial.enabled": true,
   "trial.days": 60,
   "trial.maxMerchants": 50,

@@ -14,15 +14,11 @@ type Unit = "$" | "minutes" | "hours" | "days" | "months" | "%" | "points" | "×
 /** Plain-language name, explanation and unit for every setting. */
 const META: Record<Exclude<SettingKey, "hero">, { label: string; help: string; unit: Unit }> = {
   "booking.holdMinutes": { label: "Seat hold time", help: "When a family starts booking, their spots are kept for them for this long while they pay. After that the spots go back on sale.", unit: "minutes" },
-  "booking.feeCents": { label: "Booking fee", help: "Small service fee EVNT adds to each paid booking. EVNT+ members don't pay it. Set 0 to turn it off.", unit: "$" },
+  "booking.feeCents": { label: "Booking fee", help: "Small service fee EVNT adds to each paid booking. Set 0 to turn it off.", unit: "$" },
   "shop.listingCents": { label: "Shop listing price", help: "What a shop pays per month to have its store and products on EVNT. No commission is taken on shop sales.", unit: "$" },
   "attribution.externalSharePct": { label: "Commission on outside bookings", help: "When a family finds a business on EVNT, contacts them (call / WhatsApp) and books directly, EVNT earns this share of its normal commission.", unit: "%" },
   "attribution.externalWindowHours": { label: "Outside booking window", help: "How long after a family contacts a business a direct booking still counts as coming from EVNT.", unit: "hours" },
-  "membership.monthlyCents": { label: "EVNT+ monthly price", help: "What families pay per month for EVNT+.", unit: "$" },
-  "membership.yearlyCents": { label: "EVNT+ yearly price", help: "What families pay per year for EVNT+ (usually a discount on 12 months).", unit: "$" },
-  "membership.earlyAccessHours": { label: "EVNT+ early access", help: "EVNT+ members can book new activities this long before everyone else.", unit: "hours" },
   "loyalty.pointsPerDollar": { label: "Points per $1 spent", help: "Loyalty points a family earns for every dollar they spend.", unit: "points" },
-  "loyalty.memberMultiplier": { label: "EVNT+ points boost", help: "EVNT+ members earn points this many times faster (2 = double points).", unit: "×" },
   "trial.enabled": { label: "Free trial for new businesses", help: "New businesses get a paid plan free for a while to try EVNT.", unit: "text" },
   "trial.days": { label: "Trial length", help: "How long the free trial lasts.", unit: "days" },
   "trial.maxMerchants": { label: "Trial spots", help: "Maximum number of businesses that can get the free trial in total.", unit: "businesses" },
@@ -38,7 +34,7 @@ const META: Record<Exclude<SettingKey, "hero">, { label: string; help: string; u
 const ICONS = [Ticket, Crown, Scale, Cake, ShieldCheck, Sparkles, Receipt, CreditCard, ShoppingBag];
 const GROUPS: { title: string; desc: string; icon: (typeof ICONS)[number]; tone: Tone; keys: Exclude<SettingKey, "hero">[] }[] = [
   { title: "Bookings", desc: "How booking an activity works", icon: ICONS[0], tone: "mint", keys: ["booking.holdMinutes", "booking.feeCents"] },
-  { title: "EVNT+ & loyalty", desc: "Family membership and reward points", icon: ICONS[1], tone: "violet", keys: ["membership.monthlyCents", "membership.yearlyCents", "membership.earlyAccessHours", "loyalty.pointsPerDollar", "loyalty.memberMultiplier"] },
+  { title: "Loyalty points", desc: "Reward points families earn when they book and buy", icon: ICONS[1], tone: "violet", keys: ["loyalty.pointsPerDollar"] },
   { title: "Shops", desc: "Stores pay a monthly fee to be listed, with no commission on their sales", icon: ICONS[8], tone: "blush", keys: ["shop.listingCents"] },
   { title: "Bookings made outside EVNT", desc: "When families contact a business from EVNT and book with them directly", icon: ICONS[2], tone: "sky", keys: ["attribution.externalSharePct", "attribution.externalWindowHours"] },
   { title: "Free trial for businesses", desc: "Help new businesses get started", icon: ICONS[5], tone: "peach", keys: ["trial.enabled", "trial.days", "trial.maxMerchants"] },

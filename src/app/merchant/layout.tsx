@@ -39,7 +39,6 @@ export default async function MerchantLayout({ children }: { children: React.Rea
     ...(f.restaurant ? [{ href: "/merchant/restaurant", label: t("Restaurant & reservations"), icon: "UtensilsCrossed" as const, badge: pendingRes }] : []),
     ...(f.shop ? [{ href: "/merchant/products", label: t("Products"), icon: "Package" as const }] : []),
     ...(f.shop ? [{ href: "/merchant/orders", label: t("Orders"), icon: "ShoppingBag" as const, badge: newOrders }] : []),
-    ...(f.birthdays ? [{ href: "/merchant/leads", label: t("Birthday requests"), icon: "Cake" as const }] : []),
     { href: "/merchant/promotions", label: t("Flash promotions"), icon: "Zap" },
     { href: "/merchant/ads", label: t("Advertising"), icon: "Megaphone" },
     { href: "/merchant/analytics", label: t("Analytics"), icon: "BarChart3" },

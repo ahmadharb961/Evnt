@@ -141,10 +141,6 @@ export async function EventForm({ merchantId, event }: { merchantId: string; eve
             {t("Allow reservations paid at the venue")}
           </label>
           <label className="flex items-center gap-3 text-sm">
-            <input type="checkbox" name="memberEarlyAccess" defaultChecked={e?.memberEarlyAccess} className="h-4 w-4 accent-ink" />
-            {t("Give EVNT+ members 48-hour early access (when a sales date is set)")}
-          </label>
-          <label className="flex items-center gap-3 text-sm">
             <input type="checkbox" name="accessible" defaultChecked={e?.accessible} className="h-4 w-4 accent-ink" />
             {t("Wheelchair accessible")}
           </label>

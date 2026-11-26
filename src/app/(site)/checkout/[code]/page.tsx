@@ -58,7 +58,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ code:
               total={formatMoney(b.totalCents, locale)}
               methods={methods}
               whishPending={!whish}
-              policy={loc(b.event.cancellationPolicy, locale) || t("Free cancellation up to 48 hours before the session (24 hours for EVNT+ members). No refunds after that.")}
+              policy={loc(b.event.cancellationPolicy, locale) || t("Free cancellation up to 48 hours before the session. No refunds after that.")}
             />
           )}
         </div>
@@ -91,7 +91,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ code:
                 {b.subtotalCents > 0 && (
                   <div className="flex justify-between text-ink-muted">
                     <span>{t("EVNT booking fee")}</span>
-                    <span>{b.feeCents ? formatMoney(b.feeCents, locale) : t("Free with EVNT+")}</span>
+                    <span>{formatMoney(b.feeCents, locale)}</span>
                   </div>
                 )}
                 <div className="flex justify-between border-t border-ink/10 pt-2 text-base font-bold">

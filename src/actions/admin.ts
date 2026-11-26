@@ -8,7 +8,6 @@ import { prisma } from "@/server/db";
 import { ADMIN_AS_COOKIE, hasRole, requireAdmin, UserError } from "@/server/auth";
 import { changePlan, createInvoice, createPayout, invoiceCommissions, markInvoicePaid } from "@/server/billing";
 import { reviewCampaign } from "@/server/ads";
-import { grantMembership } from "@/server/plus";
 import { refreshRatings } from "@/server/reviews";
 import { reindexAll } from "@/server/reindex";
 import { clearSettingsCache, DEFAULTS, setSetting, type SettingKey } from "@/server/settings";
@@ -174,12 +173,6 @@ export async function setUserDisabledAction(userId: string, disabled: boolean) {
     await prisma.user.update({ where: { id: userId }, data: { disabled } });
     if (disabled) await prisma.session.deleteMany({ where: { userId } });
     await audit(actor, disabled ? "user.disabled" : "user.enabled", "user", userId);
-  }, `/admin/users/${userId}`);
-}
-
-export async function grantPlusAction(userId: string, input?: string) {
-  return guard(["ADMIN"], async (actor) => {
-    await grantMembership(userId, parseInt(input ?? "1", 10) || 1, actor);
   }, `/admin/users/${userId}`);
 }
 

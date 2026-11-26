@@ -22,7 +22,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     prisma.category.findMany({ where: { active: true }, select: { slug: true, kind: true, parentId: true } }),
     prisma.article.findMany({ where: { status: "PUBLISHED" }, select: { slug: true, updatedAt: true } }),
   ]).catch(() => [[], [], [], [], [], []] as never);
-  const statics = ["/", "/discover", "/activities", "/birthdays", "/restaurants", "/shop", "/plus", "/guides", "/business", "/business/pricing", "/contact", "/terms", "/privacy", "/refunds", "/reviews-policy"];
+  const statics = ["/", "/discover", "/activities", "/restaurants", "/shop", "/guides", "/business", "/business/pricing", "/contact", "/terms", "/privacy", "/refunds", "/reviews-policy"];
   return [
     ...statics.map((p) => entry(p, undefined, p === "/" ? 1 : 0.7)),
     ...cats.filter((c) => c.kind === "EVENT").map((c) => entry(`/c/${c.slug}`, undefined, 0.7)),

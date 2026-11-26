@@ -11,7 +11,7 @@ import { PageHeader, Panel } from "@/components/portal/shell";
 import { TONES } from "@/lib/tones";
 import { ROLE_INFO } from "@/lib/roles";
 import { ActionButton } from "@/components/portal/action-button";
-import { setRoleAction, setUserDisabledAction, grantPlusAction } from "@/actions/admin";
+import { setRoleAction, setUserDisabledAction } from "@/actions/admin";
 import { fmtDate, fmtDateTime } from "@/lib/dates";
 import { formatMoney } from "@/lib/money";
 
@@ -39,9 +39,6 @@ export default async function UserAdmin({ params }: { params: Promise<{ id: stri
             <ActionButton action={setUserDisabledAction.bind(null, u.id, !u.disabled)} className={u.disabled ? "btn-outline btn-sm" : "btn-danger btn-sm"} confirm={u.disabled ? t("Re-enable this account?") : t("Disable this account and sign them out?")}>
               {u.disabled ? t("Enable account") : t("Disable account")}
             </ActionButton>
-            <ActionButton action={grantPlusAction.bind(null, u.id)} className="btn-outline btn-sm" prompt={t("Grant EVNT+ for how many months?")}>
-              {t("Grant EVNT+")}
-            </ActionButton>
           </>
         }
       />
@@ -55,7 +52,6 @@ export default async function UserAdmin({ params }: { params: Promise<{ id: stri
             <div>
               {t("Joined")}: {fmtDate(u.createdAt, locale, { day: "numeric", month: "short", year: "numeric" })} · {t("Last login")}: {u.lastLoginAt ? fmtDateTime(u.lastLoginAt, locale) : "—"}
             </div>
-            <div>EVNT+: {u.membership ? `${t(labelOf(SUBSCRIPTION_STATUS, u.membership.status))} ${u.membership.currentPeriodEnd ? fmtDate(u.membership.currentPeriodEnd, locale, { day: "numeric", month: "short", year: "numeric" }) : ""}` : "—"}</div>
             <div>{t("{n} points", { n: points })}</div>
             <div>
               {t("Marketing")}: email {u.marketingEmail ? "✓" : "✗"} · WhatsApp {u.marketingWhatsapp ? "✓" : "✗"}

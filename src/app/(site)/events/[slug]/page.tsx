@@ -6,7 +6,6 @@ import { loadEventPage } from "@/server/event-page";
 import { getCurrentUser } from "@/server/auth";
 import { favoriteIds } from "@/server/home";
 import { getSetting } from "@/server/settings";
-import { isMember } from "@/server/membership";
 import { listReviews } from "@/server/reviews";
 import { searchEvents } from "@/server/listings";
 import { prisma } from "@/server/db";
@@ -47,10 +46,9 @@ export default async function EventPage({ params, searchParams }: { params: Prom
   if (!staffView) void trackView(e.merchant.id, "event", e.id);
   if (sp.ad && /^[a-z0-9]{20,40}$/.test(sp.ad)) await prisma.adCampaign.updateMany({ where: { id: sp.ad, eventId: e.id }, data: { clicks: { increment: 1 } } });
 
-  const [saved, feeCents, member, holdMinutes, reviews, related, completed] = await Promise.all([
+  const [saved, feeCents, holdMinutes, reviews, related, completed] = await Promise.all([
     favoriteIds(user?.id),
     getSetting("booking.feeCents"),
-    isMember(user?.id),
     getSetting("booking.holdMinutes"),
     listReviews({ eventId: e.id }),
     searchEvents({ categorySlug: e.category.parent?.slug ?? e.category.slug, excludeId: e.id, limit: 8 }, locale),
@@ -162,7 +160,7 @@ export default async function EventPage({ params, searchParams }: { params: Prom
           )}
           <section className="mt-8">
             <h2 className="h-section">{t("Cancellation policy")}</h2>
-            <p className="mt-3 whitespace-pre-line text-ink-soft">{e.cancellationPolicy || t("Free cancellation up to 48 hours before the session (24 hours for EVNT+ members). No refunds after that.")}</p>
+            <p className="mt-3 whitespace-pre-line text-ink-soft">{e.cancellationPolicy || t("Free cancellation up to 48 hours before the session. No refunds after that.")}</p>
           </section>
 
           {e.location && (
@@ -203,7 +201,7 @@ export default async function EventPage({ params, searchParams }: { params: Prom
               seating={e.seatingMode === "ASSIGNED" && e.seatingMap ? e.seatingMap : null}
               flashPercent={e.flashPercent}
               feeCents={feeCents}
-              isMember={member}
+              isMember={false}
               initialSession={sp.session}
               holdMinutes={holdMinutes}
             />

@@ -13,7 +13,7 @@ export async function SiteHeader() {
   const nav = [
     { href: "/discover", label: t("Discover") },
     { href: "/activities", label: t("Activities") },
-    { href: "/birthdays", label: t("Birthdays") },
+    { href: "/c/birthdays-parties", label: t("Birthdays") },
     { href: "/restaurants", label: t("Restaurants") },
     { href: "/shop", label: t("Shop") },
   ];

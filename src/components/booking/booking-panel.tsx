@@ -3,8 +3,7 @@
 import { useMemo, useState, useTransition } from "react";
 import { ScrollRow } from "@/components/scroll-row";
 import { usePathname, useRouter } from "next/navigation";
-import Link from "next/link";
-import { Minus, Plus, Loader2, Crown, CalendarX } from "lucide-react";
+import { Minus, Plus, Loader2, CalendarX } from "lucide-react";
 import { startBookingAction } from "@/actions/booking";
 import { SeatPicker, type Seat } from "@/components/booking/seat-picker";
 import { useLocale, useT } from "@/i18n/client";
@@ -65,7 +64,7 @@ export function BookingPanel({
 
   const count = lines.reduce((a, l) => a + l.n, 0);
   const subtotal = lines.reduce((a, l) => a + l.n * l.cents, 0);
-  const fee = subtotal > 0 && !isMember ? feeCents : 0;
+  const fee = subtotal > 0 ? feeCents : 0;
   const totalQtyMax = session ? Math.min(session.remaining, 50) : 0;
 
   if (!sessions.length)
@@ -123,12 +122,8 @@ export function BookingPanel({
                   {soldOut
                     ? t("Sold out")
                     : !s.open
-                      ? s.reason === "members_only"
-                        ? t("EVNT+ early access")
-                        : t("Opens soon")
-                      : s.early
-                        ? t("Early access")
-                        : s.remaining <= 5
+                      ? t("Opens soon")
+                      : s.remaining <= 5
                           ? t("{n} left", { n: s.remaining })
                           : t("Available")}
                 </span>
@@ -136,12 +131,6 @@ export function BookingPanel({
             );
           })}
         </ScrollRow>
-        {sessions.some((s) => s.reason === "members_only") && !isMember && (
-          <Link href="/plus" className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-powder-deep">
-            <Crown className="h-3.5 w-3.5" />
-            {t("EVNT+ members can book 48 hours before everyone else")}
-          </Link>
-        )}
       </div>
 
       {session && (
@@ -213,7 +202,7 @@ export function BookingPanel({
           {subtotal > 0 && (
             <div className="flex justify-between text-ink-muted">
               <span>{t("EVNT booking fee")}</span>
-              <span>{fee ? formatMoney(fee, locale) : isMember ? t("Free with EVNT+") : formatMoney(0, locale)}</span>
+              <span>{formatMoney(fee, locale)}</span>
             </div>
           )}
           <div className="flex justify-between border-t border-ink/10 pt-2 text-base font-bold">

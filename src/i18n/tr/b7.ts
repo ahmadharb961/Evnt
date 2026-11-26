@@ -262,4 +262,12 @@ export const B7: [string, string, string][] = [
   ["Your shop listing renews soon", "يتجدد عرض متجرك قريباً", "Votre référencement se renouvelle bientôt"],
   ["Your store on EVNT for {price} a month", "متجرك على EVNT مقابل {price} شهرياً", "Votre boutique sur EVNT pour {price} par mois"],
   ["No commission on your sales.", "بدون عمولة على مبيعاتك.", "Aucune commission sur vos ventes."],
+  ["Booking is not open for this date", "الحجز غير متاح لهذا الموعد", "La réservation n'est pas ouverte pour cette date"],
+  ["Free cancellation up to 48 hours before the session. No refunds after that.", "إلغاء مجاني حتى 48 ساعة قبل الموعد. لا استرداد بعد ذلك.", "Annulation gratuite jusqu'à 48 h avant la séance. Aucun remboursement ensuite."],
+  ["Live shops", "متاجر منشورة", "Boutiques en ligne"],
+  ["Loyalty points", "نقاط الولاء", "Points de fidélité"],
+  ["Reward points families earn when they book and buy", "نقاط مكافأة تكسبها العائلات عند الحجز والشراء", "Points que les familles gagnent en réservant et en achetant"],
+  ["Small service fee EVNT adds to each paid booking. Set 0 to turn it off.", "رسم خدمة صغير تضيفه EVNT على كل حجز مدفوع. ضع 0 لإيقافه.", "Petits frais de service ajoutés à chaque réservation payante. Mettez 0 pour les désactiver."],
+  ["Table reservations", "حجوزات الطاولات", "Réservations de table"],
+  ["{n} accounts · {s} admin team", "{n} حساب · {s} في فريق الإدارة", "{n} comptes · {s} admins"],
 ];

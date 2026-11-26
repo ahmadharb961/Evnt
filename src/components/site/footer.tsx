@@ -9,7 +9,7 @@ export async function SiteFooter() {
       title: t("Discover"),
       links: [
         ["/activities", t("Activities & Workshops")],
-        ["/birthdays", t("Birthdays & Parties")],
+        ["/c/birthdays-parties", t("Birthdays & Parties")],
         ["/restaurants", t("Restaurants & Cafés")],
         ["/shop", t("Shop for Kids")],
         ["/guides", t("Family guides")],
@@ -18,7 +18,6 @@ export async function SiteFooter() {
     {
       title: "EVNT",
       links: [
-        ["/plus", "EVNT+"],
         ["/contact", t("Contact & support")],
       ],
     },

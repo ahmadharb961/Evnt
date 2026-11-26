@@ -43,7 +43,7 @@ export default async function MerchantHome({ searchParams }: { searchParams: Pro
         <Stat label={t("EVNT-generated revenue")} value={money(k.evntRevenueCents)} />
         <Stat label={t("Bookings")} value={k.bookings} />
         <Stat label={t("Product orders")} value={k.orders} />
-        <Stat label={t("Leads & quote requests")} value={k.leads} />
+        <Stat label={t("Table reservations")} value={k.reservations} />
         <Stat label={t("Profile & listing views")} value={k.views} />
         <Stat label={t("Conversion rate")} value={`${k.conversionPct}%`} />
         <Stat label={k.commissionPayableCents ? t("Commission payable") : t("Payout due to you")} value={money(k.commissionPayableCents || k.payoutDueCents)} />

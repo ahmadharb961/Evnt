@@ -16,12 +16,11 @@ export async function trackView(merchantId: string, targetType: string, targetId
 
 /** Merchant KPIs for a period. Only money actually received counts as revenue (no unpaid COD). */
 export async function merchantKpis(merchantId: string, since: Date) {
-  const [bookings, evntBookings, orders, views, quotes, ledger, campaigns, reservations] = await Promise.all([
+  const [bookings, evntBookings, orders, views, ledger, campaigns, reservations] = await Promise.all([
     prisma.booking.aggregate({ where: { merchantId, status: { in: ["CONFIRMED", "COMPLETED"] }, confirmedAt: { gte: since } }, _sum: { subtotalCents: true }, _count: { _all: true } }),
     prisma.booking.aggregate({ where: { merchantId, status: { in: ["CONFIRMED", "COMPLETED"] }, confirmedAt: { gte: since }, attribution: { not: "MERCHANT_LINK" } }, _sum: { subtotalCents: true } }),
     prisma.order.aggregate({ where: { merchantId, createdAt: { gte: since }, OR: [{ paidAt: { not: null } }, { codCollectedAt: { not: null } }], status: { notIn: ["CANCELED", "REFUNDED"] } }, _sum: { subtotalCents: true }, _count: { _all: true } }),
     prisma.dailyStat.aggregate({ where: { merchantId, day: { gte: since } }, _sum: { views: true } }),
-    prisma.birthdayQuote.count({ where: { merchantId, createdAt: { gte: since } } }),
     prisma.ledgerEntry.aggregate({ where: { merchantId, settlementId: null }, _sum: { amountCents: true } }),
     prisma.adCampaign.aggregate({ where: { merchantId, createdAt: { gte: since } }, _sum: { impressions: true, clicks: true } }),
     prisma.restaurantReservation.aggregate({ where: { restaurant: { merchantId }, status: "COMPLETED", startsAt: { gte: since } }, _count: { _all: true }, _sum: { completedGuests: true } }),
@@ -37,7 +36,6 @@ export async function merchantKpis(merchantId: string, since: Date) {
     reservations: reservations._count._all,
     guests: reservations._sum.completedGuests ?? 0,
     views: v,
-    leads: quotes,
     conversionPct: v ? Math.round((conversions / v) * 1000) / 10 : 0,
     commissionPayableCents: balance < 0 ? -balance : 0,
     payoutDueCents: balance > 0 ? balance : 0,

@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { prisma, type Tx } from "./db";
 import { UserError } from "./auth";
 import { getSetting } from "./settings";
-import { isMember, awardPoints, reversePoints } from "./membership";
+import { awardPoints, reversePoints } from "./membership";
 import { recordBookingCommission, reverseBookingCommission } from "./commission";
 import { notifyMerchant, notifyUser } from "./notify";
 import { audit } from "./audit";
@@ -64,18 +64,12 @@ export async function sessionRemaining(sessionId: string) {
   return s.capacity - s.reserved;
 }
 
-/** Can this user book this session right now? Handles EVNT+ 48-hour early access. */
-export async function salesState(session: { startsAt: Date; salesStartAt: Date | null; status: string }, event: { memberEarlyAccess: boolean }, userId?: string | null) {
+/** Can this user book this session right now? (sales may open at a set date) */
+export async function salesState(session: { startsAt: Date; salesStartAt: Date | null; status: string }, _event?: unknown, _userId?: string | null) {
   const now = new Date();
   if (session.status !== "SCHEDULED" || session.startsAt <= now) return { open: false as const, reason: "closed" as const };
   if (!session.salesStartAt || session.salesStartAt <= now) return { open: true as const };
-  const hours = await getSetting("membership.earlyAccessHours");
-  const earlyFrom = new Date(session.salesStartAt.getTime() - hours * 3600_000);
-  if (event.memberEarlyAccess && now >= earlyFrom) {
-    if (await isMember(userId)) return { open: true as const, early: true };
-    return { open: false as const, reason: "members_only" as const, opensAt: session.salesStartAt };
-  }
-  return { open: false as const, reason: "not_yet" as const, opensAt: event.memberEarlyAccess ? earlyFrom : session.salesStartAt };
+  return { open: false as const, reason: "not_yet" as const, opensAt: session.salesStartAt };
 }
 
 /** Flash promotion currently running for an event (percent off the merchant's price). */
@@ -121,7 +115,7 @@ export async function startBooking(input: StartInput): Promise<{ code: string }>
   if (!session || session.event.status !== "PUBLISHED" || session.event.merchant.status !== "APPROVED") throw new UserError("This activity is not available for booking");
   const event = session.event;
   const sales = await salesState(session, event, input.userId);
-  if (!sales.open) throw new UserError(sales.reason === "members_only" ? "Early access is for EVNT+ members right now" : "Booking is not open for this date");
+  if (!sales.open) throw new UserError("Booking is not open for this date");
 
   const types = new Map(event.ticketTypes.map((t) => [t.id, t]));
   const assigned = event.seatingMode === "ASSIGNED";
@@ -157,8 +151,7 @@ export async function startBooking(input: StartInput): Promise<{ code: string }>
   const pct = await activeFlashPercent(event.id);
   const unitAfter = (u: number) => (pct ? Math.round((u * (100 - pct)) / 100) : u);
   const subtotal = lines.reduce((a, l) => a + unitAfter(l.unit) * l.quantity, 0);
-  const member = await isMember(input.userId);
-  const fee = subtotal > 0 && !member ? await getSetting("booking.feeCents") : 0;
+  const fee = subtotal > 0 ? await getSetting("booking.feeCents") : 0;
   const holdMinutes = await getSetting("booking.holdMinutes");
   const expiresAt = new Date(Date.now() + holdMinutes * 60_000);
   const user = await prisma.user.findUniqueOrThrow({ where: { id: input.userId } });
@@ -195,7 +188,6 @@ export async function startBooking(input: StartInput): Promise<{ code: string }>
           subtotalCents: subtotal,
           feeCents: fee,
           totalCents: subtotal + fee,
-          memberApplied: member && subtotal > 0,
           contactName: user.name,
           contactPhone: user.phone ?? "",
           contactEmail: user.email,
@@ -278,7 +270,7 @@ async function finalize(tx: Tx, bookingId: string, method: PaymentMethod) {
       eventCategoryId: b.event.categoryId,
       plan: b.merchant.plan,
     });
-    if (b.totalCents > 0) await awardPoints(tx, b.userId, b.totalCents, b.memberApplied || (await isMember(b.userId, tx)), { type: "booking", id: b.id });
+    if (b.totalCents > 0) await awardPoints(tx, b.userId, b.totalCents, { type: "booking", id: b.id });
   }
   await tx.auditLog.create({ data: { actorId: b.userId, action: "booking.confirmed", entityType: "booking", entityId: b.id, data: { method } } });
   return { already: false, booking: updated };
@@ -356,13 +348,13 @@ export async function applyBookingPayment(paymentId: string, outcome: "success" 
 
 // ───────────────────────── Cancelling ─────────────────────────
 
-export async function freeCancelHours(userId: string) {
-  return (await isMember(userId)) ? 24 : 48;
+export async function freeCancelHours(_userId?: string) {
+  return 48;
 }
 
 /**
  * Cancels a booking. Parents can cancel themselves before the free-cancellation window closes
- * (48h, or 24h for EVNT+ members, subject to the merchant's policy). Merchants and admins can always cancel.
+ * (48h, subject to the merchant's policy). Merchants and admins can always cancel.
  * Seats/spots go back on sale, tickets are voided, commission is reversed and a refund is recorded.
  */
 export async function cancelBooking(code: string, actor: { userId: string; as: "customer" | "merchant" | "admin"; merchantId?: string }, reason: string) {
@@ -434,7 +426,7 @@ export async function markPaidAtVenue(code: string, merchantId: string, actorId:
       data: { purpose: "BOOKING", method: "PAY_AT_VENUE", status: "SUCCEEDED", amountCents: b.subtotalCents, idempotencyKey: `venue:${b.id}`, userId: b.userId, merchantId, bookingId: b.id, recordedById: actorId, confirmedAt: new Date() },
     });
     await recordBookingCommission(tx, { id: b.id, code: b.code, merchantId, userId: b.userId, subtotalCents: b.subtotalCents, attribution: b.attribution, paymentMethod: "PAY_AT_VENUE", eventCategoryId: b.event.categoryId, plan: b.merchant.plan });
-    await awardPoints(tx, b.userId, b.subtotalCents, await isMember(b.userId, tx), { type: "booking", id: b.id });
+    await awardPoints(tx, b.userId, b.subtotalCents, { type: "booking", id: b.id });
     await tx.auditLog.create({ data: { actorId, action: "booking.paid_at_venue", entityType: "booking", entityId: b.id } });
   });
 }

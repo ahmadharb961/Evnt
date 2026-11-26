@@ -16,10 +16,8 @@ async function applyOutcome(paymentId: string, outcome: "success" | "failed") {
   if (p.purpose === "BOOKING") return applyBookingPayment(paymentId, outcome);
   const { applyOrderPayment } = await import("../orders");
   const { applyInvoicePayment } = await import("../billing");
-  const { applyMembershipPayment } = await import("../plus");
   if (p.purpose === "ORDER") return applyOrderPayment(paymentId, outcome);
   if (p.purpose === "INVOICE") return applyInvoicePayment(paymentId, outcome);
-  if (p.purpose === "MEMBERSHIP") return applyMembershipPayment(paymentId, outcome);
   if (p.purpose === "RESERVATION_DEPOSIT") return (await import("../restaurants")).applyDepositPayment(paymentId, outcome);
 }
 

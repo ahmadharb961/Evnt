@@ -8,7 +8,7 @@ import { findCart } from "./cart";
 import { mediaSrc } from "./media";
 import { recordOrderCommission, reverseOrderCommission } from "./commission";
 import { effectiveProductPrice, productFlash } from "./listings";
-import { awardPoints, isMember, reversePoints } from "./membership";
+import { awardPoints, reversePoints } from "./membership";
 import { notifyMerchant, notifyUser } from "./notify";
 import { loc, type Locale } from "@/i18n/core";
 import { shortCode } from "@/lib/codes";
@@ -232,7 +232,7 @@ export async function updateOrderStatus(orderNumber: string, merchantId: string 
     // COD: only collected cash is revenue. The commission is recorded at collection, never before.
     if (next === "DELIVERED" && o.paymentMethod === "COD") {
       await recordOrderCommission(tx, { id: o.id, number: o.number, merchantId: o.merchantId, plan: o.merchant.plan, baseCents: o.subtotalCents - o.discountCents, paymentMethod: "COD", totalCents: o.totalCents });
-      await awardPoints(tx, o.group.userId, opts.collectedCents ?? o.totalCents, await isMember(o.group.userId, tx), { type: "order", id: o.id });
+      await awardPoints(tx, o.group.userId, opts.collectedCents ?? o.totalCents, { type: "order", id: o.id });
     }
   });
   const msg: Partial<Record<OrderStatus, [string, string]>> = {
@@ -275,7 +275,7 @@ export async function applyOrderPayment(paymentId: string, outcome: "success" | 
       await tx.order.update({ where: { id: o.id }, data: { status: "CONFIRMED", paidAt: new Date() } });
       await tx.orderStatusEvent.create({ data: { orderId: o.id, status: "CONFIRMED", note: "Paid with Whish" } });
       await recordOrderCommission(tx, { id: o.id, number: o.number, merchantId: o.merchantId, plan: o.merchant.plan, baseCents: o.subtotalCents - o.discountCents, paymentMethod: "WHISH", totalCents: o.totalCents });
-      await awardPoints(tx, o.group.userId, o.totalCents, await isMember(o.group.userId, tx), { type: "order", id: o.id });
+      await awardPoints(tx, o.group.userId, o.totalCents, { type: "order", id: o.id });
     });
     await notifyMerchant(o.merchantId, { kind: "order.new", title: "New paid order {number}", body: "A new order was paid online. Please prepare it.", vars: { number: o.number }, link: `/merchant/orders/${o.number}` });
   }

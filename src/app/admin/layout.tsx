@@ -34,7 +34,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     ...(fin ? [{ href: "/admin/finance", label: t("Payments & finance"), icon: "Wallet" as const, badge: refunds, group: G.money, tone: "emerald" as const }] : []),
     ...(fin ? [{ href: "/admin/commissions", label: t("Commissions"), icon: "Scale" as const, group: G.money, tone: "sky" as const }] : []),
     ...(fin || ops ? [{ href: "/admin/plans", label: t("Plans & pricing"), icon: "Crown" as const, group: G.money, tone: "amber" as const }] : []),
-    ...(ops ? [{ href: "/admin/plus", label: "EVNT+", icon: "Crown" as const, group: G.money, tone: "violet" as const }] : []),
     ...(ops ? [{ href: "/admin/ads", label: t("Advertising"), icon: "Megaphone" as const, badge: pendingAds, group: G.money, tone: "peach" as const }] : []),
     ...(ops || fin ? [{ href: "/admin/analytics", label: t("Analytics"), icon: "BarChart3" as const, group: G.money, tone: "powder" as const }] : []),
     ...(ops || fin ? [{ href: "/admin/simulator", label: t("Revenue simulator"), icon: "Calculator" as const, group: G.money, tone: "slate" as const }] : []),

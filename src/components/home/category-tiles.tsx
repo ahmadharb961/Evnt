@@ -15,7 +15,6 @@ const STYLE: Record<string, { icon: React.ElementType; bg: string; fg: string }>
 export function categoryHref(slug: string) {
   if (slug === "restaurants-cafes") return "/restaurants";
   if (slug === "shop") return "/shop";
-  if (slug === "birthdays-parties") return "/birthdays";
   return `/c/${slug}`;
 }
 

@@ -30,7 +30,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     ...(ops ? [{ href: "/admin/bookings", label: t("Bookings"), icon: "Ticket" as const, group: G.activity, tone: "mint" as const }] : []),
     ...(ops ? [{ href: "/admin/orders", label: t("Shop orders"), icon: "ShoppingBag" as const, group: G.activity, tone: "blush" as const }] : []),
     ...(ops ? [{ href: "/admin/reservations", label: t("Restaurant tables"), icon: "UtensilsCrossed" as const, group: G.activity, tone: "emerald" as const }] : []),
-    ...(ops ? [{ href: "/admin/birthdays", label: t("Birthdays"), icon: "Cake" as const, group: G.activity, tone: "rose" as const }] : []),
     ...(fin ? [{ href: "/admin/finance", label: t("Payments & finance"), icon: "Wallet" as const, badge: refunds, group: G.money, tone: "emerald" as const }] : []),
     ...(fin ? [{ href: "/admin/commissions", label: t("Commissions"), icon: "Scale" as const, group: G.money, tone: "sky" as const }] : []),
     ...(fin || ops ? [{ href: "/admin/plans", label: t("Plans & pricing"), icon: "Crown" as const, group: G.money, tone: "amber" as const }] : []),

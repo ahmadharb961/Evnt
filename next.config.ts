@@ -15,6 +15,19 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 2592000,
     formats: ["image/webp"],
   },
+  // Old links to features that were removed go somewhere sensible instead of "page not found".
+  async redirects() {
+    return [
+      { source: "/plus", destination: "/", permanent: true },
+      { source: "/farah-approved", destination: "/", permanent: true },
+      { source: "/birthdays/plan/:id", destination: "/c/birthdays-parties", permanent: true },
+      { source: "/merchant/leads", destination: "/merchant", permanent: true },
+      { source: "/merchant/certification", destination: "/merchant", permanent: true },
+      { source: "/admin/plus", destination: "/admin", permanent: true },
+      { source: "/admin/farah/:path*", destination: "/admin", permanent: true },
+      { source: "/admin/birthdays", destination: "/admin", permanent: true },
+    ];
+  },
   async headers() {
     return [
       { source: "/sw.js", headers: [{ key: "Cache-Control", value: "no-cache" }] },
